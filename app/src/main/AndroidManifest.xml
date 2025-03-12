@@ -15,11 +15,6 @@
         <activity
             android:name=".NavDrawer"
             android:exported="false"
-            android:label="@string/title_activity_nav_drawer"
-            android:theme="@style/Theme.FundooNotes.NoActionBar" />
-        <activity
-            android:name=".NotesHome"
-            android:exported="false"
             android:label="@string/title_activity_notes_home"
             android:theme="@style/Theme.FundooNotes.NoActionBar" />
         <activity
