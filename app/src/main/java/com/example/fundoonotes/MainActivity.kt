@@ -1,5 +1,6 @@
 package com.example.fundoonotes
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.ImageButton
@@ -11,12 +12,23 @@ import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import com.example.fundoonotes.ui.loginSignup.loginSignupActivity
 import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Check if user is logged in
+        if (!isUserLoggedIn()) {
+            // Redirect to login activity
+            val intent = Intent(this, loginSignupActivity::class.java)
+            startActivity(intent)
+            finish() // Close MainActivity
+            return
+        }
+
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -63,5 +75,12 @@ class MainActivity : AppCompatActivity() {
             drawerLayout.closeDrawer(GravityCompat.START)
             true
         }
+    }
+
+    private fun isUserLoggedIn(): Boolean {
+        // Replace with your actual logic to check if the user is logged in
+        // For example, check if a token exists in SharedPreferences
+        val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        return sharedPreferences.getBoolean("isLoggedIn", false)
     }
 }

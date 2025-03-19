@@ -2,4 +2,22 @@
     <string name="app_name">FundooNotes</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="email_address">Email Address</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="full_name">Full Name</string>
+    <string name="remember_password">Remember Password</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="terms_privacy_agreement">By signing in you are agreeing to our Terms and Privacy Policy</string>
+    <string name="accept_terms_conditions">I accept the Terms and Conditions</string>
+    <string name="connect_with">Connect with</string>
+    <string name="login_using_fingerprint">Login using Fingerprint</string>
+    <string name="fingerprint_login">Fingerprint Login</string>
+    <string name="facebook_login">Facebook Login</string>
+    <string name="google_login">Google Login</string>
+    <string name="twitter_login">Twitter Login</string>
+    <string name="apple_login">Apple Login</string>
 </resources>
