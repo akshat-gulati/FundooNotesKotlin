@@ -1,20 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item
-        android:id="@+id/navNotes"
-        android:title="Notes"
-        android:icon="@drawable/lightbulb"
-        />
-    <item
-        android:id="@+id/navReminders"
-        android:title="Reminders"
-        android:icon="@drawable/alarm"
-        />
+
+    <group
+        android:id="@+id/group1"
+        >
+        <item
+            android:id="@+id/navNotes"
+            android:title="Notes"
+            android:icon="@drawable/lightbulb"
+            />
+        <item
+            android:id="@+id/navReminders"
+            android:title="Reminders"
+            android:icon="@drawable/alarm"
+            />
+    </group>
+    <group
+        android:id="@+id/group2"
+        >
     <item
         android:id="@+id/navLabels"
         android:title="Create/Edit labels"
         android:icon="@drawable/brush"
         />
+    </group>
+    <group
+        android:id="@+id/group3"
+        >
     <item
         android:id="@+id/navArchive"
         android:title="Archive"
@@ -25,6 +37,7 @@
         android:title="Bin"
         android:icon="@drawable/bin"
         />
+    </group>
     <item
         android:id="@+id/navSettings"
         android:title="Settings"
