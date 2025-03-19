@@ -12,10 +12,19 @@ import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
+import com.example.fundoonotes.ui.archive.ArchiveFragment
+import com.example.fundoonotes.ui.bin.BinFragment
+import com.example.fundoonotes.ui.labels.LabelsFragment
 import com.example.fundoonotes.ui.loginSignup.loginSignupActivity
+import com.example.fundoonotes.ui.notes.NoteFragment
+import com.example.fundoonotes.ui.reminders.RemindersFragment
 import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var navView: NavigationView
+    private var currentNavItemId: Int = R.id.navNotes // Default selected item
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,39 +51,66 @@ class MainActivity : AppCompatActivity() {
         drawerButton.setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
         }
-        val navView: NavigationView = findViewById(R.id.nav_view)
-        navView.setNavigationItemSelectedListener { item: MenuItem ->
-            val itemId: Int = item.itemId
 
-            when (itemId) {
+        navView = findViewById(R.id.nav_view)
+        navView.setNavigationItemSelectedListener { item: MenuItem ->
+            // Update the current selected item ID
+            currentNavItemId = item.itemId
+
+            // Check/highlight the selected item
+            item.isChecked = true
+
+            when (item.itemId) {
                 R.id.navNotes -> {
-                    Toast.makeText(this, "Notes selected", Toast.LENGTH_SHORT).show()
+                    // Navigate to NotesFragment
+                    val fragment = NoteFragment()
+                    loadFragment(fragment)
                 }
                 R.id.navReminders -> {
-                    Toast.makeText(this, "Reminders selected", Toast.LENGTH_SHORT).show()
+                    // Navigate to RemindersFragment
+                    val fragment = RemindersFragment()
+                    loadFragment(fragment)
                 }
                 R.id.navLabels -> {
-                    Toast.makeText(this, "Create/Edit labels selected", Toast.LENGTH_SHORT).show()
+                    // Navigate to LabelsFragment
+                    val fragment = LabelsFragment()
+                    loadFragment(fragment)
                 }
                 R.id.navArchive -> {
-                    Toast.makeText(this, "Archive selected", Toast.LENGTH_SHORT).show()
+                    // Navigate to ArchiveFragment
+                    val fragment = ArchiveFragment()
+                    loadFragment(fragment)
                 }
                 R.id.navBin -> {
-                    Toast.makeText(this, "Bin selected", Toast.LENGTH_SHORT).show()
+                    // Navigate to BinFragment
+                    val fragment = BinFragment()
+                    loadFragment(fragment)
                 }
-                R.id.navSettings -> {
-                    Toast.makeText(this, "Settings selected", Toast.LENGTH_SHORT).show()
-                }
-                R.id.navFeedback -> {
-                    Toast.makeText(this, "Send app feedback selected", Toast.LENGTH_SHORT).show()
-                }
-                R.id.navHelp -> {
-                    Toast.makeText(this, "Help selected", Toast.LENGTH_SHORT).show()
-                }
+                // Handle other menu items...
             }
             drawerLayout.closeDrawer(GravityCompat.START)
             true
         }
+
+        // Load default fragment if no fragment is loaded
+        if (savedInstanceState == null) {
+            // Set the default item as checked
+            navView.menu.findItem(currentNavItemId).isChecked = true
+            loadFragment(NoteFragment())
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Make sure the correct navigation item is highlighted when returning to the activity
+        navView.menu.findItem(currentNavItemId).isChecked = true
+    }
+
+    private fun loadFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun isUserLoggedIn(): Boolean {
