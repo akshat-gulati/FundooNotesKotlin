@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navNotes"
+        android:title="Notes"
+        android:icon="@drawable/lightbulb"
+        />
+    <item
+        android:id="@+id/navReminders"
+        android:title="Reminders"
+        android:icon="@drawable/alarm"
+        />
+    <item
+        android:id="@+id/navLabels"
+        android:title="Create/Edit labels"
+        android:icon="@drawable/brush"
+        />
+    <item
+        android:id="@+id/navArchive"
+        android:title="Archive"
+        android:icon="@drawable/archive"
+        />
+    <item
+        android:id="@+id/navBin"
+        android:title="Bin"
+        android:icon="@drawable/bin"
+        />
+    <item
+        android:id="@+id/navSettings"
+        android:title="Settings"
+        android:icon="@drawable/gear"
+        />
+    <item
+        android:id="@+id/navFeedback"
+        android:title="Send app feedback"
+        android:icon="@drawable/info"
+        />
+    <item
+        android:id="@+id/navHelp"
+        android:title="Help"
+        android:icon="@drawable/help"
+        />
+</menu>
