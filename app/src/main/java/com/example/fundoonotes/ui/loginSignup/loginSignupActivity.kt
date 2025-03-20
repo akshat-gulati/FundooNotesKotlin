@@ -70,8 +70,6 @@ class loginSignupActivity : AppCompatActivity() {
         cbAcceptTerms = findViewById(R.id.cbAcceptTerms)
         tvAcceptTerms = findViewById(R.id.tvAcceptTerms)
         clPasswordOptions = findViewById(R.id.clPasswordOptions)
-        ivFingerprint = findViewById(R.id.ivFingerprint)
-        tvFingerprintLogin = findViewById(R.id.tvFingerprintLogin)
         btnAction = findViewById(R.id.btnAction)
         tvLoginHeader = findViewById(R.id.tvLoginHeader)
     }
@@ -108,8 +106,6 @@ class loginSignupActivity : AppCompatActivity() {
 
         // Show login-specific elements
         clPasswordOptions.visibility = View.GONE
-        ivFingerprint.visibility = View.GONE
-        tvFingerprintLogin.visibility = View.GONE
 
 
         // Update action button
@@ -126,8 +122,6 @@ class loginSignupActivity : AppCompatActivity() {
 
         // Hide login-specific elements
         clPasswordOptions.visibility = View.GONE
-        ivFingerprint.visibility = View.GONE
-        tvFingerprintLogin.visibility = View.GONE
 
         // Update action button
         btnAction.text = getString(R.string.register)
