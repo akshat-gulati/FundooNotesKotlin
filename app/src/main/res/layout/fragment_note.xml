@@ -6,19 +6,20 @@
     android:layout_height="match_parent"
     tools:context=".ui.notes.NoteFragment">
 
-    <!-- Existing TextView -->
+    <!-- Existing TextView
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Hello Notes"
         android:id="@+id/textView" />
+        -->
 
     <!-- RecyclerView positioned to take full space -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/textView"
+
         tools:listitem="@layout/item_row" />
 
     <!-- Floating Action Button Positioned on Top -->

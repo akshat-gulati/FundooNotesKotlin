@@ -23,10 +23,10 @@
 
         <!-- Title (Centered) -->
         <TextView
-            android:id="@+id/title_text"
+            android:id="@+id/tvHeaderTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Reminders"
+            android:text="Notes"
             android:textSize="18sp"
             android:textStyle="bold"
             android:layout_gravity="center" />

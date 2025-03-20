@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.widget.ImageButton
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -25,8 +26,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var navView: NavigationView
     private var currentNavItemId: Int = R.id.navNotes // Default selected item
 
+    private lateinit var title_text: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
 
         // Check if user is logged in
         if (!isUserLoggedIn()) {
@@ -46,6 +50,7 @@ class MainActivity : AppCompatActivity() {
         }
         val drawerLayout: DrawerLayout = findViewById(R.id.main)
         val drawerButton: ImageButton = findViewById(R.id.drawer_button)
+        title_text = findViewById(R.id.tvHeaderTitle)
 
         drawerButton.setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
@@ -63,26 +68,31 @@ class MainActivity : AppCompatActivity() {
                 R.id.navNotes -> {
                     // Navigate to NotesFragment
                     val fragment = NoteFragment()
+                    title_text.text = getString(R.string.notes)
                     loadFragment(fragment)
                 }
                 R.id.navReminders -> {
                     // Navigate to RemindersFragment
                     val fragment = RemindersFragment()
+                    title_text.text = getString(R.string.reminders)
                     loadFragment(fragment)
                 }
                 R.id.navLabels -> {
                     // Navigate to LabelsFragment
                     val fragment = LabelsFragment()
+                    title_text.text = getString(R.string.create_labels)
                     loadFragment(fragment)
                 }
                 R.id.navArchive -> {
                     // Navigate to ArchiveFragment
                     val fragment = ArchiveFragment()
+                    title_text.text = getString(R.string.archive)
                     loadFragment(fragment)
                 }
                 R.id.navBin -> {
                     // Navigate to BinFragment
                     val fragment = BinFragment()
+                    title_text.text = getString(R.string.bin)
                     loadFragment(fragment)
                 }
                 // Handle other menu items...

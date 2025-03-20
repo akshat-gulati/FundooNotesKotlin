@@ -20,4 +20,11 @@
     <string name="google_login">Google Login</string>
     <string name="twitter_login">Twitter Login</string>
     <string name="apple_login">Apple Login</string>
+    <string name="notes">Notes</string>
+    <string name="reminders">Reminders</string>
+    <string name="create_labels">Create labels</string>
+    <string name="archive">Archive</string>
+    <string name="bin">Bin</string>
+
+
 </resources>
