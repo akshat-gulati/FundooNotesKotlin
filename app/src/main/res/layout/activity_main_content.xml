@@ -26,7 +26,7 @@
             android:id="@+id/tvHeaderTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Notes"
+            android:text="@string/notes"
             android:textSize="18sp"
             android:textStyle="bold"
             android:layout_gravity="center" />
@@ -54,6 +54,21 @@
                 android:src="@drawable/rectangle1x2"
                 android:padding="5dp"
                 app:tint="@color/black" />
+            <ImageView
+                android:id="@+id/profile_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/rectangle1x2"
+                android:padding="5dp"
+                app:tint="@color/black" />
+            <ImageView
+                android:id="@+id/header_options"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/rectangle1x2"
+                android:padding="5dp"
+                app:tint="@color/black" />
+
         </LinearLayout>
 
     </androidx.appcompat.widget.Toolbar>
