@@ -28,122 +28,186 @@ class MainActivity : AppCompatActivity() {
     private lateinit var navView: NavigationView
     private var currentNavItemId: Int = R.id.navNotes // Default selected item
 
-    private lateinit var title_text: TextView
-    private lateinit var search_icon: ImageView
-    private lateinit var layout_toggle_icon: ImageView
-    private lateinit var profile_icon: ImageView
-    private lateinit var header_options: ImageView
-
+    private lateinit var titleText: TextView
+    private lateinit var searchIcon: ImageView
+    private lateinit var layoutToggleIcon: ImageView
+    private lateinit var profileIcon: ImageView
+    private lateinit var headerOptions: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
         // Check if user is logged in
         if (!isUserLoggedIn()) {
-            // Redirect to login activity
-            val intent = Intent(this, loginSignupActivity::class.java)
-            startActivity(intent)
-            finish() // Close MainActivity
+            redirectToLogin()
             return
         }
 
+        setupUI(savedInstanceState)
+    }
+
+    private fun redirectToLogin() {
+        val intent = Intent(this, loginSignupActivity::class.java)
+        startActivity(intent)
+        finish() // Close MainActivity
+    }
+
+    private fun setupUI(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+        setupWindowInsets()
+        initializeViews()
+        setupDrawer()
+        setupNavigation()
+
+        // Load default fragment if no fragment is loaded
+        if (savedInstanceState == null) {
+            loadDefaultFragment()
+        }
+    }
+
+    private fun setupWindowInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.nav_view)) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             view.updatePadding(left = systemBars.left) // Ensures drawer respects notch in landscape
             insets
         }
+    }
+
+    private fun initializeViews() {
+        titleText = findViewById(R.id.tvHeaderTitle)
+        layoutToggleIcon = findViewById(R.id.layout_toggle_icon)
+        searchIcon = findViewById(R.id.search_icon)
+        profileIcon = findViewById(R.id.profile_icon)
+        headerOptions = findViewById(R.id.header_options)
+
+        // Set initial visibility
+        searchIcon.visibility = View.GONE
+        headerOptions.visibility = View.GONE
+    }
+
+    private fun setupDrawer() {
         val drawerLayout: DrawerLayout = findViewById(R.id.main)
         val drawerButton: ImageButton = findViewById(R.id.drawer_button)
-        title_text = findViewById(R.id.tvHeaderTitle)
-        layout_toggle_icon = findViewById(R.id.layout_toggle_icon)
-        search_icon = findViewById(R.id.search_icon)
-        profile_icon = findViewById(R.id.profile_icon)
-        header_options = findViewById(R.id.header_options)
-        search_icon.visibility = View.GONE
-        header_options.visibility = View.GONE
-
 
         drawerButton.setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
         }
+    }
 
+    private fun setupNavigation() {
         navView = findViewById(R.id.nav_view)
         navView.setNavigationItemSelectedListener { item: MenuItem ->
-            // Update the current selected item ID
-            currentNavItemId = item.itemId
+            handleNavigation(item)
+        }
+    }
 
-            // Check/highlight the selected item
-            item.isChecked = true
+    private fun loadDefaultFragment() {
+        // Set the default item as checked
+        navView.menu.findItem(currentNavItemId).isChecked = true
+        loadFragment(NoteFragment())
+    }
 
-            when (item.itemId) {
-                R.id.navNotes -> {
-                    // Navigate to NotesFragment
-                    val fragment = NoteFragment()
-                    title_text.text = getString(R.string.notes)
+    private fun handleNavigation(item: MenuItem): Boolean {
+        // Update the current selected item ID
+        currentNavItemId = item.itemId
 
-                    layout_toggle_icon.visibility = View.VISIBLE
-                    profile_icon.visibility = View.VISIBLE
-                    header_options.visibility = View.GONE
-                    search_icon.visibility = View.GONE
+        // Check/highlight the selected item
+        item.isChecked = true
 
-                    loadFragment(fragment)
-                }
-                R.id.navReminders -> {
-                    // Navigate to RemindersFragment
-                    val fragment = RemindersFragment()
-                    title_text.text = getString(R.string.reminders)
-                    layout_toggle_icon.visibility = View.VISIBLE
-                    profile_icon.visibility = View.GONE
-                    header_options.visibility = View.GONE
-                    search_icon.visibility = View.VISIBLE
-                    loadFragment(fragment)
-                }
-                R.id.navLabels -> {
-                    // Navigate to LabelsFragment
-                    val fragment = LabelsFragment()
-//                    layout_toggle_icon.visibility = View.GONE
-                    layout_toggle_icon.visibility = View.GONE
-                    profile_icon.visibility = View.GONE
-                    header_options.visibility = View.GONE
-                    search_icon.visibility = View.GONE
-                    title_text.text = getString(R.string.create_labels)
-                    loadFragment(fragment)
-                }
-                R.id.navArchive -> {
-                    // Navigate to ArchiveFragment
-                    val fragment = ArchiveFragment()
-                    layout_toggle_icon.visibility = View.VISIBLE
-                    profile_icon.visibility = View.GONE
-                    header_options.visibility = View.GONE
-                    search_icon.visibility = View.VISIBLE
-                    title_text.text = getString(R.string.archive)
-                    loadFragment(fragment)
-                }
-                R.id.navBin -> {
-                    // Navigate to BinFragment
-                    val fragment = BinFragment()
-                    title_text.text = getString(R.string.bin)
-                    layout_toggle_icon.visibility = View.VISIBLE
-                    profile_icon.visibility = View.GONE
-                    header_options.visibility = View.GONE
-                    search_icon.visibility = View.GONE
-                    loadFragment(fragment)
-                }
-                // Handle other menu items...
+        when (item.itemId) {
+            R.id.navNotes -> {
+                navigateToNotes()
             }
-            drawerLayout.closeDrawer(GravityCompat.START)
-            true
+            R.id.navReminders -> {
+                navigateToReminders()
+            }
+            R.id.navLabels -> {
+                navigateToLabels()
+            }
+            R.id.navArchive -> {
+                navigateToArchive()
+            }
+            R.id.navBin -> {
+                navigateToBin()
+            }
+            // Handle other menu items...
         }
+        val drawerLayout: DrawerLayout = findViewById(R.id.main)
+        drawerLayout.closeDrawer(GravityCompat.START)
+        return true
+    }
 
-        // Load default fragment if no fragment is loaded
-        if (savedInstanceState == null) {
-            // Set the default item as checked
-            navView.menu.findItem(currentNavItemId).isChecked = true
-            loadFragment(NoteFragment())
-        }
+    private fun navigateToNotes() {
+        val fragment = NoteFragment()
+        titleText.text = getString(R.string.notes)
+        updateHeaderVisibility(
+            layoutToggle = true,
+            profile = true,
+            options = false,
+            search = false
+        )
+        loadFragment(fragment)
+    }
+
+    private fun navigateToReminders() {
+        val fragment = RemindersFragment()
+        titleText.text = getString(R.string.reminders)
+        updateHeaderVisibility(
+            layoutToggle = true,
+            profile = false,
+            options = false,
+            search = true
+        )
+        loadFragment(fragment)
+    }
+
+    private fun navigateToLabels() {
+        val fragment = LabelsFragment()
+        titleText.text = getString(R.string.create_labels)
+        updateHeaderVisibility(
+            layoutToggle = false,
+            profile = false,
+            options = false,
+            search = false
+        )
+        loadFragment(fragment)
+    }
+
+    private fun navigateToArchive() {
+        val fragment = ArchiveFragment()
+        titleText.text = getString(R.string.archive)
+        updateHeaderVisibility(
+            layoutToggle = true,
+            profile = false,
+            options = false,
+            search = true
+        )
+        loadFragment(fragment)
+    }
+
+    private fun navigateToBin() {
+        val fragment = BinFragment()
+        titleText.text = getString(R.string.bin)
+        updateHeaderVisibility(
+            layoutToggle = true,
+            profile = false,
+            options = false,
+            search = false
+        )
+        loadFragment(fragment)
+    }
+
+    private fun updateHeaderVisibility(
+        layoutToggle: Boolean,
+        profile: Boolean,
+        options: Boolean,
+        search: Boolean
+    ) {
+        layoutToggleIcon.visibility = if (layoutToggle) View.VISIBLE else View.GONE
+        profileIcon.visibility = if (profile) View.VISIBLE else View.GONE
+        headerOptions.visibility = if (options) View.VISIBLE else View.GONE
+        searchIcon.visibility = if (search) View.VISIBLE else View.GONE
     }
 
     override fun onResume() {
@@ -160,8 +224,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isUserLoggedIn(): Boolean {
-        // Replace with your actual logic to check if the user is logged in
-        // For example, check if a token exists in SharedPreferences
+        // Logic to check if the user is logged in
         val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         return sharedPreferences.getBoolean("isLoggedIn", false)
     }
