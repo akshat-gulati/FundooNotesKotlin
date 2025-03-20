@@ -7,12 +7,12 @@
         >
         <item
             android:id="@+id/navNotes"
-            android:title="Notes"
+            android:title="@string/notes"
             android:icon="@drawable/lightbulb"
             />
         <item
             android:id="@+id/navReminders"
-            android:title="Reminders"
+            android:title="@string/reminders"
             android:icon="@drawable/alarm"
             />
     </group>
@@ -22,7 +22,7 @@
         >
     <item
         android:id="@+id/navLabels"
-        android:title="Create/Edit labels"
+        android:title="@string/create_labels"
         android:icon="@drawable/brush"
         />
     </group>
@@ -32,12 +32,12 @@
         >
     <item
         android:id="@+id/navArchive"
-        android:title="Archive"
+        android:title="@string/archive"
         android:icon="@drawable/archive"
         />
     <item
         android:id="@+id/navBin"
-        android:title="Bin"
+        android:title="@string/bin"
         android:icon="@drawable/bin"
         />
     </group>
