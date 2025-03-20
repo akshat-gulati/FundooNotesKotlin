@@ -5,22 +5,47 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:openDrawer="start"
     android:fitsSystemWindows="true"
+    tools:openDrawer="start"
     tools:context=".MainActivity">
 
-   <include
-      layout="@layout/activity_main_content" />
+   <LinearLayout
+       android:orientation="vertical"
+       android:layout_width="match_parent"
+       android:layout_height="match_parent"
+       android:fitsSystemWindows="true"
+       android:paddingTop="?attr/actionBarSize">
+
+      <androidx.appcompat.widget.Toolbar
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:background="?attr/colorPrimary"
+          app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+
+         <ImageButton
+             android:id="@+id/drawer_button"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:src="@drawable/menu"
+             android:background="@android:color/transparent"
+             android:padding="10dp"/>
+      </androidx.appcompat.widget.Toolbar>
+
+      <FrameLayout
+          android:id="@+id/fragment_container"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:fitsSystemWindows="true"/>
+   </LinearLayout>
 
    <com.google.android.material.navigation.NavigationView
        android:id="@+id/nav_view"
        android:layout_width="wrap_content"
        android:layout_height="match_parent"
+       android:layout_gravity="start"
+       android:fitsSystemWindows="true"
        app:menu="@menu/drawer_items"
        app:itemIconPadding="30dp"
        app:headerLayout="@layout/drawer_header"
-       android:layout_gravity="start"
-       app:dividerInsetStart="60dp"
-       />
-
+       app:dividerInsetStart="60dp"/>
 </androidx.drawerlayout.widget.DrawerLayout>
