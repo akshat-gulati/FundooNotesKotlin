@@ -26,8 +26,6 @@ class loginSignupActivity : AppCompatActivity() {
     private lateinit var cbAcceptTerms: CheckBox
     private lateinit var tvAcceptTerms: TextView
     private lateinit var clPasswordOptions: ConstraintLayout
-    private lateinit var ivFingerprint: ImageView
-    private lateinit var tvFingerprintLogin: TextView
     private lateinit var btnAction: Button
     private lateinit var tvLoginHeader: TextView
 
