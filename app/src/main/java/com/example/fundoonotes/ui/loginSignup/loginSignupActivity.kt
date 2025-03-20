@@ -107,9 +107,10 @@ class loginSignupActivity : AppCompatActivity() {
         tvAcceptTerms.visibility = View.GONE
 
         // Show login-specific elements
-        clPasswordOptions.visibility = View.VISIBLE
-        ivFingerprint.visibility = View.VISIBLE
-        tvFingerprintLogin.visibility = View.VISIBLE
+        clPasswordOptions.visibility = View.GONE
+        ivFingerprint.visibility = View.GONE
+        tvFingerprintLogin.visibility = View.GONE
+
 
         // Update action button
         btnAction.text = getString(R.string.login)
