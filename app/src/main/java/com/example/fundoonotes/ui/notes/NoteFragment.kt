@@ -2,11 +2,11 @@ package com.example.fundoonotes.ui.notes
 
 import NoteAdapter
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fundoonotes.R
 import com.example.fundoonotes.data.model.Note
@@ -28,8 +28,12 @@ class NoteFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_note, container, false)
+
+        // First initialize recyclerView before setting its properties
         recyclerView = view.findViewById(R.id.recyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        // Use GridLayoutManager with 2 columns
+        recyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
 
         val sampleNotes = listOf(
             Note("Meeting", "Discuss project timeline with the team at 10 AM."),

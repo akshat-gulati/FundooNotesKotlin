@@ -58,7 +58,7 @@
                 android:id="@+id/profile_icon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/rectangle1x2"
+                android:src="@drawable/person"
                 android:padding="5dp"
                 app:tint="@color/black" />
             <ImageView
