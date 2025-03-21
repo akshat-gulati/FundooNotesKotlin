@@ -7,6 +7,7 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
     tools:openDrawer="start"
+    android:background="@color/white"
     tools:context=".MainActivity">
 
    <LinearLayout
@@ -34,5 +35,6 @@
        app:menu="@menu/drawer_items"
        app:itemIconPadding="30dp"
        app:headerLayout="@layout/drawer_header"
+       android:background="@color/white"
        app:dividerInsetStart="60dp"/>
 </androidx.drawerlayout.widget.DrawerLayout>
