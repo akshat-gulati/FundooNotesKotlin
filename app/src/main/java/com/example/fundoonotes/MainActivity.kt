@@ -81,6 +81,11 @@ class MainActivity : AppCompatActivity() {
         layoutToggleIcon = findViewById(R.id.layout_toggle_icon)
         searchIcon = findViewById(R.id.search_icon)
         profileIcon = findViewById(R.id.profile_icon)
+
+        profileIcon.setOnClickListener {
+            logout()
+        }
+
         headerOptions = findViewById(R.id.header_options)
 
         layoutToggleIcon.setOnClickListener {
@@ -251,6 +256,11 @@ class MainActivity : AppCompatActivity() {
         finish() // Close MainActivity
     }
 
+    private  fun logout(){
+        val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        sharedPreferences.edit().putBoolean("isLoggedIn", false).apply()
+        redirectToLogin()
+    }
     // Lifecycle methods
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
