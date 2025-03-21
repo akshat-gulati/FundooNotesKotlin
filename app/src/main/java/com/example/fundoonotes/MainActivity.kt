@@ -25,14 +25,16 @@ import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity() {
 
+    // UI components
     private lateinit var navView: NavigationView
-    private var currentNavItemId: Int = R.id.navNotes // Default selected item
-
     private lateinit var titleText: TextView
     private lateinit var searchIcon: ImageView
     private lateinit var layoutToggleIcon: ImageView
     private lateinit var profileIcon: ImageView
     private lateinit var headerOptions: ImageView
+
+    // State variables
+    private var currentNavItemId: Int = R.id.navNotes // Default selected item
     private var isGridLayout = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,12 +47,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupUI(savedInstanceState)
-    }
-
-    private fun redirectToLogin() {
-        val intent = Intent(this, loginSignupActivity::class.java)
-        startActivity(intent)
-        finish() // Close MainActivity
     }
 
     private fun setupUI(savedInstanceState: Bundle?) {
@@ -70,12 +66,6 @@ class MainActivity : AppCompatActivity() {
             // Update UI based on the restored navigation item
             updateUIForNavItem(currentNavItemId)
         }
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        // Save the current navigation item
-        outState.putInt("currentNavItemId", currentNavItemId)
     }
 
     private fun setupWindowInsets() {
@@ -107,20 +97,6 @@ class MainActivity : AppCompatActivity() {
         headerOptions.visibility = View.GONE
     }
 
-    private fun toggleLayout() {
-        isGridLayout = !isGridLayout
-        // Set the appropriate icon for layout toggle
-        layoutToggleIcon.setImageResource(
-            if (isGridLayout) R.drawable.rectangle2x2 else R.drawable.rectangle1x2
-        )
-
-        // Get the current fragment and notify it about the layout change
-        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
-        if (currentFragment is LayoutToggleListener) {
-            currentFragment.onLayoutToggle(isGridLayout)
-        }
-    }
-
     private fun setupDrawer() {
         val drawerLayout: DrawerLayout = findViewById(R.id.main)
         val drawerButton: ImageButton = findViewById(R.id.drawer_button)
@@ -134,22 +110,6 @@ class MainActivity : AppCompatActivity() {
         navView = findViewById(R.id.nav_view)
         navView.setNavigationItemSelectedListener { item: MenuItem ->
             handleNavigation(item)
-        }
-    }
-
-    private fun loadDefaultFragment() {
-        // Set the default item as checked
-        navView.menu.findItem(currentNavItemId).isChecked = true
-        updateUIForNavItem(currentNavItemId)
-    }
-
-    private fun updateUIForNavItem(itemId: Int) {
-        when (itemId) {
-            R.id.navNotes -> navigateToNotes()
-            R.id.navReminders -> navigateToReminders()
-            R.id.navLabels -> navigateToLabels()
-            R.id.navArchive -> navigateToArchive()
-            R.id.navBin -> navigateToBin()
         }
     }
 
@@ -170,6 +130,55 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
+    private fun updateUIForNavItem(itemId: Int) {
+        when (itemId) {
+            R.id.navNotes -> navigateToNotes()
+            R.id.navReminders -> navigateToReminders()
+            R.id.navLabels -> navigateToLabels()
+            R.id.navArchive -> navigateToArchive()
+            R.id.navBin -> navigateToBin()
+        }
+    }
+
+    private fun loadDefaultFragment() {
+        // Set the default item as checked
+        navView.menu.findItem(currentNavItemId).isChecked = true
+        updateUIForNavItem(currentNavItemId)
+    }
+
+    private fun loadFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit()
+    }
+
+    private fun toggleLayout() {
+        isGridLayout = !isGridLayout
+        // Set the appropriate icon for layout toggle
+        layoutToggleIcon.setImageResource(
+            if (isGridLayout) R.drawable.rectangle2x2 else R.drawable.rectangle1x2
+        )
+
+        // Get the current fragment and notify it about the layout change
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+        if (currentFragment is LayoutToggleListener) {
+            currentFragment.onLayoutToggle(isGridLayout)
+        }
+    }
+
+    private fun updateHeaderVisibility(
+        layoutToggle: Boolean,
+        profile: Boolean,
+        options: Boolean,
+        search: Boolean
+    ) {
+        layoutToggleIcon.visibility = if (layoutToggle) View.VISIBLE else View.GONE
+        profileIcon.visibility = if (profile) View.VISIBLE else View.GONE
+        headerOptions.visibility = if (options) View.VISIBLE else View.GONE
+        searchIcon.visibility = if (search) View.VISIBLE else View.GONE
+    }
+
+    // Navigation methods
     private fun navigateToNotes() {
         val fragment = NoteFragment()
         titleText.text = getString(R.string.notes)
@@ -230,16 +239,23 @@ class MainActivity : AppCompatActivity() {
         loadFragment(fragment)
     }
 
-    private fun updateHeaderVisibility(
-        layoutToggle: Boolean,
-        profile: Boolean,
-        options: Boolean,
-        search: Boolean
-    ) {
-        layoutToggleIcon.visibility = if (layoutToggle) View.VISIBLE else View.GONE
-        profileIcon.visibility = if (profile) View.VISIBLE else View.GONE
-        headerOptions.visibility = if (options) View.VISIBLE else View.GONE
-        searchIcon.visibility = if (search) View.VISIBLE else View.GONE
+    // Authentication methods
+    private fun isUserLoggedIn(): Boolean {
+        val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
+        return sharedPreferences.getBoolean("isLoggedIn", false)
+    }
+
+    private fun redirectToLogin() {
+        val intent = Intent(this, loginSignupActivity::class.java)
+        startActivity(intent)
+        finish() // Close MainActivity
+    }
+
+    // Lifecycle methods
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        // Save the current navigation item
+        outState.putInt("currentNavItemId", currentNavItemId)
     }
 
     override fun onResume() {
@@ -248,18 +264,7 @@ class MainActivity : AppCompatActivity() {
         navView.menu.findItem(currentNavItemId).isChecked = true
     }
 
-    private fun loadFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment)
-            .commit()
-    }
-
-    private fun isUserLoggedIn(): Boolean {
-        // Logic to check if the user is logged in
-        val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        return sharedPreferences.getBoolean("isLoggedIn", false)
-    }
-
+    // Interface for fragment communication
     interface LayoutToggleListener {
         fun onLayoutToggle(isGridLayout: Boolean)
     }
