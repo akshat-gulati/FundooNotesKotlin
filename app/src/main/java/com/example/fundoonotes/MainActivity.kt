@@ -23,6 +23,8 @@ import com.example.fundoonotes.ui.notes.NoteFragment
 import com.example.fundoonotes.ui.reminders.RemindersFragment
 import com.google.android.material.navigation.NavigationView
 
+
+
 class MainActivity : AppCompatActivity() {
 
     private lateinit var navView: NavigationView
@@ -33,6 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var layoutToggleIcon: ImageView
     private lateinit var profileIcon: ImageView
     private lateinit var headerOptions: ImageView
+    private var isGridLayout = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,9 +84,28 @@ class MainActivity : AppCompatActivity() {
         profileIcon = findViewById(R.id.profile_icon)
         headerOptions = findViewById(R.id.header_options)
 
+        layoutToggleIcon.setOnClickListener {
+            toggleLayout()
+        }
+
         // Set initial visibility
         searchIcon.visibility = View.GONE
         headerOptions.visibility = View.GONE
+    }
+
+    private fun toggleLayout() {
+        isGridLayout = !isGridLayout
+
+        // Set the appropriate icon for layout toggle
+        layoutToggleIcon.setImageResource(
+            if (isGridLayout) R.drawable.rectangle1x2 else R.drawable.rectangle2x2
+        )
+
+        // Get the current fragment and notify it about the layout change
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+        if (currentFragment is LayoutToggleListener) {
+            currentFragment.onLayoutToggle(isGridLayout)
+        }
     }
 
     private fun setupDrawer() {
@@ -227,5 +249,10 @@ class MainActivity : AppCompatActivity() {
         // Logic to check if the user is logged in
         val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         return sharedPreferences.getBoolean("isLoggedIn", false)
+    }
+    
+    interface LayoutToggleListener {
+        fun onLayoutToggle(isGridLayout: Boolean)
+
     }
 }
