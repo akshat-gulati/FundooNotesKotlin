@@ -95,7 +95,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun toggleLayout() {
         isGridLayout = !isGridLayout
-
         // Set the appropriate icon for layout toggle
         layoutToggleIcon.setImageResource(
             if (isGridLayout) R.drawable.rectangle1x2 else R.drawable.rectangle2x2
