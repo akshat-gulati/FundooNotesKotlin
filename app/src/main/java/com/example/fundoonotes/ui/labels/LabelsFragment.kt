@@ -1,60 +1,105 @@
 package com.example.fundoonotes.ui.labels
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.fundoonotes.MainActivity
 import com.example.fundoonotes.R
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [LabelsFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class LabelsFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var etNewLabel: EditText
+    private lateinit var btnAddLabel: Button
+    private val labels = mutableListOf("Personal", "Work", "Home", "Health", "Ideas")
+    private lateinit var adapter: LabelAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_labels, container, false)
+        val view = inflater.inflate(R.layout.fragment_labels, container, false)
+
+        recyclerView = view.findViewById(R.id.recyclerViewLabels)
+        etNewLabel = view.findViewById(R.id.etNewLabel)
+        btnAddLabel = view.findViewById(R.id.btnAddLabel)
+
+        setupRecyclerView()
+        setupAddLabelButton()
+
+        return view
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment LabelsFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            LabelsFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+    private fun setupRecyclerView() {
+        adapter = LabelAdapter(labels, object : LabelAdapter.OnLabelClickListener {
+            override fun onLabelClick(label: String) {
+                // Navigate to notes with this label
+                (activity as MainActivity).navigateToLabelNotes(label)
             }
+
+            override fun onLabelDelete(label: String, position: Int) {
+                // Remove the label
+                labels.removeAt(position)
+                adapter.notifyItemRemoved(position)
+            }
+        })
+
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView.adapter = adapter
+    }
+
+    private fun setupAddLabelButton() {
+        btnAddLabel.setOnClickListener {
+            val labelName = etNewLabel.text.toString().trim()
+            if (labelName.isNotEmpty()) {
+                labels.add(labelName)
+                adapter.notifyItemInserted(labels.size - 1)
+                etNewLabel.text.clear()
+            }
+        }
+    }
+
+    class LabelAdapter(
+        private val labels: List<String>,
+        private val listener: OnLabelClickListener
+    ) : RecyclerView.Adapter<LabelAdapter.LabelViewHolder>() {
+
+        interface OnLabelClickListener {
+            fun onLabelClick(label: String)
+            fun onLabelDelete(label: String, position: Int)
+        }
+
+        class LabelViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+            val labelText: TextView = view.findViewById(R.id.tvLabelName)
+            val deleteButton: TextView = view.findViewById(R.id.tvDeleteLabel)
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LabelViewHolder {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_label, parent, false)
+            return LabelViewHolder(view)
+        }
+
+        override fun onBindViewHolder(holder: LabelViewHolder, position: Int) {
+            val label = labels[position]
+            holder.labelText.text = label
+
+            holder.itemView.setOnClickListener {
+                listener.onLabelClick(label)
+            }
+
+            holder.deleteButton.setOnClickListener {
+                listener.onLabelDelete(label, position)
+            }
+        }
+
+        override fun getItemCount() = labels.size
     }
 }

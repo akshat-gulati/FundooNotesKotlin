@@ -15,12 +15,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
-import com.example.fundoonotes.ui.archive.ArchiveFragment
-import com.example.fundoonotes.ui.bin.BinFragment
 import com.example.fundoonotes.ui.labels.LabelsFragment
 import com.example.fundoonotes.ui.loginSignup.loginSignupActivity
 import com.example.fundoonotes.ui.notes.NoteFragment
-import com.example.fundoonotes.ui.reminders.RemindersFragment
 import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity() {
@@ -96,10 +93,6 @@ class MainActivity : AppCompatActivity() {
         layoutToggleIcon.setImageResource(
             if (isGridLayout) R.drawable.rectangle2x2 else R.drawable.rectangle1x2
         )
-
-        // Set initial visibility
-        searchIcon.visibility = View.GONE
-        headerOptions.visibility = View.GONE
     }
 
     private fun setupDrawer() {
@@ -183,9 +176,9 @@ class MainActivity : AppCompatActivity() {
         searchIcon.visibility = if (search) View.VISIBLE else View.GONE
     }
 
-    // Navigation methods
+    // Navigation methods - all using NoteFragment with different modes
     private fun navigateToNotes() {
-        val fragment = NoteFragment()
+        val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_NOTES)
         titleText.text = getString(R.string.notes)
         updateHeaderVisibility(
             layoutToggle = true,
@@ -197,7 +190,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateToReminders() {
-        val fragment = RemindersFragment()
+        val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_REMINDERS)
         titleText.text = getString(R.string.reminders)
         updateHeaderVisibility(
             layoutToggle = true,
@@ -209,6 +202,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateToLabels() {
+        // For labels view, we still need the LabelsFragment to manage the labels
+        // Once a label is selected, we'll load a NoteFragment with that label
         val fragment = LabelsFragment()
         titleText.text = getString(R.string.create_labels)
         updateHeaderVisibility(
@@ -220,8 +215,21 @@ class MainActivity : AppCompatActivity() {
         loadFragment(fragment)
     }
 
+    // Called when a specific label is selected from the LabelsFragment
+    fun navigateToLabelNotes(label: String) {
+        val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_LABELS, label)
+        titleText.text = label // Use the label name as the title
+        updateHeaderVisibility(
+            layoutToggle = true,
+            profile = false,
+            options = false,
+            search = true
+        )
+        loadFragment(fragment)
+    }
+
     private fun navigateToArchive() {
-        val fragment = ArchiveFragment()
+        val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_ARCHIVE)
         titleText.text = getString(R.string.archive)
         updateHeaderVisibility(
             layoutToggle = true,
@@ -233,7 +241,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateToBin() {
-        val fragment = BinFragment()
+        val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_BIN)
         titleText.text = getString(R.string.bin)
         updateHeaderVisibility(
             layoutToggle = true,
@@ -256,11 +264,12 @@ class MainActivity : AppCompatActivity() {
         finish() // Close MainActivity
     }
 
-    private  fun logout(){
+    private fun logout() {
         val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         sharedPreferences.edit().putBoolean("isLoggedIn", false).apply()
         redirectToLogin()
     }
+
     // Lifecycle methods
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)

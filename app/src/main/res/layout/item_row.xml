@@ -27,6 +27,27 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Description" />
+        <LinearLayout
+            android:id="@+id/llReminder"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/ivAlarm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/alarm"
+            />
+            <TextView
+                android:id="@+id/tvTimeDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="11dp"
+                android:text="Time and Date"
+                android:layout_marginLeft="5dp"
+                />
+        </LinearLayout>
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>
