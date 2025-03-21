@@ -46,6 +46,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:background="@color/white"
+            app:tabSelectedTextColor="@color/sky_blue"
+            app:tabIndicatorColor="@color/sky_blue"
             app:layout_constraintTop_toBottomOf="@+id/tvTermsPolicy">
 
             <com.google.android.material.tabs.TabItem
@@ -218,6 +220,7 @@
             app:cornerRadius="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            android:backgroundTint="@color/sky_blue"
             app:layout_constraintTop_toBottomOf="@+id/clPasswordOptions" />
 
         <TextView
