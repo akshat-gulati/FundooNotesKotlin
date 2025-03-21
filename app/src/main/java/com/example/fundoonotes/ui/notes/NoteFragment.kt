@@ -8,12 +8,14 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.fundoonotes.MainActivity
 import com.example.fundoonotes.R
 import com.example.fundoonotes.data.model.Note
 
-class NoteFragment : Fragment() {
+class NoteFragment : Fragment(), MainActivity.LayoutToggleListener {
     private lateinit var recyclerView: RecyclerView
     private lateinit var noteAdapter: NoteAdapter
+    private var isGridLayout = true
 
     // Define constants to fix errors
     private val ARG_PARAM1 = "param1"
@@ -32,8 +34,8 @@ class NoteFragment : Fragment() {
         // First initialize recyclerView before setting its properties
         recyclerView = view.findViewById(R.id.recyclerView)
 
-        // Use GridLayoutManager with 2 columns
-        recyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
+        // Use GridLayoutManager with 2 columns initially
+        setupLayoutManager()
 
         val sampleNotes = listOf(
             Note("Meeting", "Discuss project timeline with the team at 10 AM."),
@@ -52,6 +54,16 @@ class NoteFragment : Fragment() {
         recyclerView.adapter = noteAdapter
 
         return view
+    }
+
+    private fun setupLayoutManager() {
+        val spanCount = if (isGridLayout) 2 else 1
+        recyclerView.layoutManager = GridLayoutManager(requireContext(), spanCount)
+    }
+
+    override fun onLayoutToggle(isGridLayout: Boolean) {
+        this.isGridLayout = isGridLayout
+        setupLayoutManager()
     }
 
     companion object {

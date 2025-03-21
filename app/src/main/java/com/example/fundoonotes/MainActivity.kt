@@ -23,8 +23,6 @@ import com.example.fundoonotes.ui.notes.NoteFragment
 import com.example.fundoonotes.ui.reminders.RemindersFragment
 import com.google.android.material.navigation.NavigationView
 
-
-
 class MainActivity : AppCompatActivity() {
 
     private lateinit var navView: NavigationView
@@ -66,7 +64,18 @@ class MainActivity : AppCompatActivity() {
         // Load default fragment if no fragment is loaded
         if (savedInstanceState == null) {
             loadDefaultFragment()
+        } else {
+            // Restore the current navigation item
+            currentNavItemId = savedInstanceState.getInt("currentNavItemId", R.id.navNotes)
+            // Update UI based on the restored navigation item
+            updateUIForNavItem(currentNavItemId)
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        // Save the current navigation item
+        outState.putInt("currentNavItemId", currentNavItemId)
     }
 
     private fun setupWindowInsets() {
@@ -88,6 +97,11 @@ class MainActivity : AppCompatActivity() {
             toggleLayout()
         }
 
+        // Set initial icon for layout toggle
+        layoutToggleIcon.setImageResource(
+            if (isGridLayout) R.drawable.rectangle2x2 else R.drawable.rectangle1x2
+        )
+
         // Set initial visibility
         searchIcon.visibility = View.GONE
         headerOptions.visibility = View.GONE
@@ -97,7 +111,7 @@ class MainActivity : AppCompatActivity() {
         isGridLayout = !isGridLayout
         // Set the appropriate icon for layout toggle
         layoutToggleIcon.setImageResource(
-            if (isGridLayout) R.drawable.rectangle1x2 else R.drawable.rectangle2x2
+            if (isGridLayout) R.drawable.rectangle2x2 else R.drawable.rectangle1x2
         )
 
         // Get the current fragment and notify it about the layout change
@@ -126,34 +140,31 @@ class MainActivity : AppCompatActivity() {
     private fun loadDefaultFragment() {
         // Set the default item as checked
         navView.menu.findItem(currentNavItemId).isChecked = true
-        loadFragment(NoteFragment())
+        updateUIForNavItem(currentNavItemId)
+    }
+
+    private fun updateUIForNavItem(itemId: Int) {
+        when (itemId) {
+            R.id.navNotes -> navigateToNotes()
+            R.id.navReminders -> navigateToReminders()
+            R.id.navLabels -> navigateToLabels()
+            R.id.navArchive -> navigateToArchive()
+            R.id.navBin -> navigateToBin()
+        }
     }
 
     private fun handleNavigation(item: MenuItem): Boolean {
-        // Update the current selected item ID
-        currentNavItemId = item.itemId
+        if (currentNavItemId != item.itemId) {
+            // Update the current selected item ID
+            currentNavItemId = item.itemId
 
-        // Check/highlight the selected item
-        item.isChecked = true
+            // Check/highlight the selected item
+            item.isChecked = true
 
-        when (item.itemId) {
-            R.id.navNotes -> {
-                navigateToNotes()
-            }
-            R.id.navReminders -> {
-                navigateToReminders()
-            }
-            R.id.navLabels -> {
-                navigateToLabels()
-            }
-            R.id.navArchive -> {
-                navigateToArchive()
-            }
-            R.id.navBin -> {
-                navigateToBin()
-            }
-            // Handle other menu items...
+            // Update UI based on the selected item
+            updateUIForNavItem(currentNavItemId)
         }
+
         val drawerLayout: DrawerLayout = findViewById(R.id.main)
         drawerLayout.closeDrawer(GravityCompat.START)
         return true
@@ -240,7 +251,6 @@ class MainActivity : AppCompatActivity() {
     private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
-            .addToBackStack(null)
             .commit()
     }
 
@@ -249,9 +259,8 @@ class MainActivity : AppCompatActivity() {
         val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
         return sharedPreferences.getBoolean("isLoggedIn", false)
     }
-    
+
     interface LayoutToggleListener {
         fun onLayoutToggle(isGridLayout: Boolean)
-
     }
 }
