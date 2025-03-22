@@ -25,6 +25,11 @@
     <string name="create_labels">Create labels</string>
     <string name="archive">Archive</string>
     <string name="bin">Bin</string>
+    <string name="drawer_button">Drawer Button</string>
+    <string name="search">Search</string>
+    <string name="screen_layout_toggle">Screen layout toggle</string>
+    <string name="profile">Profile</string>
+    <string name="options">Options</string>
 
 
 </resources>
