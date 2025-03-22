@@ -45,7 +45,7 @@ class NoteAdapter(
         // Handle reminder visibility and display
         if (note.reminderTime != null) {
             holder.llReminder.visibility = View.VISIBLE
-            val dateFormat = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault())
+            val dateFormat = SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault())
             holder.tvTimeDate.text = dateFormat.format(Date(note.reminderTime))
         } else {
             holder.llReminder.visibility = View.GONE
