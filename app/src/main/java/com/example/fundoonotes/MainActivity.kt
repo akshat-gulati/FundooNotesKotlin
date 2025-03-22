@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.widget.Toolbar
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
@@ -29,6 +30,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var layoutToggleIcon: ImageView
     private lateinit var profileIcon: ImageView
     private lateinit var headerOptions: ImageView
+    private lateinit var toolbar: Toolbar
 
     // State variables
     private var currentNavItemId: Int = R.id.navNotes // Default selected item
@@ -93,6 +95,7 @@ class MainActivity : AppCompatActivity() {
         layoutToggleIcon.setImageResource(
             if (isGridLayout) R.drawable.rectangle2x2 else R.drawable.rectangle1x2
         )
+        toolbar = findViewById(R.id.toolbar)
     }
 
     private fun setupDrawer() {
@@ -177,7 +180,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Navigation methods - all using NoteFragment with different modes
+// Add this at the beginning of each navigation method to clear the background
+    private fun clearToolbarBackground() {
+        toolbar.background = null
+    }
+
+// Then modify your navigation methods:
+
     private fun navigateToNotes() {
+        // Set toolbar background back to default for Notes section
+        toolbar.setBackgroundResource(R.drawable.toolbar_rounded) // Use your app's toolbar color resource
+
         val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_NOTES)
         titleText.text = getString(R.string.notes)
         updateHeaderVisibility(
@@ -190,6 +203,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateToReminders() {
+        clearToolbarBackground() // Clear the background
         val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_REMINDERS)
         titleText.text = getString(R.string.reminders)
         updateHeaderVisibility(
@@ -202,8 +216,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateToLabels() {
-        // For labels view, we still need the LabelsFragment to manage the labels
-        // Once a label is selected, we'll load a NoteFragment with that label
+        clearToolbarBackground() // Clear the background
         val fragment = LabelsFragment()
         titleText.text = getString(R.string.create_labels)
         updateHeaderVisibility(
@@ -215,20 +228,8 @@ class MainActivity : AppCompatActivity() {
         loadFragment(fragment)
     }
 
-    // Called when a specific label is selected from the LabelsFragment
-    fun navigateToLabelNotes(label: String) {
-        val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_LABELS, label)
-        titleText.text = label // Use the label name as the title
-        updateHeaderVisibility(
-            layoutToggle = true,
-            profile = false,
-            options = false,
-            search = true
-        )
-        loadFragment(fragment)
-    }
-
     private fun navigateToArchive() {
+        clearToolbarBackground() // Clear the background
         val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_ARCHIVE)
         titleText.text = getString(R.string.archive)
         updateHeaderVisibility(
@@ -241,6 +242,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateToBin() {
+        clearToolbarBackground() // Clear the background
         val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_BIN)
         titleText.text = getString(R.string.bin)
         updateHeaderVisibility(
@@ -248,6 +250,20 @@ class MainActivity : AppCompatActivity() {
             profile = false,
             options = false,
             search = false
+        )
+        loadFragment(fragment)
+    }
+
+    // Also update this method
+    fun navigateToLabelNotes(label: String) {
+        clearToolbarBackground() // Clear the background
+        val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_LABELS, label)
+        titleText.text = label
+        updateHeaderVisibility(
+            layoutToggle = true,
+            profile = false,
+            options = false,
+            search = true
         )
         loadFragment(fragment)
     }
