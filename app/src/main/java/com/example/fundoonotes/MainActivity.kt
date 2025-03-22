@@ -277,6 +277,7 @@ class MainActivity : AppCompatActivity() {
         outState.putInt("currentNavItemId", currentNavItemId)
     }
 
+    //Highlights Correct Navigation item
     override fun onResume() {
         super.onResume()
         // Make sure the correct navigation item is highlighted when returning to the activity
