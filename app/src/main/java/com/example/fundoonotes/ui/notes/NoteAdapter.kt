@@ -41,11 +41,11 @@ class NoteAdapter(
     override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {
         val note = notes[position]
 
-        // Set note title and description
+
         holder.tvTitle.text = note.title
         holder.tvDescription.text = note.description
 
-        // Handle reminder visibility and display
+
         if (note.reminderTime != null) {
             holder.llReminder.visibility = View.VISIBLE
             val dateFormat = SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault())
@@ -63,7 +63,7 @@ class NoteAdapter(
             }
 
 
-        // Set click listeners
+
         holder.itemView.setOnClickListener {
             onNoteClickListener.onNoteClick(note)
         }

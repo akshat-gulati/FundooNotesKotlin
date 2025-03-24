@@ -128,7 +128,6 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         }
     }
 
-    // Refresh the notes list when any changes occur
     fun refreshNotes() {
         noteAdapter.updateNotes(getFilteredNotes())
     }

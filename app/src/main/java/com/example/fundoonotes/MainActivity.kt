@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var toolbar: Toolbar
 
     // State variables
-    private var currentNavItemId: Int = R.id.navNotes // Default selected item
+    private var currentNavItemId: Int = R.id.navNotes
     private var isGridLayout = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -179,8 +179,7 @@ class MainActivity : AppCompatActivity() {
         searchIcon.visibility = if (search) View.VISIBLE else View.GONE
     }
 
-    // Navigation methods - all using NoteFragment with different modes
-// Add this at the beginning of each navigation method to clear the background
+
     private fun clearToolbarBackground() {
         toolbar.background = null
     }
@@ -296,7 +295,6 @@ class MainActivity : AppCompatActivity() {
     //Highlights Correct Navigation item
     override fun onResume() {
         super.onResume()
-        // Make sure the correct navigation item is highlighted when returning to the activity
         navView.menu.findItem(currentNavItemId).isChecked = true
     }
 
