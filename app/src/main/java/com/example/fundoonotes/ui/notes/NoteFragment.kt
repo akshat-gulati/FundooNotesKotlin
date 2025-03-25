@@ -37,7 +37,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
             reminderTime = System.currentTimeMillis() + 86400000), // Tomorrow
         Note(id = "6", title = "Coding Task", description = "Implement RecyclerView adapter in FundooNotes.",
             labels = listOf("Work")),
-        Note(id = "7", title = "Doctor's Appointment", description = "Check-up scheduled for 3:00 PM.",
+        Note(id = "7", title = "Doctor's Appointment", description = "Check-up scheduled for 3:00 PM.", labels = listOf("Personal"),
             reminderTime = System.currentTimeMillis() + 172800000), // Day after tomorrow
         Note(id = "8", title = "Birthday Reminder", description = "John's birthday on March 25th, buy a gift.",
             reminderTime = System.currentTimeMillis() + 259200000), // Three days from now
