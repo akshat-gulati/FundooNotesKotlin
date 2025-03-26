@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "23672236464",
+    "project_id": "fundoonotes-a5446",
+    "storage_bucket": "fundoonotes-a5446.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:23672236464:android:47da154bbc6769a56a0e75",
+        "android_client_info": {
+          "package_name": "com.example.fundoonotes"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDu3KTjb9tp2fhO9a7OMwGLFOsJzhgXm9Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
