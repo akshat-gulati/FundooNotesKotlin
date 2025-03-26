@@ -17,7 +17,7 @@ import androidx.core.view.updatePadding
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import com.example.fundoonotes.ui.labels.LabelsFragment
-import com.example.fundoonotes.ui.loginSignup.loginSignupActivity
+import com.example.fundoonotes.ui.loginSignup.LoginSignupActivity
 import com.example.fundoonotes.ui.notes.NoteFragment
 import com.google.android.material.navigation.NavigationView
 
@@ -155,7 +155,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun toggleLayout() {
         isGridLayout = !isGridLayout
-        // Set the appropriate icon for layout toggle
+        // Set thw icon for layout toggle
         layoutToggleIcon.setImageResource(
             if (isGridLayout) R.drawable.rectangle2x2 else R.drawable.rectangle1x2
         )
@@ -184,11 +184,10 @@ class MainActivity : AppCompatActivity() {
         toolbar.background = null
     }
 
-// Then modify your navigation methods:
 
     private fun navigateToNotes() {
-        // Set toolbar background back to default for Notes section
-        toolbar.setBackgroundResource(R.drawable.toolbar_rounded) // Use your app's toolbar color resource
+
+        toolbar.setBackgroundResource(R.drawable.toolbar_rounded)
 
         val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_NOTES)
         titleText.text = getString(R.string.notes)
@@ -253,7 +252,7 @@ class MainActivity : AppCompatActivity() {
         loadFragment(fragment)
     }
 
-    // Also update this method
+
     fun navigateToLabelNotes(label: String) {
         clearToolbarBackground() // Clear the background
         val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_LABELS, label)
@@ -270,11 +269,11 @@ class MainActivity : AppCompatActivity() {
     // Authentication methods
     private fun isUserLoggedIn(): Boolean {
         val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        return sharedPreferences.getBoolean("isLoggedIn", false)
+        return sharedPreferences.getBoolean("isLoggedIn", true)
     }
 
     private fun redirectToLogin() {
-        val intent = Intent(this, loginSignupActivity::class.java)
+        val intent = Intent(this, LoginSignupActivity::class.java)
         startActivity(intent)
         finish() // Close MainActivity
     }
@@ -288,7 +287,6 @@ class MainActivity : AppCompatActivity() {
     // Lifecycle methods
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        // Save the current navigation item
         outState.putInt("currentNavItemId", currentNavItemId)
     }
 

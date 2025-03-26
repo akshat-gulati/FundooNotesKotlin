@@ -94,7 +94,6 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
 
         // Set up FAB click listener
         fabAddNote.setOnClickListener {
-            // In a real app, this would open a new activity or dialog to create a note
             Toast.makeText(context, "Add new note", Toast.LENGTH_SHORT).show()
         }
 
@@ -139,12 +138,10 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
 
     // NoteAdapter.OnNoteClickListener implementation
     override fun onNoteClick(note: Note) {
-        // In a real app, this would open a note editor
         Toast.makeText(context, "Clicked on: ${note.title}", Toast.LENGTH_SHORT).show()
     }
 
     override fun onNoteLongClick(note: Note, position: Int): Boolean {
-        // In a real app, this would show a context menu for options like delete, archive, etc.
         Toast.makeText(context, "Long press on: ${note.title}", Toast.LENGTH_SHORT).show()
         return true
     }

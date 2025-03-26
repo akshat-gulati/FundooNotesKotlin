@@ -6,7 +6,6 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
-import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -25,7 +24,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.android.material.textfield.TextInputEditText
 
-class loginSignupActivity : AppCompatActivity() {
+class LoginSignupActivity : AppCompatActivity() {
 
     // UI components
     private lateinit var tabLayout: TabLayout
@@ -163,7 +162,7 @@ class loginSignupActivity : AppCompatActivity() {
                     val user = auth.currentUser
                     updateUI(user)
                 } else {
-                    // If sign in fails, display a message to the user.
+                    // If sign in fails, displayying a message to the user.
                     Log.w(TAG, "signInWithEmail:failure", task.exception)
                     Toast.makeText(
                         baseContext,

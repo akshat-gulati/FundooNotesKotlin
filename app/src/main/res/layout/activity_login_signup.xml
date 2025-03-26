@@ -10,7 +10,7 @@
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:context=".ui.loginSignup.loginSignupActivity">
+        tools:context=".ui.loginSignup.LoginSignupActivity">
 
         <TextView
             android:id="@+id/tvLoginHeader"
