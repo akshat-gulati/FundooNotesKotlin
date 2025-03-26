@@ -16,6 +16,7 @@ import com.example.fundoonotes.MainActivity
 import com.example.fundoonotes.R
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.textfield.TextInputLayout
+import androidx.core.content.edit
 
 class loginSignupActivity : AppCompatActivity() {
 
@@ -47,9 +48,9 @@ class loginSignupActivity : AppCompatActivity() {
         btnAction.setOnClickListener {
             // Save login state
             val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-            val editor = sharedPreferences.edit()
-            editor.putBoolean("isLoggedIn", true)
-            editor.apply()
+            sharedPreferences.edit() {
+                putBoolean("isLoggedIn", true)
+            }
 
             // Start MainActivity
             val intent = Intent(this, MainActivity::class.java)
@@ -86,11 +87,11 @@ class loginSignupActivity : AppCompatActivity() {
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab?) {
-                // Not needed
+                // Not needed as of now
             }
 
             override fun onTabReselected(tab: TabLayout.Tab?) {
-                // Not needed
+                // Not needed as of now
             }
         })
     }
