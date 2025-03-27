@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -18,11 +19,21 @@ import com.example.fundoonotes.R
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.textfield.TextInputLayout
 import androidx.core.content.edit
+import androidx.credentials.CredentialManager
+import androidx.credentials.Credential
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
+import androidx.lifecycle.lifecycleScope
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.Companion.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.launch
 
 class LoginSignupActivity : AppCompatActivity() {
 
@@ -37,6 +48,7 @@ class LoginSignupActivity : AppCompatActivity() {
     private lateinit var clPasswordOptions: ConstraintLayout
     private lateinit var btnAction: Button
     private lateinit var tvLoginHeader: TextView
+    private lateinit var ivGoogle: ImageView
 
     // Email and Password EditTexts
     private lateinit var etEmail: TextInputEditText
@@ -45,9 +57,12 @@ class LoginSignupActivity : AppCompatActivity() {
     private lateinit var etConfirmPassword: TextInputEditText
 
     private lateinit var auth: FirebaseAuth
+    private lateinit var credentialManager: CredentialManager
+    private lateinit var request: GetCredentialRequest
 
     companion object {
         private const val TAG = "LoginSignupActivity"
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,8 +70,10 @@ class LoginSignupActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_login_signup)
         auth = Firebase.auth
+        credentialManager = CredentialManager.create(this)
         initializeViews()
         setupTabLayout()
+        setupGoogleSignIn()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -75,6 +92,72 @@ class LoginSignupActivity : AppCompatActivity() {
                 registerUser()
             }
         }
+        ivGoogle.setOnClickListener {
+            performGoogleSignIn()
+        }
+    }
+
+    private fun setupGoogleSignIn() {
+        // Instantiate a Google sign-in request
+        val googleIdOption = GetGoogleIdOption.Builder()
+            // Your server's client ID, not your Android client ID.
+            .setServerClientId(getString(R.string.default_web_client_id))
+            // Only show accounts previously used to sign in.
+            .setFilterByAuthorizedAccounts(true)
+            .build()
+
+        // Create the Credential Manager request
+        val request = GetCredentialRequest.Builder()
+            .addCredentialOption(googleIdOption)
+            .build()
+    }
+    private fun performGoogleSignIn() {
+        lifecycleScope.launch {
+            try {
+                val result = credentialManager.getCredential(
+                    request = request,
+                    context = this@LoginSignupActivity
+                )
+                handleSignIn(result.credential)
+            } catch (e: Exception) {
+                Log.e(TAG, "Google Sign-In failed", e)
+                Toast.makeText(this@LoginSignupActivity, "Google Sign-In failed", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+    private fun handleSignIn(credential: Credential) {
+        // Check if credential is of type Google ID
+        if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+            // Create Google ID Token
+            val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+
+            // Sign in to Firebase using the token
+            firebaseAuthWithGoogle(googleIdTokenCredential.idToken)
+        } else {
+            Log.w(TAG, "Credential is not of type Google ID!")
+        }
+    }
+
+    private fun firebaseAuthWithGoogle(idToken: String) {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        auth.signInWithCredential(credential)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    // Sign in success, update UI with the signed-in user's information
+                    Log.d(TAG, "signInWithCredential:success")
+                    val user = auth.currentUser
+                    updateUI(user)
+                } else {
+                    // If sign in fails, display a message to the user
+                    Log.w(TAG, "signInWithCredential:failure", task.exception)
+                    Toast.makeText(
+                        this,
+                        "Google Authentication failed: ${task.exception?.localizedMessage}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    updateUI(null)
+                }
+            }
     }
 
     private fun initializeViews() {
@@ -88,6 +171,7 @@ class LoginSignupActivity : AppCompatActivity() {
         clPasswordOptions = findViewById(R.id.clPasswordOptions)
         btnAction = findViewById(R.id.btnAction)
         tvLoginHeader = findViewById(R.id.tvLoginHeader)
+        ivGoogle = findViewById(R.id.ivGoogle)
 
         // Initialize EditTexts
         etEmail = findViewById(R.id.etEmail)
