@@ -1,5 +1,6 @@
 package com.example.fundoonotes.ui.notes
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +13,9 @@ import com.example.fundoonotes.MainActivity
 import com.example.fundoonotes.R
 import com.example.fundoonotes.adapters.NoteAdapter
 import com.example.fundoonotes.data.model.Note
+import com.example.fundoonotes.ui.noteEdit.NoteEditActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlin.jvm.java
 
 class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.OnNoteClickListener {
     private lateinit var recyclerView: RecyclerView
@@ -139,6 +142,9 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
     // NoteAdapter.OnNoteClickListener implementation
     override fun onNoteClick(note: Note) {
         Toast.makeText(context, "Clicked on: ${note.title}", Toast.LENGTH_SHORT).show()
+        val intent = Intent(activity, NoteEditActivity::class.java)
+        // Start the activity
+        startActivity(intent)
     }
 
     override fun onNoteLongClick(note: Note, position: Int): Boolean {

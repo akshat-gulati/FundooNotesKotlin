@@ -7,4 +7,31 @@
     android:layout_height="match_parent"
     tools:context=".ui.noteEdit.NoteEditActivity">
 
+    <include layout="@layout/note_edit_toolbar"
+        android:id="@+id/note_edit_toolbar"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
+    <EditText
+        android:id="@+id/etNoteTitle"
+        android:hint="@string/noteEditTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/note_edit_toolbar"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        />
+
+    <EditText
+        android:id="@+id/etNoteDescription"
+        android:hint="@string/noteEditDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etNoteTitle"
+        />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

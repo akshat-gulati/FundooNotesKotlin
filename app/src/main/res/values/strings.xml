@@ -30,6 +30,8 @@
     <string name="screen_layout_toggle">Screen layout toggle</string>
     <string name="profile">Profile</string>
     <string name="options">Options</string>
+    <string name="noteEditTitle">Title</string>
+    <string name="noteEditDescription">Description</string>
 
 
 </resources>
