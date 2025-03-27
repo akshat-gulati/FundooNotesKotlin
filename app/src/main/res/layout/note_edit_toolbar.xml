@@ -19,7 +19,7 @@ android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
     android:src="@drawable/back" />
 
 <LinearLayout
-    android:id="@+id/right_icons_container"
+    android:id="@+id/llRightIconsContainer"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="end"

@@ -9,7 +9,7 @@
     android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
     <LinearLayout
-        android:id="@+id/rightIconsContainer"
+        android:id="@+id/llRightIconsContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="start"
@@ -17,7 +17,7 @@
         android:orientation="horizontal">
 
         <ImageView
-            android:id="@+id/layoutToggleIcon"
+            android:id="@+id/ivAddButton"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:contentDescription="@string/screen_layout_toggle"
@@ -26,7 +26,7 @@
             app:tint="@color/black" />
 
         <ImageView
-            android:id="@+id/profileIcon"
+            android:id="@+id/ivColor"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:contentDescription="@string/profile"
@@ -35,7 +35,7 @@
             app:tint="@color/black" />
 
         <ImageView
-            android:id="@+id/headerOptions"
+            android:id="@+id/ivUnderline"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:contentDescription="@string/options"
@@ -44,23 +44,14 @@
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/tvHeaderTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/notes"
-        android:textSize="18sp"
-        android:textStyle="bold"/>
 
-    <ImageButton
-        android:id="@+id/headerOptionsButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <ImageView
+        android:id="@+id/ivOptionsButton"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:layout_gravity="end"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="@string/options"
-        android:padding="8dp"
         android:src="@drawable/ellipsis"
         android:rotation="90"
         app:tint="@color/black" />
