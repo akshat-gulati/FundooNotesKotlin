@@ -1,6 +1,7 @@
 package com.example.fundoonotes.ui.noteEdit
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.EditText
 import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
@@ -28,11 +29,15 @@ class NoteEditActivity : AppCompatActivity() {
             insets
         }
 
+        // Initialize repository with application context
+        noteRepository = NoteRepository(applicationContext)
+
         initializeViews()
 
+        // Get note ID from intent
         noteId = intent.getStringExtra("NOTE_ID")
-        noteRepository = NoteRepository()
 
+        // Load note details if editing existing note
         if (noteId != null) {
             loadNoteDetails(noteId!!)
         }
@@ -58,15 +63,24 @@ class NoteEditActivity : AppCompatActivity() {
     }
 
     private fun saveNote() {
-        val title = etNoteTitle.text.toString()
-        val description = etNoteDescription.text.toString()
+        val title = etNoteTitle.text.toString().trim()
+        val description = etNoteDescription.text.toString().trim()
 
-        if (noteId != null) {
-            // Update existing note
-            noteRepository.updateNote(noteId!!, title, description)
+        Log.d("NoteEditActivity", "Saving note - Title: $title, Description: $description")
+
+        // Only save if there's content
+        if (title.isNotEmpty() || description.isNotEmpty()) {
+            if (noteId != null) {
+                // Update existing note
+                Log.d("NoteEditActivity", "Updating existing note: $noteId")
+                noteRepository.updateNote(noteId!!, title, description)
+            } else {
+                // Add new note
+                Log.d("NoteEditActivity", "Adding new note")
+                noteRepository.addNewNote(title, description)
+            }
         } else {
-            // Add new note
-            noteRepository.addNewNote(title, description)
+            Log.d("NoteEditActivity", "No content to save")
         }
     }
 }

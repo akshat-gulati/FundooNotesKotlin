@@ -58,10 +58,9 @@ dependencies {
 
         // ... other dependencies ...
 
-    implementation("com.google.firebase:firebase-analytics:21.5.0")
+    implementation("com.google.firebase:firebase-analytics:22.4.0")
 
     // Import the BoM for the Firebase platform
-    implementation(platform("com.google.firebase:firebase-bom:33.11.0"))
 
     // Add the dependency for the Firebase Authentication library
     // When using the BoM, you don't specify versions in Firebase library dependencies
@@ -74,9 +73,8 @@ dependencies {
     // When using the BoM, you don't specify versions in Firebase library dependencies
 
     // Also add the dependencies for the Credential Manager libraries and specify their versions
-    implementation("androidx.credentials:credentials:1.3.0")
-    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+    implementation("androidx.credentials:credentials:1.5.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.5.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
-    implementation ("androidx.credentials:credentials-play-services-auth:1.2.0")
 
 }
