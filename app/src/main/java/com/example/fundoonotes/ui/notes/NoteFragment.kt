@@ -122,7 +122,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
     override fun onNoteClick(note: Note) {
         Toast.makeText(context, "Clicked on: ${note.title}", Toast.LENGTH_SHORT).show()
         val intent = Intent(activity, NoteEditActivity::class.java)
-        putExtra("NOTE_ID", note.id)
+        intent.putExtra("NOTE_ID", note.id)
         startActivity(intent)
     }
 
