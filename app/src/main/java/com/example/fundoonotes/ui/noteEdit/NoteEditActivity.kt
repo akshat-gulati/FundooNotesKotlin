@@ -22,6 +22,8 @@ class NoteEditActivity : AppCompatActivity() {
             insets
         }
         initializeViews()
+
+        val noteId = intent.getStringExtra("NOTE_ID")
     }
 private fun initializeViews(){
     ivBack = findViewById(R.id.ivBack)
