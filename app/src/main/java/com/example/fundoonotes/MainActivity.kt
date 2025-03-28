@@ -20,6 +20,7 @@ import com.example.fundoonotes.ui.labels.LabelsFragment
 import com.example.fundoonotes.ui.loginSignup.LoginSignupActivity
 import com.example.fundoonotes.ui.notes.NoteFragment
 import com.google.android.material.navigation.NavigationView
+import androidx.core.content.edit
 
 class MainActivity : AppCompatActivity() {
 
@@ -269,7 +270,7 @@ class MainActivity : AppCompatActivity() {
     // Authentication methods
     private fun isUserLoggedIn(): Boolean {
         val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        return sharedPreferences.getBoolean("isLoggedIn", true)
+        return sharedPreferences.getBoolean("isLoggedIn", false)
     }
 
     private fun redirectToLogin() {
@@ -280,7 +281,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun logout() {
         val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        sharedPreferences.edit().putBoolean("isLoggedIn", false).apply()
+        sharedPreferences.edit() { putBoolean("isLoggedIn", false) }
         redirectToLogin()
     }
 
