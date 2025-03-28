@@ -108,13 +108,13 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
 
     private fun getFilteredNotes(notes: List<Note>): List<Note> {
         return when (displayMode) {
-            DISPLAY_NOTES -> notes.filter { !it.isArchived && !it.isDeleted }
-            DISPLAY_REMINDERS -> notes.filter { !it.isArchived && !it.isDeleted && it.reminderTime != null }
-            DISPLAY_ARCHIVE -> notes.filter { it.isArchived && !it.isDeleted }
-            DISPLAY_BIN -> notes.filter { it.isDeleted }
+            DISPLAY_NOTES -> notes.filter { !it.archived && !it.deleted }
+            DISPLAY_REMINDERS -> notes.filter { !it.archived && !it.deleted && it.reminderTime != null }
+            DISPLAY_ARCHIVE -> notes.filter { it.archived && !it.deleted }
+            DISPLAY_BIN -> notes.filter { it.deleted }
             DISPLAY_LABELS -> {
                 currentLabel?.let { label ->
-                    notes.filter { !it.isArchived && !it.isDeleted && it.labels.contains(label) }
+                    notes.filter { !it.archived && !it.deleted && it.labels.contains(label) }
                 } ?: emptyList()
             }
             else -> emptyList()
