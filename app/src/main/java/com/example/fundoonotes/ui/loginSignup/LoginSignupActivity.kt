@@ -43,8 +43,6 @@ class LoginSignupActivity : AppCompatActivity() {
     private lateinit var tilConfirmPassword: TextInputLayout
     private lateinit var tilEmail: TextInputLayout
     private lateinit var tilPassword: TextInputLayout
-    private lateinit var cbAcceptTerms: CheckBox
-    private lateinit var tvAcceptTerms: TextView
     private lateinit var clPasswordOptions: ConstraintLayout
     private lateinit var btnAction: Button
     private lateinit var tvLoginHeader: TextView
@@ -166,8 +164,6 @@ class LoginSignupActivity : AppCompatActivity() {
         tilConfirmPassword = findViewById(R.id.tilConfirmPassword)
         tilEmail = findViewById(R.id.tilEmail)
         tilPassword = findViewById(R.id.tilPassword)
-        cbAcceptTerms = findViewById(R.id.cbAcceptTerms)
-        tvAcceptTerms = findViewById(R.id.tvAcceptTerms)
         clPasswordOptions = findViewById(R.id.clPasswordOptions)
         btnAction = findViewById(R.id.btnAction)
         tvLoginHeader = findViewById(R.id.tvLoginHeader)
@@ -202,8 +198,6 @@ class LoginSignupActivity : AppCompatActivity() {
         // Show login-specific UI elements
         tilFullName.visibility = View.GONE
         tilConfirmPassword.visibility = View.GONE
-        cbAcceptTerms.visibility = View.GONE
-        tvAcceptTerms.visibility = View.GONE
 
         // Show login-specific elements
         clPasswordOptions.visibility = View.GONE
@@ -217,8 +211,6 @@ class LoginSignupActivity : AppCompatActivity() {
         // Show register-specific UI elements
         tilFullName.visibility = View.VISIBLE
         tilConfirmPassword.visibility = View.VISIBLE
-        cbAcceptTerms.visibility = View.VISIBLE
-        tvAcceptTerms.visibility = View.VISIBLE
 
         // Hide login-specific elements
         clPasswordOptions.visibility = View.GONE
