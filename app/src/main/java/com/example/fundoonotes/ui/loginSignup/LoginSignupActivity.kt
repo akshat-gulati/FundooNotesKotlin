@@ -299,6 +299,7 @@ class LoginSignupActivity : AppCompatActivity() {
 
     private fun updateUI(user: FirebaseUser?) {
         if (user != null) {
+            val userId = user.uid // <--- Firebase UID here
             // Save login state
             val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
             sharedPreferences.edit() {
