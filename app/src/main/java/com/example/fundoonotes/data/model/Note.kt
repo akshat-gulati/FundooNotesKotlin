@@ -2,6 +2,7 @@ package com.example.fundoonotes.data.model
 
 data class Note(
     val id: String = "",
+    val userId: String = "",
     var title: String = "",
     var description: String = "",
     val timestamp: Long = System.currentTimeMillis(),

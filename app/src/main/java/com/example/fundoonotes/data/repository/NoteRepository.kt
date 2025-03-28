@@ -2,9 +2,8 @@ package com.example.fundoonotes.data.repository
 
 import com.example.fundoonotes.data.SampleData
 import com.example.fundoonotes.data.model.Note
-import com.example.fundoonotes.ui.noteEdit.NoteEditActivity
 
-class NoteRepository(activity: NoteEditActivity) {
+class NoteRepository() {
 
     private val sampleData = SampleData()
     private val allNotes = sampleData.getAllNotes().toMutableList()

@@ -31,7 +31,7 @@ class NoteEditActivity : AppCompatActivity() {
         initializeViews()
 
         noteId = intent.getStringExtra("NOTE_ID")
-        noteRepository = NoteRepository(this)
+        noteRepository = NoteRepository()
 
         if (noteId != null) {
             loadNoteDetails(noteId!!)
