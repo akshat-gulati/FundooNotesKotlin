@@ -16,7 +16,6 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.textfield.TextInputLayout
 import androidx.credentials.CredentialManager
 import androidx.lifecycle.lifecycleScope
-import com.google.firebase.auth.FirebaseAuth
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 import com.example.fundoonotes.data.repository.FirebaseAuthService
@@ -40,14 +39,9 @@ class LoginSignupActivity : AppCompatActivity() {
     private lateinit var etFullName: TextInputEditText
     private lateinit var etConfirmPassword: TextInputEditText
 
-    private lateinit var auth: FirebaseAuth
     private lateinit var credentialManager: CredentialManager
     private lateinit var firebaseAuthService: FirebaseAuthService
 
-    companion object {
-        private const val TAG = "LoginSignupActivity"
-
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -88,8 +82,10 @@ class LoginSignupActivity : AppCompatActivity() {
                     firebaseAuthService.navigateToMainActivity(this@LoginSignupActivity)
                     finish()
                 }
+
                 is FirebaseAuthService.AuthResult.Error -> {
-                    Toast.makeText(this@LoginSignupActivity, result.message, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@LoginSignupActivity, result.message, Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         }
@@ -168,8 +164,10 @@ class LoginSignupActivity : AppCompatActivity() {
                     firebaseAuthService.navigateToMainActivity(this@LoginSignupActivity)
                     finish()
                 }
+
                 is FirebaseAuthService.AuthResult.Error -> {
-                    Toast.makeText(this@LoginSignupActivity, result.message, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@LoginSignupActivity, result.message, Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         }
@@ -189,8 +187,10 @@ class LoginSignupActivity : AppCompatActivity() {
                     firebaseAuthService.navigateToMainActivity(this@LoginSignupActivity)
                     finish()
                 }
+
                 is FirebaseAuthService.AuthResult.Error -> {
-                    Toast.makeText(this@LoginSignupActivity, result.message, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@LoginSignupActivity, result.message, Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         }
