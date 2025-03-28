@@ -21,6 +21,7 @@ import com.example.fundoonotes.ui.loginSignup.LoginSignupActivity
 import com.example.fundoonotes.ui.notes.NoteFragment
 import com.google.android.material.navigation.NavigationView
 import androidx.core.content.edit
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
 
@@ -270,7 +271,14 @@ class MainActivity : AppCompatActivity() {
     // Authentication methods
     private fun isUserLoggedIn(): Boolean {
         val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        return sharedPreferences.getBoolean("isLoggedIn", false)
+        val userId = sharedPreferences.getString("userId", null)
+
+        // Check if stored userId matches current Firebase user
+        val currentUser = FirebaseAuth.getInstance().currentUser
+
+        return userId != null &&
+                currentUser != null &&
+                currentUser.uid == userId
     }
 
     private fun redirectToLogin() {
@@ -280,8 +288,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun logout() {
+        FirebaseAuth.getInstance().signOut()
+
         val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        sharedPreferences.edit() { putBoolean("isLoggedIn", false) }
+        sharedPreferences.edit().remove("userId").apply()
         redirectToLogin()
     }
 

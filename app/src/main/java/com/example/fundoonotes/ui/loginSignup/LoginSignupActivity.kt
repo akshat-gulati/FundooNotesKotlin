@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
-import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -295,7 +294,7 @@ class LoginSignupActivity : AppCompatActivity() {
             // Save login state
             val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
             sharedPreferences.edit() {
-                putBoolean("isLoggedIn", true)
+                putString("userId", userId)
             }
 
             // Start MainActivity
