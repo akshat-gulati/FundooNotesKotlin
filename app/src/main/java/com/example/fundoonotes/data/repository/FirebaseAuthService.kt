@@ -72,6 +72,11 @@ class FirebaseAuthService(private val context: Context) {
             val authResult = auth.createUserWithEmailAndPassword(email, password).await()
             authResult.user?.let {
                 saveLoginState(it)
+
+                // Add this line to save user data to Firestore
+                val userRepo = FirestoreUserDataRepository(context)
+                userRepo.addNewUser(fullName, email)
+
                 AuthResult.Success(it)
             } ?: AuthResult.Error("Registration failed")
 

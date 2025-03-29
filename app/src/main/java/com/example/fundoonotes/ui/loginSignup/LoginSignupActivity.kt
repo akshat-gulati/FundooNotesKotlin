@@ -20,6 +20,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 import com.example.fundoonotes.data.repository.FirebaseAuthService
+import com.example.fundoonotes.ui.loginSignup.LoginSignupActivity
 
 class LoginSignupActivity : AppCompatActivity() {
 
@@ -207,5 +208,5 @@ class LoginSignupActivity : AppCompatActivity() {
 }
 
 private fun LoginSignupActivity.selectProfilePicture() {
-    TODO("Not yet implemented")
+    Toast.makeText(baseContext, "Upload feature will be implemented soon", Toast.LENGTH_SHORT).show()
 }
