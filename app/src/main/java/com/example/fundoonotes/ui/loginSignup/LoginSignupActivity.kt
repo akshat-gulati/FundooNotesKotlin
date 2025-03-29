@@ -74,6 +74,10 @@ class LoginSignupActivity : AppCompatActivity() {
         ivGoogle.setOnClickListener {
             performGoogleSignIn()
         }
+
+        cvProfilePicture.setOnClickListener{
+            selectProfilePicture()
+        }
     }
 
 
@@ -200,4 +204,8 @@ class LoginSignupActivity : AppCompatActivity() {
             }
         }
     }
+}
+
+private fun LoginSignupActivity.selectProfilePicture() {
+    TODO("Not yet implemented")
 }
