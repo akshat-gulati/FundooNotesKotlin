@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
@@ -14,7 +13,7 @@ import com.example.fundoonotes.MainActivity
 import com.example.fundoonotes.R
 import com.example.fundoonotes.adapters.NoteAdapter
 import com.example.fundoonotes.data.model.Note
-import com.example.fundoonotes.data.repository.NoteRepository
+import com.example.fundoonotes.data.repository.FirestoreNoteRepository
 import com.example.fundoonotes.ui.noteEdit.NoteEditActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
@@ -23,7 +22,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
     private lateinit var recyclerView: RecyclerView
     private lateinit var noteAdapter: NoteAdapter
     private lateinit var fabAddNote: FloatingActionButton
-    private lateinit var noteRepository: NoteRepository
+    private lateinit var firestoreNoteRepository: FirestoreNoteRepository
 
     private var isGridLayout = true
     private var displayMode = DISPLAY_NOTES // Default mode
@@ -58,7 +57,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         }
 
         // Initialize repository
-        noteRepository = NoteRepository(requireContext())
+        firestoreNoteRepository = FirestoreNoteRepository(requireContext())
     }
 
     override fun onCreateView(
@@ -79,7 +78,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
 
         // Observe notes and update adapter
         viewLifecycleOwner.lifecycleScope.launch {
-            noteRepository.notesState.collect { notes ->
+            firestoreNoteRepository.notesState.collect { notes ->
                 val filteredNotes = getFilteredNotes(notes)
                 noteAdapter.updateNotes(filteredNotes)
             }

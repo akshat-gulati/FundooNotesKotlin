@@ -9,13 +9,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.fundoonotes.R
-import com.example.fundoonotes.data.repository.NoteRepository
+import com.example.fundoonotes.data.repository.FirestoreNoteRepository
 
 class NoteEditActivity : AppCompatActivity() {
     private lateinit var ivBack: ImageView
     private lateinit var etNoteTitle: EditText
     private lateinit var etNoteDescription: EditText
-    private lateinit var noteRepository: NoteRepository
+    private lateinit var firestoreNoteRepository: FirestoreNoteRepository
     private var noteId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,7 +30,7 @@ class NoteEditActivity : AppCompatActivity() {
         }
 
         // Initialize repository with application context
-        noteRepository = NoteRepository(applicationContext)
+        firestoreNoteRepository = FirestoreNoteRepository(applicationContext)
 
         initializeViews()
 
@@ -55,7 +55,7 @@ class NoteEditActivity : AppCompatActivity() {
     }
 
     private fun loadNoteDetails(noteId: String) {
-        val note = noteRepository.getNoteById(noteId)
+        val note = firestoreNoteRepository.getNoteById(noteId)
         note?.let {
             etNoteTitle.setText(it.title)
             etNoteDescription.setText(it.description)
@@ -73,11 +73,11 @@ class NoteEditActivity : AppCompatActivity() {
             if (noteId != null) {
                 // Update existing note
                 Log.d("NoteEditActivity", "Updating existing note: $noteId")
-                noteRepository.updateNote(noteId!!, title, description)
+                firestoreNoteRepository.updateNote(noteId!!, title, description)
             } else {
                 // Add new note
                 Log.d("NoteEditActivity", "Adding new note")
-                noteRepository.addNewNote(title, description)
+                firestoreNoteRepository.addNewNote(title, description)
             }
         } else {
             Log.d("NoteEditActivity", "No content to save")

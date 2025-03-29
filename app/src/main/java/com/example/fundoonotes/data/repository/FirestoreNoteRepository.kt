@@ -4,15 +4,13 @@ import android.content.Context
 import android.util.Log
 import com.example.fundoonotes.data.model.Note
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.tasks.await
 
-class NoteRepository(private val context: Context) {
+class FirestoreNoteRepository(private val context: Context) {
     private val db = Firebase.firestore
     private val auth = FirebaseAuth.getInstance()
     private val _notesState = MutableStateFlow<List<Note>>(emptyList())
