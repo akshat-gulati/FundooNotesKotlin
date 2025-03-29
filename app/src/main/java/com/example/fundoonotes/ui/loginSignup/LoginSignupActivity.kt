@@ -8,6 +8,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -32,6 +33,7 @@ class LoginSignupActivity : AppCompatActivity() {
     private lateinit var btnAction: Button
     private lateinit var tvLoginHeader: TextView
     private lateinit var ivGoogle: ImageView
+    private lateinit var cvProfilePicture: CardView
 
     // Email and Password EditTexts
     private lateinit var etEmail: TextInputEditText
@@ -102,6 +104,7 @@ class LoginSignupActivity : AppCompatActivity() {
         btnAction = findViewById(R.id.btnAction)
         tvLoginHeader = findViewById(R.id.tvLoginHeader)
         ivGoogle = findViewById(R.id.ivGoogle)
+        cvProfilePicture = findViewById(R.id.cvProfilePicture)
 
         // Initialize EditTexts
         etEmail = findViewById(R.id.etEmail)
@@ -132,6 +135,7 @@ class LoginSignupActivity : AppCompatActivity() {
         // Show login-specific UI elements
         tilFullName.visibility = View.GONE
         tilConfirmPassword.visibility = View.GONE
+        cvProfilePicture.visibility = View.GONE  // Hide profile picture upload in login mode
 
         // Show login-specific elements
         clPasswordOptions.visibility = View.GONE
@@ -145,6 +149,7 @@ class LoginSignupActivity : AppCompatActivity() {
         // Show register-specific UI elements
         tilFullName.visibility = View.VISIBLE
         tilConfirmPassword.visibility = View.VISIBLE
+        cvProfilePicture.visibility = View.VISIBLE  // Show profile picture upload in register mode
 
         // Hide login-specific elements
         clPasswordOptions.visibility = View.GONE

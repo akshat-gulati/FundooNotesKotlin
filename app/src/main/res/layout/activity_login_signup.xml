@@ -9,7 +9,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/main"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         tools:context=".ui.loginSignup.LoginSignupActivity">
 
         <TextView
@@ -184,6 +184,47 @@
                 app:layout_constraintTop_toTopOf="@+id/cbRememberPassword" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <!-- Profile Picture Upload - for Registration Only -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvProfilePicture"
+            android:layout_width="170dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tilConfirmPassword"
+            app:cardBackgroundColor="@color/sky_blue"
+            app:cardElevation="4dp"
+            app:cardCornerRadius="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:padding="8dp">
+
+                <ImageButton
+                    android:id="@+id/ibProfilePicture"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:scaleType="centerInside"
+                    android:layout_gravity="center_vertical"
+                    android:src="@drawable/person"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Profile picture"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Upload profile picture now"
+                    android:textAlignment="center"
+                    android:layout_marginStart="8dp"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
         <!-- Action Button (Login/Register) -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAction"
@@ -199,7 +240,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             android:backgroundTint="@color/sky_blue"
-            app:layout_constraintTop_toBottomOf="@+id/clPasswordOptions" />
+            app:layout_constraintTop_toBottomOf="@+id/cvProfilePicture" />
 
         <TextView
             android:id="@+id/tvConnectWith"
@@ -239,8 +280,6 @@
                 android:contentDescription="@string/google_login"
                 android:src="@drawable/google" />
         </LinearLayout>
-
-
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
