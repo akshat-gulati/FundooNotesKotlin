@@ -38,9 +38,7 @@ class NoteEditActivity : AppCompatActivity() {
         noteId = intent.getStringExtra("NOTE_ID")
 
         // Load note details if editing existing note
-        if (noteId != null) {
-            loadNoteDetails(noteId!!)
-        }
+        noteId?.let { loadNoteDetails(it) }
     }
 
     private fun initializeViews() {
@@ -55,12 +53,22 @@ class NoteEditActivity : AppCompatActivity() {
     }
 
     private fun loadNoteDetails(noteId: String) {
-        val note = firestoreNoteRepository.getNoteById(noteId)
-        note?.let {
-            etNoteTitle.setText(it.title)
-            etNoteDescription.setText(it.description)
+        // First check if note is already in memory
+        var note = firestoreNoteRepository.getNoteById(noteId)
+
+        if (note != null) {
+            // If found in memory, use it
+            etNoteTitle.setText(note.title)
+            etNoteDescription.setText(note.description)
+        } else {
+            // Otherwise fetch it directly from Firestore using repository
+            firestoreNoteRepository.fetchNoteById(noteId) { fetchedNote ->
+                etNoteTitle.setText(fetchedNote.title)
+                etNoteDescription.setText(fetchedNote.description)
+            }
         }
     }
+
 
     private fun saveNote() {
         val title = etNoteTitle.text.toString().trim()

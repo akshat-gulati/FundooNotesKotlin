@@ -22,6 +22,21 @@ class FirestoreNoteRepository(private val context: Context) {
     init {
         fetchNotes()
     }
+    fun fetchNoteById(noteId: String, onSuccess: (Note) -> Unit) {
+        db.collection("notes").document(noteId)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document != null && document.exists()) {
+                    val note = document.toObject(Note::class.java)?.copy(id = document.id)
+                    note?.let { onSuccess(it) }
+                } else {
+                    Log.d("NoteRepository", "No such document with ID: $noteId")
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.w("NoteRepository", "Error getting note", e)
+            }
+    }
 
     fun fetchNotes() {
         val userId = getUserId() ?: return
@@ -103,6 +118,7 @@ class FirestoreNoteRepository(private val context: Context) {
     fun getNoteById(noteId: String): Note? {
         return _notesState.value.find { it.id == noteId }
     }
+
 
     private fun getUserId(): String? {
         val userId = sharedPreferences.getString("userId", null)
