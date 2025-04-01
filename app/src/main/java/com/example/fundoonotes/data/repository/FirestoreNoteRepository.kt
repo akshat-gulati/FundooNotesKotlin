@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class FirestoreNoteRepository(private val context: Context) {
+class FirestoreNoteRepository(private val context: Context): NotesRepository {
     private val db = Firebase.firestore
     private val auth = FirebaseAuth.getInstance()
     private val _notesState = MutableStateFlow<List<Note>>(emptyList())
@@ -22,7 +22,7 @@ class FirestoreNoteRepository(private val context: Context) {
     init {
         fetchNotes()
     }
-    fun fetchNoteById(noteId: String, onSuccess: (Note) -> Unit) {
+    override fun fetchNoteById(noteId: String, onSuccess: (Note) -> Unit) {
         db.collection("notes").document(noteId)
             .get()
             .addOnSuccessListener { document ->
@@ -38,7 +38,7 @@ class FirestoreNoteRepository(private val context: Context) {
             }
     }
 
-    fun fetchNotes() {
+    override fun fetchNotes() {
         val userId = getUserId() ?: return
         db.collection("notes")
             .whereEqualTo("userId", userId)
@@ -54,7 +54,7 @@ class FirestoreNoteRepository(private val context: Context) {
             }
     }
 
-    fun addNewNote(title: String, description: String): String {
+    override fun addNewNote(title: String, description: String): String {
         val userId = getUserId()
         Log.d("NoteRepository", "User ID: $userId")
 
@@ -86,7 +86,7 @@ class FirestoreNoteRepository(private val context: Context) {
         return noteRef.id
     }
 
-    fun updateNote(noteId: String, title: String, description: String) {
+    override fun updateNote(noteId: String, title: String, description: String) {
         val userId = getUserId() ?: return
 
         val updatedNote = mapOf(
@@ -104,7 +104,7 @@ class FirestoreNoteRepository(private val context: Context) {
             }
     }
 
-    fun deleteNote(noteId: String) {
+    override fun deleteNote(noteId: String) {
         db.collection("notes").document(noteId)
             .delete()
             .addOnSuccessListener {
