@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+@Suppress("SpellCheckingInspection")
 class NotesDataBridge(private val context: Context) : NotesRepository {
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
