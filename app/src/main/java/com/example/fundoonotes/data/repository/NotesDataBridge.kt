@@ -17,6 +17,9 @@ class NotesDataBridge(private val context: Context) : NotesRepository {
     private val _notesState = MutableStateFlow<List<Note>>(emptyList())
     val notesState: StateFlow<List<Note>> = _notesState.asStateFlow()
     private val firestoreRepository: FirestoreNoteRepository = FirestoreNoteRepository(context)
+    private val sqliteNoteRepository: SQLiteNoteRepository = SQLiteNoteRepository(context)
+
+
     private var activeRepository: NotesRepository = firestoreRepository
 
     init {

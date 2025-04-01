@@ -10,5 +10,4 @@ interface NotesRepository {
     fun updateNote(noteId: String, title: String, description: String)
     fun deleteNote(noteId: String) {}
 
-
 }
