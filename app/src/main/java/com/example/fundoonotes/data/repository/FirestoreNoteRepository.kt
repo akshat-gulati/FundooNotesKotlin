@@ -17,6 +17,7 @@ class FirestoreNoteRepository(private val context: Context): NotesRepository {
     val notesState: StateFlow<List<Note>> = _notesState.asStateFlow()
 
     // Shared Preferences to get user ID
+
     private val sharedPreferences = context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
 
     init {
