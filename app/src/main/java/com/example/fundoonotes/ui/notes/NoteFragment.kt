@@ -14,6 +14,7 @@ import com.example.fundoonotes.R
 import com.example.fundoonotes.adapters.NoteAdapter
 import com.example.fundoonotes.data.model.Note
 import com.example.fundoonotes.data.repository.FirestoreNoteRepository
+import com.example.fundoonotes.data.repository.NotesDataBridge
 import com.example.fundoonotes.ui.noteEdit.NoteEditActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
@@ -22,7 +23,9 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
     private lateinit var recyclerView: RecyclerView
     private lateinit var noteAdapter: NoteAdapter
     private lateinit var fabAddNote: FloatingActionButton
-    private lateinit var firestoreNoteRepository: FirestoreNoteRepository
+//    private lateinit var firestoreNoteRepository: FirestoreNoteRepository
+private lateinit var notesDataBridge: NotesDataBridge
+
 
     private var isGridLayout = true
     private var displayMode = DISPLAY_NOTES // Default mode
@@ -57,7 +60,9 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         }
 
         // Initialize repository
-        firestoreNoteRepository = FirestoreNoteRepository(requireContext())
+//        firestoreNoteRepository = FirestoreNoteRepository(requireContext())
+        notesDataBridge = NotesDataBridge(requireContext())
+
     }
 
     override fun onCreateView(
@@ -77,8 +82,15 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         recyclerView.adapter = noteAdapter
 
         // Observe notes and update adapter
+//        viewLifecycleOwner.lifecycleScope.launch {
+//            firestoreNoteRepository.notesState.collect { notes ->
+//                val filteredNotes = getFilteredNotes(notes)
+//                noteAdapter.updateNotes(filteredNotes)
+//            }
+//        }
+
         viewLifecycleOwner.lifecycleScope.launch {
-            firestoreNoteRepository.notesState.collect { notes ->
+            notesDataBridge.notesState.collect { notes ->
                 val filteredNotes = getFilteredNotes(notes)
                 noteAdapter.updateNotes(filteredNotes)
             }

@@ -10,12 +10,18 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.fundoonotes.R
 import com.example.fundoonotes.data.repository.FirestoreNoteRepository
+import com.example.fundoonotes.data.repository.NotesDataBridge
 
 class NoteEditActivity : AppCompatActivity() {
     private lateinit var ivBack: ImageView
     private lateinit var etNoteTitle: EditText
     private lateinit var etNoteDescription: EditText
-    private lateinit var firestoreNoteRepository: FirestoreNoteRepository
+//    private lateinit var firestoreNoteRepository: FirestoreNoteRepository
+private lateinit var notesDataBridge: NotesDataBridge
+
+
+
+
     private var noteId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,7 +36,8 @@ class NoteEditActivity : AppCompatActivity() {
         }
 
         // Initialize repository with application context
-        firestoreNoteRepository = FirestoreNoteRepository(applicationContext)
+//        firestoreNoteRepository = FirestoreNoteRepository(applicationContext)
+        notesDataBridge = NotesDataBridge(applicationContext)
 
         initializeViews()
 
@@ -54,7 +61,7 @@ class NoteEditActivity : AppCompatActivity() {
 
     private fun loadNoteDetails(noteId: String) {
         // First check if note is already in memory
-        var note = firestoreNoteRepository.getNoteById(noteId)
+        var note = notesDataBridge.getNoteById(noteId)
 
         if (note != null) {
             // If found in memory, use it
@@ -62,7 +69,7 @@ class NoteEditActivity : AppCompatActivity() {
             etNoteDescription.setText(note.description)
         } else {
             // Otherwise fetch it directly from Firestore using repository
-            firestoreNoteRepository.fetchNoteById(noteId) { fetchedNote ->
+            notesDataBridge.fetchNoteById(noteId) { fetchedNote ->
                 etNoteTitle.setText(fetchedNote.title)
                 etNoteDescription.setText(fetchedNote.description)
             }
@@ -81,11 +88,11 @@ class NoteEditActivity : AppCompatActivity() {
             if (noteId != null) {
                 // Update existing note
                 Log.d("NoteEditActivity", "Updating existing note: $noteId")
-                firestoreNoteRepository.updateNote(noteId!!, title, description)
+                notesDataBridge.updateNote(noteId!!, title, description)
             } else {
                 // Add new note
                 Log.d("NoteEditActivity", "Adding new note")
-                firestoreNoteRepository.addNewNote(title, description)
+                notesDataBridge.addNewNote(title, description)
             }
         } else {
             Log.d("NoteEditActivity", "No content to save")
