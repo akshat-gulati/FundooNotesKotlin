@@ -19,18 +19,17 @@ class NotesDataBridge(private val context: Context) : NotesRepository {
     private val firestoreRepository: FirestoreNoteRepository = FirestoreNoteRepository(context)
     private val sqliteNoteRepository: SQLiteNoteRepository = SQLiteNoteRepository(context)
 
-
     private var activeRepository: NotesRepository = firestoreRepository
 
     init {
         observeFirestoreNotes()
-        fetchNotes()
     }
 
     private fun observeFirestoreNotes() {
         coroutineScope.launch {
             firestoreRepository.notesState.collect { notes ->
                 _notesState.value = notes
+                Log.d("NotesDataBridge", "New notes received: ${notes.size}")
             }
         }
     }
@@ -60,6 +59,11 @@ class NotesDataBridge(private val context: Context) : NotesRepository {
     }
 
     fun switchRepository(repositoryType: RepositoryType) {
+        // Clean up the current repository if it's Firestore
+        if (activeRepository == firestoreRepository) {
+            firestoreRepository.cleanup()
+        }
+
         activeRepository = when (repositoryType) {
             RepositoryType.FIRESTORE -> firestoreRepository
             RepositoryType.SQLITE -> {
@@ -72,6 +76,13 @@ class NotesDataBridge(private val context: Context) : NotesRepository {
 
     fun syncRepositories() {
         Log.d("NotesDataBridge", "Repository sync not yet implemented")
+    }
+
+    // Method to clean up resources when no longer needed
+    fun cleanup() {
+        if (activeRepository == firestoreRepository) {
+            firestoreRepository.cleanup()
+        }
     }
 
     enum class RepositoryType {

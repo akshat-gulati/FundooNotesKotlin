@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -13,19 +14,18 @@ import com.example.fundoonotes.MainActivity
 import com.example.fundoonotes.R
 import com.example.fundoonotes.adapters.NoteAdapter
 import com.example.fundoonotes.data.model.Note
-import com.example.fundoonotes.data.repository.FirestoreNoteRepository
 import com.example.fundoonotes.data.repository.NotesDataBridge
 import com.example.fundoonotes.ui.noteEdit.NoteEditActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.flow.collect
 
 class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.OnNoteClickListener {
     private lateinit var recyclerView: RecyclerView
     private lateinit var noteAdapter: NoteAdapter
     private lateinit var fabAddNote: FloatingActionButton
-//    private lateinit var firestoreNoteRepository: FirestoreNoteRepository
-private lateinit var notesDataBridge: NotesDataBridge
-
+    private lateinit var notesDataBridge: NotesDataBridge
 
     private var isGridLayout = true
     private var displayMode = DISPLAY_NOTES // Default mode
@@ -60,9 +60,7 @@ private lateinit var notesDataBridge: NotesDataBridge
         }
 
         // Initialize repository
-//        firestoreNoteRepository = FirestoreNoteRepository(requireContext())
         notesDataBridge = NotesDataBridge(requireContext())
-
     }
 
     override fun onCreateView(
@@ -81,20 +79,8 @@ private lateinit var notesDataBridge: NotesDataBridge
         noteAdapter = NoteAdapter(emptyList(), this)
         recyclerView.adapter = noteAdapter
 
-        // Observe notes and update adapter
-//        viewLifecycleOwner.lifecycleScope.launch {
-//            firestoreNoteRepository.notesState.collect { notes ->
-//                val filteredNotes = getFilteredNotes(notes)
-//                noteAdapter.updateNotes(filteredNotes)
-//            }
-//        }
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            notesDataBridge.notesState.collect { notes ->
-                val filteredNotes = getFilteredNotes(notes)
-                noteAdapter.updateNotes(filteredNotes)
-            }
-        }
+        // Setup flow collection for notes - this is the key change
+        setupNotesObserver()
 
         // Set up FAB click listener
         fabAddNote.setOnClickListener {
@@ -110,6 +96,18 @@ private lateinit var notesDataBridge: NotesDataBridge
         }
 
         return view
+    }
+
+    private fun setupNotesObserver() {
+        // This ensures proper collection lifecycle management
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                notesDataBridge.notesState.collect { notes ->
+                    val filteredNotes = getFilteredNotes(notes)
+                    noteAdapter.updateNotes(filteredNotes)
+                }
+            }
+        }
     }
 
     private fun setupLayoutManager() {
@@ -148,4 +146,7 @@ private lateinit var notesDataBridge: NotesDataBridge
         // Implement long click actions if needed
         return true
     }
+
+    // Remove the onResume method collection as it's redundant and causing issues
+    // The setupNotesObserver() method now handles this properly
 }
