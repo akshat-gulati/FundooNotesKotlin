@@ -74,7 +74,7 @@ class FirestoreNoteRepository(private val context: Context): NotesRepository {
             }
     }
 
-    override fun addNewNote(title: String, description: String): String {
+    override fun addNewNote(title: String, description: String, reminderTime: Long?): String {
         val userId = getUserId()
         Log.d("NoteRepository", "User ID: $userId")
 
@@ -89,7 +89,8 @@ class FirestoreNoteRepository(private val context: Context): NotesRepository {
             id = noteRef.id,
             userId = userId,
             title = title,
-            description = description
+            description = description,
+            reminderTime = reminderTime
         )
 
         Log.d("NoteRepository", "Attempting to add note: $note")
@@ -106,10 +107,11 @@ class FirestoreNoteRepository(private val context: Context): NotesRepository {
         return noteRef.id
     }
 
-    override fun updateNote(noteId: String, title: String, description: String) {
+    override fun updateNote(noteId: String, title: String, description: String, reminderTime: Long?) {
         val updatedNote = mapOf(
             "title" to title,
-            "description" to description
+            "description" to description,
+            "reminderTime" to reminderTime
         )
 
         db.collection("notes").document(noteId)

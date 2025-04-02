@@ -1,7 +1,12 @@
 package com.example.fundoonotes.ui.noteEdit
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.icu.text.SimpleDateFormat
+import android.icu.util.Calendar
 import android.os.Bundle
 import android.util.Log
+import android.widget.DatePicker
 import android.widget.EditText
 import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
@@ -9,15 +14,22 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.fundoonotes.R
-import com.example.fundoonotes.data.repository.FirestoreNoteRepository
 import com.example.fundoonotes.data.repository.NotesDataBridge
 
-class NoteEditActivity : AppCompatActivity() {
+class NoteEditActivity : AppCompatActivity(){
     private lateinit var ivBack: ImageView
     private lateinit var etNoteTitle: EditText
     private lateinit var etNoteDescription: EditText
+    private lateinit var ivReminder: ImageView
+    private lateinit var ivArchive: ImageView
+
+//    Added a class variable to store the reminder time temporarily
+    private var reminderTime: Long? = null
+
+
+
 //    private lateinit var firestoreNoteRepository: FirestoreNoteRepository
-private lateinit var notesDataBridge: NotesDataBridge
+    private lateinit var notesDataBridge: NotesDataBridge
 
 
 
@@ -52,6 +64,12 @@ private lateinit var notesDataBridge: NotesDataBridge
         ivBack = findViewById(R.id.ivBack)
         etNoteTitle = findViewById(R.id.etNoteTitle)
         etNoteDescription = findViewById(R.id.etNoteDescription)
+        ivReminder = findViewById(R.id.ivReminder)
+
+        ivReminder.setOnClickListener {
+            setupReminderPicker()
+        }
+
 
         ivBack.setOnClickListener {
             saveNote()
@@ -88,14 +106,67 @@ private lateinit var notesDataBridge: NotesDataBridge
             if (noteId != null) {
                 // Update existing note
                 Log.d("NoteEditActivity", "Updating existing note: $noteId")
-                notesDataBridge.updateNote(noteId!!, title, description)
+                notesDataBridge.updateNote(noteId!!, title, description, reminderTime)
             } else {
                 // Add new note
                 Log.d("NoteEditActivity", "Adding new note")
-                notesDataBridge.addNewNote(title, description)
+                notesDataBridge.addNewNote(title, description, reminderTime)
             }
         } else {
             Log.d("NoteEditActivity", "No content to save")
         }
     }
+
+    private fun setupReminderPicker() {
+        ivReminder = findViewById(R.id.ivReminder)
+
+        ivReminder.setOnClickListener {
+            // First show date picker
+            val currentDate = Calendar.getInstance()
+
+            val dateListener = DatePickerDialog.OnDateSetListener { _, year, month, day ->
+                // After date is picked, update calendar and show time picker
+                currentDate.set(Calendar.YEAR, year)
+                currentDate.set(Calendar.MONTH, month)
+                currentDate.set(Calendar.DAY_OF_MONTH, day)
+
+                // Show time picker after date is selected
+                val timeListener = TimePickerDialog.OnTimeSetListener { _, hourOfDay, minute ->
+                    currentDate.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                    currentDate.set(Calendar.MINUTE, minute)
+
+                    // At this point, currentDate has the complete date and time
+                    saveReminderTime(currentDate.timeInMillis)
+                }
+
+                TimePickerDialog(
+                    this,
+                    timeListener,
+                    currentDate.get(Calendar.HOUR_OF_DAY),
+                    currentDate.get(Calendar.MINUTE),
+                    true
+                ).show()
+            }
+
+            DatePickerDialog(
+                this,
+                dateListener,
+                currentDate.get(Calendar.YEAR),
+                currentDate.get(Calendar.MONTH),
+                currentDate.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }
+    }
+
+    private fun saveReminderTime(reminderTime: Long) {
+        // Save reminder time to the note
+        // You may want to display this somewhere in your UI too
+        val formattedDateTime = SimpleDateFormat("MMM dd, yyyy HH:mm").format(reminderTime)
+        Log.d("NoteEditActivity", "Reminder set for: $formattedDateTime")
+
+        // Store temporarily until saved with the note
+        this.reminderTime = reminderTime
+    }
+
 }
+

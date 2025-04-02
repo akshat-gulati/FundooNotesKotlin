@@ -25,12 +25,12 @@ class SQLiteNoteRepository(private val context: Context): NotesRepository {
         Log.d(TAG, "fetchNotes not yet implemented")
     }
 
-    override fun addNewNote(title: String, description: String): String {
+    override fun addNewNote(title: String, description: String, reminderTime: Long?): String {
         Log.d(TAG, "addNewNote not yet implemented")
         return ""
     }
 
-    override fun updateNote(noteId: String, title: String, description: String) {
+    override fun updateNote(noteId: String, title: String, description: String, reminderTime: Long?) {
         Log.d(TAG, "updateNote not yet implemented")
     }
 

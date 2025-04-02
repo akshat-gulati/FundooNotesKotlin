@@ -47,12 +47,12 @@ class NotesDataBridge(private val context: Context) : NotesRepository {
         activeRepository.fetchNotes()
     }
 
-    override fun addNewNote(title: String, description: String): String {
-        return activeRepository.addNewNote(title, description)
+    override fun addNewNote(title: String, description: String, reminderTime: Long?): String {
+        return activeRepository.addNewNote(title, description, reminderTime)
     }
 
-    override fun updateNote(noteId: String, title: String, description: String) {
-        activeRepository.updateNote(noteId, title, description)
+    override fun updateNote(noteId: String, title: String, description: String, reminderTime: Long?) {
+        activeRepository.updateNote(noteId, title, description, reminderTime)
     }
 
     override fun deleteNote(noteId: String) {
