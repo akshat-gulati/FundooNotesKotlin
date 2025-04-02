@@ -1,6 +1,7 @@
 package com.example.fundoonotes.data.repository
 
 import android.content.Context
+import android.nfc.Tag
 import android.util.Log
 import com.example.fundoonotes.data.model.Note
 import kotlinx.coroutines.CoroutineScope
@@ -12,6 +13,10 @@ import kotlinx.coroutines.launch
 
 @Suppress("SpellCheckingInspection")
 class NotesDataBridge(private val context: Context) : NotesRepository {
+
+    companion object{
+        private const val TAG = "NotesDataBridge"
+    }
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
     private val _notesState = MutableStateFlow<List<Note>>(emptyList())
@@ -29,7 +34,7 @@ class NotesDataBridge(private val context: Context) : NotesRepository {
         coroutineScope.launch {
             firestoreRepository.notesState.collect { notes ->
                 _notesState.value = notes
-                Log.d("NotesDataBridge", "New notes received: ${notes.size}")
+                Log.d(TAG, "New notes received: ${notes.size}")
             }
         }
     }
@@ -67,7 +72,7 @@ class NotesDataBridge(private val context: Context) : NotesRepository {
         activeRepository = when (repositoryType) {
             RepositoryType.FIRESTORE -> firestoreRepository
             RepositoryType.SQLITE -> {
-                Log.d("NotesDataBridge", "SQLite repository not yet implemented")
+                Log.d(TAG, "SQLite repository not yet implemented")
                 firestoreRepository
             }
         }
@@ -75,7 +80,7 @@ class NotesDataBridge(private val context: Context) : NotesRepository {
     }
 
     fun syncRepositories() {
-        Log.d("NotesDataBridge", "Repository sync not yet implemented")
+        Log.d(TAG, "Repository sync not yet implemented")
     }
 
     // Method to clean up resources when no longer needed
