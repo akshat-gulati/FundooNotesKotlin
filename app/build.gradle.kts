@@ -77,8 +77,12 @@ dependencies {
     implementation("androidx.credentials:credentials:1.5.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.5.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+    implementation ("androidx.core:core-ktx:1.9.0")
+    implementation ("com.google.android.gms:play-services-base:18.6.0")
 
 
-    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.4.0")
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+
+    implementation ("androidx.work:work-runtime-ktx:2.8.1")
 
 }
