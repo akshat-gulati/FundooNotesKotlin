@@ -12,18 +12,30 @@ import android.icu.util.Calendar
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.fundoonotes.R
+import com.example.fundoonotes.data.model.Label
 import com.example.fundoonotes.data.model.Note
 import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
 import com.example.fundoonotes.data.repository.ReminderScheduler
+import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 class NoteEditActivity : AppCompatActivity(){
     private lateinit var ivBack: ImageView
@@ -31,19 +43,21 @@ class NoteEditActivity : AppCompatActivity(){
     private lateinit var etNoteDescription: EditText
     private lateinit var ivReminder: ImageView
 
-//    Added a class variable to store the reminder time temporarily
+    private var noteLabels: ArrayList<String> = ArrayList()
+    private lateinit var labelChipGroup: ChipGroup
+
+    //    Added a class variable to store the reminder time temporarily
     private var reminderTime: Long? = null
     companion object {
         private const val PERMISSION_REQUEST_CODE = 100
+        private const val TAG = "NoteEditActivity"
     }
 
 
 
-//    private lateinit var firestoreNoteRepository: FirestoreNoteRepository
+    //    private lateinit var firestoreNoteRepository: FirestoreNoteRepository
     private lateinit var notesDataBridge: NotesDataBridge
-
-
-
+    private lateinit var labelDataBridge: LabelDataBridge
 
     private var noteId: String? = null
 
@@ -61,16 +75,28 @@ class NoteEditActivity : AppCompatActivity(){
         // Initialize repository with application context
 //        firestoreNoteRepository = FirestoreNoteRepository(applicationContext)
         notesDataBridge = NotesDataBridge(applicationContext)
+        labelDataBridge = LabelDataBridge(applicationContext)
 
         initializeViews()
 
         // Get note ID from intent
         noteId = intent.getStringExtra("NOTE_ID")
 
-        // Load note details if editing existing note
-        noteId?.let { loadNoteDetails(it) }
+// Load note details if editing existing note
+        if (noteId != null) {
+            loadNoteDetails(noteId!!)
+        } else {
+            val addLabelChip = Chip(this)
+            addLabelChip.text = "+ Add Label"
+            addLabelChip.isCheckable = false
+            addLabelChip.setOnClickListener {
+                showLabelSelectionDialog()
+            }
+            labelChipGroup.addView(addLabelChip)
+        }
 
         checkNotificationPermission()
+        labelDataBridge.fetchLabels()
     }
 
     private fun checkNotificationPermission() {
@@ -124,6 +150,7 @@ class NoteEditActivity : AppCompatActivity(){
         etNoteTitle = findViewById(R.id.etNoteTitle)
         etNoteDescription = findViewById(R.id.etNoteDescription)
         ivReminder = findViewById(R.id.ivReminder)
+        labelChipGroup = findViewById(R.id.label_chip_group)
 
         // Don't set the click listener here, just call the function
         ivReminder.setOnClickListener {
@@ -181,14 +208,149 @@ class NoteEditActivity : AppCompatActivity(){
             // If found in memory, use it
             etNoteTitle.setText(note.title)
             etNoteDescription.setText(note.description)
+            noteLabels.clear()
+            noteLabels.addAll(note.labels) // Add the note's label IDs
+            loadLabels() // Call loadLabels() after setting noteLabels
         } else {
             // Otherwise fetch it directly from Firestore using repository
             notesDataBridge.fetchNoteById(noteId) { fetchedNote ->
                 etNoteTitle.setText(fetchedNote.title)
                 etNoteDescription.setText(fetchedNote.description)
+                noteLabels.clear()
+                noteLabels.addAll(fetchedNote.labels) // Add the fetched note's label IDs
+                loadLabels() // Call loadLabels() after setting noteLabels
             }
         }
     }
+
+
+    private fun loadLabels() {
+        lifecycleScope.launch {
+            try {
+                val allLabels = labelDataBridge.labelsState.first()
+
+                // Clear existing chips
+                labelChipGroup.removeAllViews()
+
+                // Add chips for existing labels on this note
+                noteLabels.forEach { labelId ->
+                    val label = allLabels.find { it.id == labelId }
+                    label?.let {
+                        addLabelChip(it, true)
+                    }
+                }
+
+                // Add a special chip to add new labels
+                val addLabelChip = Chip(this@NoteEditActivity)
+                addLabelChip.text = "+ Add Label"
+                addLabelChip.isCheckable = false
+                addLabelChip.setOnClickListener {
+                    showLabelSelectionDialog()
+                }
+                labelChipGroup.addView(addLabelChip)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading labels", e)
+                Toast.makeText(this@NoteEditActivity, "Error loading labels", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun addLabelChip(label: Label, isSelected: Boolean) {
+        val chip = Chip(this)
+        chip.text = label.name
+        chip.isCloseIconVisible = true
+        chip.isChecked = isSelected
+        chip.setOnCloseIconClickListener {
+            // Remove label from note
+            noteLabels.remove(label.id)
+            labelChipGroup.removeView(chip)
+
+            // Update the note if it exists
+            noteId?.let { id ->
+                removeNoteFromLabel(id, label.id)
+            }
+        }
+        labelChipGroup.addView(chip, labelChipGroup.childCount) // Add before the "Add Label" chip
+    }
+
+    private fun removeNoteFromLabel(noteId: String, labelId: String) {
+        // Get the current label
+        labelDataBridge.fetchLabelById(labelId) { label ->
+            // Create new noteIds list without this note
+            val updatedNoteIds = label.noteIds.filter { it != noteId }
+            // Update the label
+            labelDataBridge.updateLabel(labelId, label.name, updatedNoteIds)
+        }
+    }
+    private fun addNoteToLabel(noteId: String, labelId: String) {
+        // Get the current label
+        labelDataBridge.fetchLabelById(labelId) { label ->
+            // Create new noteIds list with this note (if not already there)
+            val updatedNoteIds = if (!label.noteIds.contains(noteId)) {
+                label.noteIds + noteId
+            } else {
+                label.noteIds
+            }
+            // Update the label
+            labelDataBridge.updateLabel(labelId, label.name, updatedNoteIds)
+        }
+    }
+
+    private fun showLabelSelectionDialog() {
+        lifecycleScope.launch {
+            try {
+                val allLabels = labelDataBridge.labelsState.first()
+                val availableLabels = allLabels.filter { it.id !in noteLabels }
+
+                if (availableLabels.isEmpty()) {
+                    Toast.makeText(this@NoteEditActivity, "No more labels available. Create new labels in the Labels section.", Toast.LENGTH_LONG).show()
+                    return@launch
+                }
+
+                val labelNames = availableLabels.map { it.name }.toTypedArray()
+
+                androidx.appcompat.app.AlertDialog.Builder(this@NoteEditActivity)
+                    .setTitle("Add Label")
+                    .setItems(labelNames) { _, which ->
+                        val selectedLabel = availableLabels[which]
+                        if (!noteLabels.contains(selectedLabel.id)) {
+                            noteLabels.add(selectedLabel.id)
+                        }
+                        addLabelChip(selectedLabel, true)
+
+                        // If the note already exists, update the relationship
+                        noteId?.let { id ->
+                            addNoteToLabel(id, selectedLabel.id)
+                        }
+                    }
+                    .setNegativeButton("Cancel", null)
+                    .show()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error showing label selection", e)
+                Toast.makeText(this@NoteEditActivity, "Error loading labels", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_note_edit, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                onBackPressedDispatcher.onBackPressed()
+                true
+            }
+            R.id.action_save -> {
+                saveNote()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
 
 
     private fun saveNote() {
@@ -204,7 +366,8 @@ class NoteEditActivity : AppCompatActivity(){
             if (noteId != null) {
                 // Update existing note
                 Log.d("NoteEditActivity", "Updating existing note: $noteId")
-                notesDataBridge.updateNote(noteId!!, title, description, reminderTime)
+                // Include noteLabels when updating
+                notesDataBridge.updateNoteWithLabels(noteId!!, title, description, reminderTime, noteLabels)
 
                 // Schedule reminder for existing note
                 reminderTime?.let { time ->
@@ -217,7 +380,8 @@ class NoteEditActivity : AppCompatActivity(){
             } else {
                 // Add new note and get the new ID
                 Log.d("NoteEditActivity", "Adding new note")
-                val newNoteId = notesDataBridge.addNewNote(title, description, reminderTime)
+                // Include noteLabels when adding
+                val newNoteId = notesDataBridge.addNewNoteWithLabels(title, description, reminderTime, noteLabels)
                 Log.d("NoteEditActivity", "New note ID: $newNoteId")
 
                 // Schedule reminder for new note
@@ -227,7 +391,8 @@ class NoteEditActivity : AppCompatActivity(){
                         id = newNoteId,
                         title = title,
                         description = description,
-                        reminderTime = time
+                        reminderTime = time,
+                        labels = noteLabels
                     )
                     Log.d("NoteEditActivity", "About to schedule reminder for new note: $newNoteId at time: $time")
                     reminderScheduler.scheduleReminder(tempNote, time)
@@ -259,4 +424,5 @@ class NoteEditActivity : AppCompatActivity(){
     }
 
 }
+
 

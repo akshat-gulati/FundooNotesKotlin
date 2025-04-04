@@ -24,12 +24,11 @@
         android:text="Label name"
         android:textSize="16sp" />
 
-    <ImageButton
+    <ImageView
         android:id="@+id/ibEditLabel"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:src="@drawable/edit"
-        android:backgroundTint="@color/white"
-        app:tint="@color/black" />
+        android:backgroundTint="@color/white" />
 
 </LinearLayout>

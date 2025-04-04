@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fundoonotes.R
 import com.example.fundoonotes.data.model.Label
@@ -23,7 +24,7 @@ class LabelAdapter(
     class LabelViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val labelText: TextInputEditText = view.findViewById(R.id.tvLabelName)
         val deleteButton: ImageButton = view.findViewById(R.id.tvDeleteLabel)
-        val editButton: ImageButton = view.findViewById(R.id.ibEditLabel)
+        val editButton: ImageView = view.findViewById(R.id.ibEditLabel)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LabelViewHolder {
