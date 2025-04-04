@@ -30,7 +30,6 @@ class NoteEditActivity : AppCompatActivity(){
     private lateinit var etNoteTitle: EditText
     private lateinit var etNoteDescription: EditText
     private lateinit var ivReminder: ImageView
-    private lateinit var ivArchive: ImageView
 
 //    Added a class variable to store the reminder time temporarily
     private var reminderTime: Long? = null
