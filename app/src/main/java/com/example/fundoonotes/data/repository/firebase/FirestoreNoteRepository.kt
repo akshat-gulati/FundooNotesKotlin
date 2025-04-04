@@ -21,7 +21,6 @@ class FirestoreNoteRepository(private val context: Context): NotesRepository {
     // For real-time updates
     private var notesListener: ListenerRegistration? = null
 
-    // Shared Preferences to get user ID
     private val sharedPreferences = context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
 
     init {
@@ -123,6 +122,19 @@ class FirestoreNoteRepository(private val context: Context): NotesRepository {
             }
             .addOnFailureListener { e ->
                 Log.w("NoteRepository", "Error updating note", e)
+            }
+    }
+
+    // New method to update specific fields of a note
+    fun updateNoteFields(noteId: String, fields: Map<String, Any?>) {
+        db.collection("notes").document(noteId)
+            .update(fields)
+            .addOnSuccessListener {
+                Log.d("NoteRepository", "Note fields updated successfully: $noteId")
+                // Real-time listener will handle updating the state
+            }
+            .addOnFailureListener { e ->
+                Log.w("NoteRepository", "Error updating note fields", e)
             }
     }
 

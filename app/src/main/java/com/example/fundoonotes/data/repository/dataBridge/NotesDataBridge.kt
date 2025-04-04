@@ -6,8 +6,6 @@ import com.example.fundoonotes.data.model.Note
 import com.example.fundoonotes.data.repository.interfaces.NotesRepository
 import com.example.fundoonotes.data.repository.SQLiteNoteRepository
 import com.example.fundoonotes.data.repository.firebase.FirestoreNoteRepository
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -67,6 +65,23 @@ class NotesDataBridge(private val context: Context) : NotesRepository {
         return _notesState.value.find { it.id == noteId }
     }
 
+    // Method to update a note's labels
+    fun updateNoteLabels(noteId: String, labels: List<String>) {
+        // First, get the current note to preserve its other properties
+        fetchNoteById(noteId) { note ->
+            // Extract the relevant properties we want to keep
+            val updatedFields = mapOf("labels" to labels)
+
+            // Use the appropriate repository to update the note
+            if (activeRepository == firestoreRepository) {
+                firestoreRepository.updateNoteFields(noteId, updatedFields)
+            }
+//            else {
+//                sqliteNoteRepository.updateNoteFields(noteId, updatedFields)
+//            }
+        }
+    }
+
     fun switchRepository(repositoryType: RepositoryType) {
         // Clean up the current repository if it's Firestore
         if (activeRepository == firestoreRepository) {
@@ -98,6 +113,4 @@ class NotesDataBridge(private val context: Context) : NotesRepository {
         FIRESTORE,
         SQLITE
     }
-
-    // Add these methods to NotesDataBridge.kt
 }

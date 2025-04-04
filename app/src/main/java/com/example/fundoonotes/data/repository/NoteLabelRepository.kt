@@ -5,10 +5,6 @@ import android.util.Log
 import com.example.fundoonotes.data.model.Note
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
 import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
-import com.example.fundoonotes.data.repository.firebase.FirestoreNoteRepository
-import com.example.fundoonotes.data.repository.interfaces.NotesRepository
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 
 class NoteLabelRepository(context: Context) {
 
@@ -40,19 +36,14 @@ class NoteLabelRepository(context: Context) {
     private fun updateNoteLabels(noteId: String, labels: List<String>) {
         // Get the current note
         notesDataBridge.fetchNoteById(noteId) { note ->
-            // Update the labels directly in Firestore
-            // This is a simplified approach since we don't have direct access to update labels through NotesDataBridge
-            val db = Firebase.firestore
-            db.collection("notes").document(noteId)
-                .update("labels", labels)
-                .addOnSuccessListener {
-                    Log.d(TAG, "Note labels updated successfully for $noteId")
-                    // Now update the bidirectional relationship
-                    updateLabelsWithNoteReference(noteId, labels)
-                }
-                .addOnFailureListener { e ->
-                    Log.e(TAG, "Error updating note labels", e)
-                }
+            // Create an updated note with new labels
+            val updatedNote = note.copy(labels = labels)
+
+            // Update the note using the DataBridge
+            notesDataBridge.updateNoteLabels(noteId, labels)
+
+            // Now update the bidirectional relationship
+            updateLabelsWithNoteReference(noteId, labels)
         }
     }
 
@@ -100,10 +91,5 @@ class NoteLabelRepository(context: Context) {
             }
             onSuccess(notesWithLabel)
         }
-    }
-
-    // Helper method to fetch a note by ID
-    private fun fetchNoteById(noteId: String): Note? {
-        return notesDataBridge.getNoteById(noteId)
     }
 }
