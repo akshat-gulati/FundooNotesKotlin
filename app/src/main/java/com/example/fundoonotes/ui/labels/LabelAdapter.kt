@@ -47,7 +47,7 @@ class LabelAdapter(
             listener.onLabelDelete(label, position)
         }
 
-        holder.editButton.setOnClickListener {
+        val toggleEditMode: () -> Unit = {
             // Toggle edit mode
             val isCurrentlyEditing = holder.labelText.isEnabled
 
@@ -56,12 +56,17 @@ class LabelAdapter(
                 val newName = holder.labelText.text.toString().trim()
                 listener.onLabelEdit(label, newName)
                 holder.labelText.isEnabled = false
+                holder.editButton.setImageResource(R.drawable.edit)
             } else {
                 // Enable editing
                 holder.labelText.isEnabled = true
                 holder.labelText.requestFocus()
+                holder.editButton.setImageResource(R.drawable.check)
             }
         }
+
+        holder.editButton.setOnClickListener { toggleEditMode() }
+        holder.labelText.setOnClickListener { toggleEditMode() }
     }
 
     override fun getItemCount() = labels.size

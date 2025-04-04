@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fundoonotes.MainActivity
 import com.example.fundoonotes.R
-import com.example.fundoonotes.adapters.NoteAdapter
 import com.example.fundoonotes.data.model.Note
 import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
 import com.example.fundoonotes.ui.noteEdit.NoteEditActivity

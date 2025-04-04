@@ -75,8 +75,8 @@ class LabelsFragment : Fragment() {
     private fun setupRecyclerView() {
         adapter = LabelAdapter(labels, object : LabelAdapter.OnLabelClickListener {
             override fun onLabelClick(label: Label) {
-                // Navigate to notes with this label
-                (activity as MainActivity).navigateToLabelNotes(label.id)
+//                // Navigate to notes with this label
+//                (activity as MainActivity).navigateToLabelNotes(label.id)
             }
 
             override fun onLabelDelete(label: Label, position: Int) {
