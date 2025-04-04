@@ -1,4 +1,4 @@
-package com.example.fundoonotes.data.repository
+package com.example.fundoonotes.data.repository.firebase
 
 import android.content.Context
 import android.content.Intent

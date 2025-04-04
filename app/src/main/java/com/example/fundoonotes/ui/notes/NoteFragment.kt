@@ -14,12 +14,11 @@ import com.example.fundoonotes.MainActivity
 import com.example.fundoonotes.R
 import com.example.fundoonotes.adapters.NoteAdapter
 import com.example.fundoonotes.data.model.Note
-import com.example.fundoonotes.data.repository.NotesDataBridge
+import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
 import com.example.fundoonotes.ui.noteEdit.NoteEditActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
 import androidx.lifecycle.repeatOnLifecycle
-import kotlinx.coroutines.flow.collect
 
 class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.OnNoteClickListener {
     private lateinit var recyclerView: RecyclerView

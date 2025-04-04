@@ -1,8 +1,9 @@
-package com.example.fundoonotes.data.repository
+package com.example.fundoonotes.data.repository.firebase
 
 import android.content.Context
 import android.util.Log
 import com.example.fundoonotes.data.model.Label
+import com.example.fundoonotes.data.repository.interfaces.LabelRepository
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase

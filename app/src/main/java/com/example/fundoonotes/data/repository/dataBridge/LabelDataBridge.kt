@@ -1,12 +1,15 @@
-package com.example.fundoonotes.data.repository
+package com.example.fundoonotes.data.repository.dataBridge
 
 import com.example.fundoonotes.data.model.Label
 import android.content.Context
+import com.example.fundoonotes.data.repository.interfaces.LabelRepository
+import com.example.fundoonotes.data.repository.firebase.FirestoreLabelRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class LabelDataBridge(private val context: Context): LabelRepository {
 
@@ -17,8 +20,17 @@ class LabelDataBridge(private val context: Context): LabelRepository {
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
     private val _labelsState = MutableStateFlow<List<Label>>(emptyList())
     val labelsState: StateFlow<List<Label>> = _labelsState.asStateFlow()
-    private val firestoreLabelRepository: FirestoreLabelRepository = FirestoreLabelRepository(context)
+    internal val firestoreLabelRepository: FirestoreLabelRepository =
+        FirestoreLabelRepository(context)
     private var activeRepository: LabelRepository = firestoreLabelRepository
+
+    init {
+        coroutineScope.launch {
+            firestoreLabelRepository.labelsState.collect { labels ->
+                _labelsState.value = labels
+            }
+        }
+    }
 
 
     override fun fetchLabelById(

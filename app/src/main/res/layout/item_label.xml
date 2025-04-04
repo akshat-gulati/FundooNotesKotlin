@@ -7,13 +7,15 @@
     android:padding="12dp"
     android:gravity="center_vertical">
 
-    <ImageView
+    <ImageButton
+        android:id="@+id/ibEditLabel"
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:src="@android:drawable/ic_menu_edit"
-        app:tint="#757575" />
+        android:backgroundTint="@color/white"
+        app:tint="@color/black" />
 
-    <TextView
+    <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/tvLabelName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -22,13 +24,12 @@
         android:text="Label name"
         android:textSize="16sp" />
 
-    <TextView
+    <ImageButton
         android:id="@+id/tvDeleteLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="×"
-        android:textSize="24sp"
-        android:textStyle="bold"
+        android:src="@drawable/bin"
+        android:backgroundTint="@color/white"
         android:padding="8dp" />
 
 </LinearLayout>

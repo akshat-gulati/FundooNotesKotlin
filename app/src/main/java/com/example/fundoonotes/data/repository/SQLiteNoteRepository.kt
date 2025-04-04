@@ -3,6 +3,7 @@ package com.example.fundoonotes.data.repository
 import android.content.Context
 import android.util.Log
 import com.example.fundoonotes.data.model.Note
+import com.example.fundoonotes.data.repository.interfaces.NotesRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

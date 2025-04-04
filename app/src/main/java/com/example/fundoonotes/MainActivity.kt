@@ -16,11 +16,11 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
-import com.example.fundoonotes.ui.labels.LabelsFragment
 import com.example.fundoonotes.ui.loginSignup.LoginSignupActivity
 import com.example.fundoonotes.ui.notes.NoteFragment
 import com.google.android.material.navigation.NavigationView
 import androidx.core.content.edit
+import com.example.fundoonotes.ui.labels.LabelsFragment
 import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {

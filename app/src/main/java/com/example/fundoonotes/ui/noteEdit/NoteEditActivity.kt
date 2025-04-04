@@ -3,7 +3,6 @@ package com.example.fundoonotes.ui.noteEdit
 import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.DatePickerDialog
-import android.app.PendingIntent
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
@@ -13,7 +12,6 @@ import android.icu.util.Calendar
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.DatePicker
 import android.widget.EditText
 import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
@@ -24,10 +22,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.fundoonotes.R
 import com.example.fundoonotes.data.model.Note
-import com.example.fundoonotes.data.repository.NotesDataBridge
-import com.example.fundoonotes.data.repository.ReminderReceiver
+import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
 import com.example.fundoonotes.data.repository.ReminderScheduler
-import kotlin.jvm.java
 
 class NoteEditActivity : AppCompatActivity(){
     private lateinit var ivBack: ImageView

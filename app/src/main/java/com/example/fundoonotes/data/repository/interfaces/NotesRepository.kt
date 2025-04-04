@@ -1,4 +1,4 @@
-package com.example.fundoonotes.data.repository
+package com.example.fundoonotes.data.repository.interfaces
 
 import com.example.fundoonotes.data.model.Note
 

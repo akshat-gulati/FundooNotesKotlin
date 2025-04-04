@@ -19,8 +19,7 @@ import androidx.credentials.CredentialManager
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
-import com.example.fundoonotes.data.repository.FirebaseAuthService
-import com.example.fundoonotes.ui.loginSignup.LoginSignupActivity
+import com.example.fundoonotes.data.repository.firebase.FirebaseAuthService
 
 class LoginSignupActivity : AppCompatActivity() {
 

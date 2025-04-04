@@ -1,9 +1,11 @@
-package com.example.fundoonotes.data.repository
+package com.example.fundoonotes.data.repository.dataBridge
 
 import android.content.Context
-import android.nfc.Tag
 import android.util.Log
 import com.example.fundoonotes.data.model.Note
+import com.example.fundoonotes.data.repository.interfaces.NotesRepository
+import com.example.fundoonotes.data.repository.SQLiteNoteRepository
+import com.example.fundoonotes.data.repository.firebase.FirestoreNoteRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
