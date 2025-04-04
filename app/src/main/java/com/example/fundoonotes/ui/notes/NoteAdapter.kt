@@ -1,16 +1,14 @@
-package com.example.fundoonotes.adapters
+package com.example.fundoonotes.ui.notes
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fundoonotes.R
 import com.example.fundoonotes.data.model.Note
+import com.example.fundoonotes.data.repository.firebase.FirestoreLabelRepository
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -53,14 +51,17 @@ class NoteAdapter(
         } else {
             holder.llReminder.visibility = View.GONE
         }
-// Handle Displaying Label Name
-            if (note.labels.isNotEmpty()) {
+// Tight Coupling with FirestoreLabelRepository
+        if (note.labels.isNotEmpty()) {
+            val firestoreLabelRepository = FirestoreLabelRepository(holder.itemView.context)
+            firestoreLabelRepository.fetchLabelsByIds(note.labels) { labels ->
+                val labelNames = labels.map { it.name }
                 holder.tvLabelName.visibility = View.VISIBLE
-                holder.tvLabelName.text = note.labels.joinToString(", ")
+                holder.tvLabelName.text = labelNames.joinToString(", ")
             }
-            else{
-                holder.tvLabelName.visibility = View.GONE
-            }
+        } else {
+            holder.tvLabelName.visibility = View.GONE
+        }
 
 
 
@@ -80,3 +81,4 @@ class NoteAdapter(
         notifyDataSetChanged()
     }
 }
+

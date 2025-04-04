@@ -101,6 +101,19 @@ class FirestoreLabelRepository(private val context: Context): LabelRepository {
             }
     }
 
+    fun fetchLabelsByIds(labelIds: List<String>, onSuccess: (List<Label>) -> Unit) {
+        db.collection("labels")
+            .whereIn("id", labelIds)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val labels = snapshot.documents.mapNotNull { it.toObject(Label::class.java) }
+                onSuccess(labels)
+            }
+            .addOnFailureListener { e ->
+                Log.w("LabelRepository", "Error getting labels", e)
+            }
+    }
+
     override fun deleteLabel(labelId: String) {
         db.collection("labels").document(labelId)
             .delete()
