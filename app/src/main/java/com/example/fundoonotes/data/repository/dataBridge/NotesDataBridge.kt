@@ -100,45 +100,4 @@ class NotesDataBridge(private val context: Context) : NotesRepository {
     }
 
     // Add these methods to NotesDataBridge.kt
-
-    fun addNewNoteWithLabels(title: String, description: String, reminderTime: Long?, labels: List<String>): String {
-        val noteId = activeRepository.addNewNote(title, description, reminderTime)
-
-        // Update the note with labels
-        if (noteId.isNotEmpty() && labels.isNotEmpty()) {
-            updateNoteLabels(noteId, labels)
-        }
-
-        return noteId
-    }
-
-    fun updateNoteWithLabels(noteId: String, title: String, description: String, reminderTime: Long?, labels: List<String>) {
-        activeRepository.updateNote(noteId, title, description, reminderTime)
-
-        // Update the note's labels
-        updateNoteLabels(noteId, labels)
-    }
-
-    private fun updateNoteLabels(noteId: String, labels: List<String>) {
-        // Get the current note
-        val currentNote = getNoteById(noteId)
-
-        // If the note exists locally, update it with new labels
-        currentNote?.let { note ->
-            val updatedNote = note.copy(labels = labels)
-
-            // Update the note in Firestore
-            if (activeRepository is FirestoreNoteRepository) {
-                val db = Firebase.firestore
-                db.collection("notes").document(noteId)
-                    .update("labels", labels)
-                    .addOnSuccessListener {
-                        Log.d("NotesDataBridge", "Note labels updated successfully for $noteId")
-                    }
-                    .addOnFailureListener { e ->
-                        Log.e("NotesDataBridge", "Error updating note labels", e)
-                    }
-            }
-        }
-    }
 }

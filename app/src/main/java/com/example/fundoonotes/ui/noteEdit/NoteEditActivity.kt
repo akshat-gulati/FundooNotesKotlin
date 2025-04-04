@@ -29,6 +29,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.fundoonotes.R
 import com.example.fundoonotes.data.model.Label
 import com.example.fundoonotes.data.model.Note
+import com.example.fundoonotes.data.repository.NoteLabelRepository
 import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
 import com.example.fundoonotes.data.repository.ReminderScheduler
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
@@ -58,6 +59,7 @@ class NoteEditActivity : AppCompatActivity(){
     //    private lateinit var firestoreNoteRepository: FirestoreNoteRepository
     private lateinit var notesDataBridge: NotesDataBridge
     private lateinit var labelDataBridge: LabelDataBridge
+    private lateinit var noteLabelRepository: NoteLabelRepository
 
     private var noteId: String? = null
 
@@ -76,6 +78,7 @@ class NoteEditActivity : AppCompatActivity(){
 //        firestoreNoteRepository = FirestoreNoteRepository(applicationContext)
         notesDataBridge = NotesDataBridge(applicationContext)
         labelDataBridge = LabelDataBridge(applicationContext)
+        noteLabelRepository = NoteLabelRepository(applicationContext)
 
         initializeViews()
 
@@ -367,7 +370,7 @@ class NoteEditActivity : AppCompatActivity(){
                 // Update existing note
                 Log.d("NoteEditActivity", "Updating existing note: $noteId")
                 // Include noteLabels when updating
-                notesDataBridge.updateNoteWithLabels(noteId!!, title, description, reminderTime, noteLabels)
+                noteLabelRepository.updateNoteWithLabels(noteId!!, title, description, reminderTime, noteLabels)
 
                 // Schedule reminder for existing note
                 reminderTime?.let { time ->
@@ -381,7 +384,7 @@ class NoteEditActivity : AppCompatActivity(){
                 // Add new note and get the new ID
                 Log.d("NoteEditActivity", "Adding new note")
                 // Include noteLabels when adding
-                val newNoteId = notesDataBridge.addNewNoteWithLabels(title, description, reminderTime, noteLabels)
+                val newNoteId = noteLabelRepository.addNewNoteWithLabels(title, description, reminderTime, noteLabels)
                 Log.d("NoteEditActivity", "New note ID: $newNoteId")
 
                 // Schedule reminder for new note
