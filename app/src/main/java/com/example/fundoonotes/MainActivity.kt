@@ -197,7 +197,7 @@ class MainActivity : AppCompatActivity() {
             layoutToggle = true,
             profile = true,
             options = false,
-            search = false
+            search = true
         )
         loadFragment(fragment)
     }

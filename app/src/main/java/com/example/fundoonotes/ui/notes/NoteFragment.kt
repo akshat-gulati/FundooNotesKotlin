@@ -18,6 +18,8 @@ import com.example.fundoonotes.ui.noteEdit.NoteEditActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 
 class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.OnNoteClickListener {
     private lateinit var recyclerView: RecyclerView
@@ -110,7 +112,8 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
 
     private fun setupLayoutManager() {
         val spanCount = if (isGridLayout) 2 else 1
-        recyclerView.layoutManager = GridLayoutManager(requireContext(), spanCount)
+        recyclerView.layoutManager = StaggeredGridLayoutManager(spanCount, StaggeredGridLayoutManager.VERTICAL)
+        recyclerView.itemAnimator = DefaultItemAnimator() // You can customize this as needed
     }
 
     private fun getFilteredNotes(notes: List<Note>): List<Note> {
