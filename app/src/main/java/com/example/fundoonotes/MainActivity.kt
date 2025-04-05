@@ -1,5 +1,7 @@
 package com.example.fundoonotes
 
+import android.R.attr.searchIcon
+import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
@@ -10,6 +12,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -20,6 +23,7 @@ import com.example.fundoonotes.ui.loginSignup.LoginSignupActivity
 import com.example.fundoonotes.ui.notes.NoteFragment
 import com.google.android.material.navigation.NavigationView
 import androidx.core.content.edit
+import com.example.fundoonotes.ui.AccountActionDialog.AccountActionDialog
 import com.example.fundoonotes.ui.labels.LabelsFragment
 import com.google.firebase.auth.FirebaseAuth
 
@@ -84,8 +88,9 @@ class MainActivity : AppCompatActivity() {
         profileIcon = findViewById(R.id.profile_icon)
 
         profileIcon.setOnClickListener {
-            logout()
-        }
+                val dialog = AccountActionDialog()
+                dialog.show(supportFragmentManager, "AccountActionDialog")
+            }
 
         headerOptions = findViewById(R.id.header_options)
 
