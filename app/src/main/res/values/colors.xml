@@ -7,6 +7,7 @@
     <color name="nav_drawer_selected_text">#367FEA</color>
     <color name="nav_drawer_unselected_text">#3C4045</color>
     <color name="grey">#B8B7B8</color>
+    <color name="selected_note_background">#E0E0E0</color>
 
 
 

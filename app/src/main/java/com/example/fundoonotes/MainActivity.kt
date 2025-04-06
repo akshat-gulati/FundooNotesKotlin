@@ -316,4 +316,11 @@ class MainActivity : AppCompatActivity() {
     interface LayoutToggleListener {
         fun onLayoutToggle(isGridLayout: Boolean)
     }
+
+
+//   A communication channel between NoteFragment and MainActivity to control the toolbar visibility.
+    fun setToolbarVisibility(isVisible: Boolean) {
+        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        toolbar.visibility = if (isVisible) View.VISIBLE else View.GONE
+    }
 }
