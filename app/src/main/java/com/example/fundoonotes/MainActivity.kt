@@ -44,8 +44,10 @@ class MainActivity : AppCompatActivity() {
     private var currentNavItemId: Int = R.id.navNotes
     private var isGridLayout = true
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        authManager = AuthManager(this)
 
         // Check if user is logged in
         if (!authManager.isUserLoggedIn()) {
@@ -53,6 +55,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
         setupUI(savedInstanceState)
+
     }
 
     private fun setupUI(savedInstanceState: Bundle?) {
