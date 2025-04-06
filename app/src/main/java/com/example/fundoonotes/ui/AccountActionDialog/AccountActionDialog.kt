@@ -1,6 +1,5 @@
 package com.example.fundoonotes.ui.AccountActionDialog
 
-import android.content.Context.MODE_PRIVATE
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -12,42 +11,60 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.lifecycleScope
 import com.example.fundoonotes.R
-import com.google.firebase.auth.FirebaseAuth
+import com.example.fundoonotes.data.repository.AuthManager
+import com.example.fundoonotes.data.repository.firebase.FirestoreUserDataRepository
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 class AccountActionDialog : DialogFragment() {
 
+    // UI Components
     private lateinit var ivProfile: ImageView
     private lateinit var tvName: TextView
     private lateinit var tvEmail: TextView
     private lateinit var cvManage: CardView
     private lateinit var cvLogout: CardView
+    private lateinit var authManager: AuthManager
 
-    private val currentUser = FirebaseAuth.getInstance().currentUser
+    // Repositories
+    private lateinit var userRepository: FirestoreUserDataRepository
+
+    // Coroutine job
+    private var userStateCollector: Job? = null
+
+    override fun onAttach(context: android.content.Context) {
+        super.onAttach(context)
+        authManager = AuthManager(context)
+        userRepository = FirestoreUserDataRepository(context)
+    }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_account_action_dialog, container, false)
         initializeViews(view)
         return view
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setupUserInfo()
+        setupClickListeners()
+        collectUserData()
+    }
+
     override fun onStart() {
         super.onStart()
-        // Set transparent background for the dialog window
-        dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        dialog?.window?.setLayout(
-            (resources.displayMetrics.widthPixels * 0.80).toInt(),
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-        dialog?.window?.setGravity(Gravity.TOP)
+        setupDialogWindow()
+    }
 
-        val windowParams = dialog?.window?.attributes
-        windowParams?.y = 50 // Distance from the top in pixels
-        dialog?.window?.attributes = windowParams
+    override fun onDestroyView() {
+        super.onDestroyView()
+        userStateCollector?.cancel()
     }
 
     private fun initializeViews(view: View) {
@@ -58,4 +75,39 @@ class AccountActionDialog : DialogFragment() {
         cvLogout = view.findViewById(R.id.cvLogout)
     }
 
+    private fun setupDialogWindow() {
+        dialog?.window?.apply {
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setLayout(
+                (resources.displayMetrics.widthPixels * 0.80).toInt(),
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+            setGravity(Gravity.TOP)
+            attributes?.apply {
+                y = 50 // Distance from the top in pixels
+            }
+        }
+    }
+
+    private fun setupUserInfo() { userRepository.fetchUserData() }
+
+    private fun collectUserData() {
+        userStateCollector = lifecycleScope.launch {
+            userRepository.userState.collect { user ->
+                user?.let {
+                    tvName.text = it.name
+                    tvEmail.text = it.email
+                }
+            }
+        }
+    }
+
+    private fun setupClickListeners() {
+        cvLogout.setOnClickListener {
+            authManager.logout()
+            dismiss()
+        }
+
+        // cvManage click listener is missing - is this intentional?
+    }
 }
