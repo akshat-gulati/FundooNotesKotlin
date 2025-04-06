@@ -24,7 +24,7 @@ class AuthManager(private val context: Context?) {
         redirectToLogin()
     }
 
-    private fun redirectToLogin() {
+    fun redirectToLogin() {
         val intent = Intent(context, LoginSignupActivity::class.java)
         context?.startActivity(intent)
         (context as? MainActivity)?.finish()

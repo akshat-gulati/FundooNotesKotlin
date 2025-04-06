@@ -23,6 +23,7 @@ import com.example.fundoonotes.ui.loginSignup.LoginSignupActivity
 import com.example.fundoonotes.ui.notes.NoteFragment
 import com.google.android.material.navigation.NavigationView
 import androidx.core.content.edit
+import com.example.fundoonotes.data.repository.AuthManager
 import com.example.fundoonotes.ui.AccountActionDialog.AccountActionDialog
 import com.example.fundoonotes.ui.labels.LabelsFragment
 import com.google.firebase.auth.FirebaseAuth
@@ -37,6 +38,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var profileIcon: ImageView
     private lateinit var headerOptions: ImageView
     private lateinit var toolbar: Toolbar
+    private lateinit var authManager: AuthManager
 
     // State variables
     private var currentNavItemId: Int = R.id.navNotes
@@ -46,11 +48,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         // Check if user is logged in
-        if (!isUserLoggedIn()) {
-            redirectToLogin()
+        if (!authManager.isUserLoggedIn()) {
+            authManager.redirectToLogin()
             return
         }
-
         setupUI(savedInstanceState)
     }
 
@@ -271,33 +272,6 @@ class MainActivity : AppCompatActivity() {
             search = true
         )
         loadFragment(fragment)
-    }
-
-    // Authentication methods
-    private fun isUserLoggedIn(): Boolean {
-        val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        val userId = sharedPreferences.getString("userId", null)
-
-        // Check if stored userId matches current Firebase user
-        val currentUser = FirebaseAuth.getInstance().currentUser
-
-        return userId != null &&
-                currentUser != null &&
-                currentUser.uid == userId
-    }
-
-    private fun redirectToLogin() {
-        val intent = Intent(this, LoginSignupActivity::class.java)
-        startActivity(intent)
-        finish() // Close MainActivity
-    }
-
-    private fun logout() {
-        FirebaseAuth.getInstance().signOut()
-
-        val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        sharedPreferences.edit().remove("userId").apply()
-        redirectToLogin()
     }
 
     // Lifecycle methods
