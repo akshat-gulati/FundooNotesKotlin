@@ -31,10 +31,6 @@ class AuthManager(private val context: Context?) {
 
     }
 
-    fun getCurrentUser(): FirebaseUser? {
-        return firebaseAuth.currentUser
-    }
-
     fun getUserId(): String? {
         return firebaseAuth.currentUser?.uid
     }
