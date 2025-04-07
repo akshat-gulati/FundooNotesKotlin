@@ -51,13 +51,13 @@ class NoteAdapter(
 
         // Highlight selected items
         if (selectedItems.contains(note.id)) {
-            holder.itemView.setBackgroundColor(
-                ContextCompat.getColor(holder.itemView.context, R.color.selected_note_background)
+            holder.itemView.setBackgroundResource(
+                R.drawable.selected_card_border
             )
         } else {
-            holder.itemView.setBackgroundColor(
-                ContextCompat.getColor(holder.itemView.context, android.R.color.transparent)
-            )
+                holder.itemView.setBackgroundResource(
+                    R.drawable.card_border
+                )
         }
 
         if (note.reminderTime != null) {
