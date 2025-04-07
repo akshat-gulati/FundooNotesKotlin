@@ -15,7 +15,12 @@ class NoteLabelRepository(context: Context) {
         private const val TAG = "NoteLabelRepository"
     }
 
-    fun addNewNoteWithLabels(title: String, description: String, reminderTime: Long?, labels: List<String>): String {
+    fun addNewNoteWithLabels(
+        title: String,
+        description: String,
+        reminderTime: Long?,
+        labels: List<String>
+    ): String {
         val noteId = notesDataBridge.addNewNote(title, description, reminderTime)
 
         // Update the note with labels
@@ -26,7 +31,13 @@ class NoteLabelRepository(context: Context) {
         return noteId
     }
 
-    fun updateNoteWithLabels(noteId: String, title: String, description: String, reminderTime: Long?, labels: List<String>) {
+    fun updateNoteWithLabels(
+        noteId: String,
+        title: String,
+        description: String,
+        reminderTime: Long?,
+        labels: List<String>
+    ) {
         notesDataBridge.updateNote(noteId, title, description, reminderTime)
 
         // Update the note's labels
@@ -92,4 +103,31 @@ class NoteLabelRepository(context: Context) {
             onSuccess(notesWithLabel)
         }
     }
+
+
+    // This is a recursive function to ensure that the lable gets deleted only when there are no notes associated with it
+    fun deleteLabel(labelId: String) {
+        val associatedNoteIds = mutableListOf<Note>()
+        getNotesWithLabel(labelId) { notes ->
+            associatedNoteIds.addAll(notes)
+
+
+            if (associatedNoteIds.isEmpty()) {
+                labelDataBridge.deleteLabel(labelId)
+            } else {
+                associatedNoteIds.forEach { note ->
+                    val noteId = note.id
+                    notesDataBridge.fetchNoteById(noteId) {
+                        val updatedLabels = note.labels.filter { it != labelId }
+                        notesDataBridge.updateNoteLabels(noteId, updatedLabels)
+
+
+                    }
+                }
+                labelDataBridge.deleteLabel(labelId)
+            }
+        }
+    }
+
+
 }

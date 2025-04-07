@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import android.view.View
 import com.example.fundoonotes.data.model.Label
 import com.example.fundoonotes.R
+import com.example.fundoonotes.data.repository.NoteLabelRepository
 import kotlin.String
 
 
@@ -29,6 +30,8 @@ class LabelsFragment : Fragment() {
     private lateinit var labelDataBridge: LabelDataBridge
     private lateinit var adapter: LabelAdapter
     private val labels = mutableListOf<Label>()
+
+    private lateinit var NoteLabelRepository: NoteLabelRepository
 
     private var labelsCollectionJob: Job? = null
 
@@ -42,6 +45,7 @@ class LabelsFragment : Fragment() {
         etNewLabel = view.findViewById(R.id.etNewLabel)
         btnAddLabel = view.findViewById(R.id.btnAddLabel)
         labelDataBridge = LabelDataBridge(requireContext())
+        NoteLabelRepository = NoteLabelRepository(requireContext())
 
         setupRecyclerView()
         setupAddLabelButton()
@@ -81,7 +85,7 @@ class LabelsFragment : Fragment() {
 
             override fun onLabelDelete(label: Label, position: Int) {
                 // Remove the label from Firestore
-                labelDataBridge.deleteLabel(label.id)
+                NoteLabelRepository.deleteLabel(label.id)
             }
 
             override fun onLabelEdit(
