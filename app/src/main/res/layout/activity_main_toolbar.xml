@@ -76,17 +76,6 @@
                 android:gravity="center_vertical"
                 app:tint="@color/black" />
 
-            <ImageView
-                android:id="@+id/header_options"
-                android:layout_width="20dp"
-                android:layout_height="match_parent"
-                android:contentDescription="@string/options"
-                android:rotation="90"
-                android:layout_marginRight="7dp"
-                android:gravity="center_vertical"
-                android:src="@drawable/ellipsis"
-                app:tint="@color/black" />
-
         </LinearLayout>
 
     </androidx.appcompat.widget.Toolbar>

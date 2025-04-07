@@ -36,7 +36,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var searchIcon: ImageView
     private lateinit var layoutToggleIcon: ImageView
     private lateinit var profileIcon: ImageView
-    private lateinit var headerOptions: ImageView
     private lateinit var toolbar: Toolbar
     private lateinit var authManager: AuthManager
 
@@ -95,8 +94,6 @@ class MainActivity : AppCompatActivity() {
                 val dialog = AccountActionDialog()
                 dialog.show(supportFragmentManager, "AccountActionDialog")
             }
-
-        headerOptions = findViewById(R.id.header_options)
 
         layoutToggleIcon.setOnClickListener {
             toggleLayout()
@@ -181,12 +178,10 @@ class MainActivity : AppCompatActivity() {
     private fun updateHeaderVisibility(
         layoutToggle: Boolean,
         profile: Boolean,
-        options: Boolean,
         search: Boolean
     ) {
         layoutToggleIcon.visibility = if (layoutToggle) View.VISIBLE else View.GONE
         profileIcon.visibility = if (profile) View.VISIBLE else View.GONE
-        headerOptions.visibility = if (options) View.VISIBLE else View.GONE
         searchIcon.visibility = if (search) View.VISIBLE else View.GONE
     }
 
@@ -205,7 +200,6 @@ class MainActivity : AppCompatActivity() {
         updateHeaderVisibility(
             layoutToggle = true,
             profile = true,
-            options = false,
             search = true
         )
         loadFragment(fragment)
@@ -218,7 +212,6 @@ class MainActivity : AppCompatActivity() {
         updateHeaderVisibility(
             layoutToggle = true,
             profile = false,
-            options = false,
             search = true
         )
         loadFragment(fragment)
@@ -231,7 +224,6 @@ class MainActivity : AppCompatActivity() {
         updateHeaderVisibility(
             layoutToggle = false,
             profile = false,
-            options = false,
             search = false
         )
         loadFragment(fragment)
@@ -244,7 +236,6 @@ class MainActivity : AppCompatActivity() {
         updateHeaderVisibility(
             layoutToggle = true,
             profile = false,
-            options = false,
             search = true
         )
         loadFragment(fragment)
@@ -257,22 +248,7 @@ class MainActivity : AppCompatActivity() {
         updateHeaderVisibility(
             layoutToggle = true,
             profile = false,
-            options = false,
             search = false
-        )
-        loadFragment(fragment)
-    }
-
-
-    fun navigateToLabelNotes(label: String) {
-        clearToolbarBackground() // Clear the background
-        val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_LABELS, label)
-        titleText.text = label
-        updateHeaderVisibility(
-            layoutToggle = true,
-            profile = false,
-            options = false,
-            search = true
         )
         loadFragment(fragment)
     }
@@ -297,7 +273,7 @@ class MainActivity : AppCompatActivity() {
 
 //   A communication channel between NoteFragment and MainActivity to control the toolbar visibility.
     fun setToolbarVisibility(isVisible: Boolean) {
-        val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
         toolbar.visibility = if (isVisible) View.VISIBLE else View.GONE
     }
 }
