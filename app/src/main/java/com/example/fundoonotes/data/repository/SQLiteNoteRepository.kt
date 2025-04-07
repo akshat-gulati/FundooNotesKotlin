@@ -3,13 +3,13 @@ package com.example.fundoonotes.data.repository
 import android.content.Context
 import android.util.Log
 import com.example.fundoonotes.data.model.Note
-import com.example.fundoonotes.data.repository.interfaces.NotesRepository
+import com.example.fundoonotes.data.repository.interfaces.NotesInterface
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 
-class SQLiteNoteRepository(private val context: Context): NotesRepository {
+class SQLiteNoteRepository(private val context: Context): NotesInterface {
     private val _notesState = MutableStateFlow<List<Note>>(emptyList())
     val notesState: StateFlow<List<Note>> = _notesState.asStateFlow()
 

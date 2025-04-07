@@ -3,7 +3,7 @@ package com.example.fundoonotes.data.repository.firebase
 import android.content.Context
 import android.util.Log
 import com.example.fundoonotes.data.model.Label
-import com.example.fundoonotes.data.repository.interfaces.LabelRepository
+import com.example.fundoonotes.data.repository.interfaces.LabelInterface
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class FirestoreLabelRepository(private val context: Context): LabelRepository {
+class FirestoreLabelRepository(private val context: Context): LabelInterface {
     private val db = Firebase.firestore
     private val _labelsState = MutableStateFlow<List<Label>>(emptyList())
     val labelsState: StateFlow<List<Label>> = _labelsState.asStateFlow()

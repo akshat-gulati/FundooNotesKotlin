@@ -2,7 +2,7 @@ package com.example.fundoonotes.data.repository.interfaces
 
 import com.example.fundoonotes.data.model.Note
 
-interface NotesRepository {
+interface NotesInterface {
 
     fun fetchNoteById(noteId: String, onSuccess: (Note) -> Unit)
     fun fetchNotes()

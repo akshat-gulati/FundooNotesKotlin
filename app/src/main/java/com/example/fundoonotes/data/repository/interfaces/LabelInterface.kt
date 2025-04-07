@@ -2,7 +2,7 @@ package com.example.fundoonotes.data.repository.interfaces
 
 import com.example.fundoonotes.data.model.Label
 
-interface LabelRepository {
+interface LabelInterface {
 
     fun fetchLabelById(labelId: String, onSuccess: (Label) -> Unit)
     fun fetchLabels()

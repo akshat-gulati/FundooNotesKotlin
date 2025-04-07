@@ -3,7 +3,7 @@ package com.example.fundoonotes.data.repository.firebase
 import android.content.Context
 import android.util.Log
 import com.example.fundoonotes.data.model.Note
-import com.example.fundoonotes.data.repository.interfaces.NotesRepository
+import com.example.fundoonotes.data.repository.interfaces.NotesInterface
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.ktx.firestore
@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class FirestoreNoteRepository(private val context: Context): NotesRepository {
+class FirestoreNoteRepository(private val context: Context): NotesInterface {
     private val db = Firebase.firestore
     private val auth = FirebaseAuth.getInstance()
     private val _notesState = MutableStateFlow<List<Note>>(emptyList())

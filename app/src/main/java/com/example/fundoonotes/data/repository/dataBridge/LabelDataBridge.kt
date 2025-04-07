@@ -2,7 +2,7 @@ package com.example.fundoonotes.data.repository.dataBridge
 
 import com.example.fundoonotes.data.model.Label
 import android.content.Context
-import com.example.fundoonotes.data.repository.interfaces.LabelRepository
+import com.example.fundoonotes.data.repository.interfaces.LabelInterface
 import com.example.fundoonotes.data.repository.firebase.FirestoreLabelRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class LabelDataBridge(private val context: Context): LabelRepository {
+class LabelDataBridge(private val context: Context): LabelInterface {
 
     companion object{
         private const val TAG = "LabelsDataBridge"
@@ -22,7 +22,7 @@ class LabelDataBridge(private val context: Context): LabelRepository {
     val labelsState: StateFlow<List<Label>> = _labelsState.asStateFlow()
     internal val firestoreLabelRepository: FirestoreLabelRepository =
         FirestoreLabelRepository(context)
-    private var activeRepository: LabelRepository = firestoreLabelRepository
+    private var activeRepository: LabelInterface = firestoreLabelRepository
 
     init {
         coroutineScope.launch {

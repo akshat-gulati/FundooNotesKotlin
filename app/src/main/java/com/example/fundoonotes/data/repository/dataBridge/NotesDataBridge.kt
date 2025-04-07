@@ -3,7 +3,7 @@ package com.example.fundoonotes.data.repository.dataBridge
 import android.content.Context
 import android.util.Log
 import com.example.fundoonotes.data.model.Note
-import com.example.fundoonotes.data.repository.interfaces.NotesRepository
+import com.example.fundoonotes.data.repository.interfaces.NotesInterface
 import com.example.fundoonotes.data.repository.SQLiteNoteRepository
 import com.example.fundoonotes.data.repository.firebase.FirestoreNoteRepository
 import kotlinx.coroutines.CoroutineScope
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 @Suppress("SpellCheckingInspection")
-class NotesDataBridge(private val context: Context) : NotesRepository {
+class NotesDataBridge(private val context: Context) : NotesInterface {
 
     companion object{
         private const val TAG = "NotesDataBridge"
@@ -26,7 +26,7 @@ class NotesDataBridge(private val context: Context) : NotesRepository {
     private val firestoreRepository: FirestoreNoteRepository = FirestoreNoteRepository(context)
     private val sqliteNoteRepository: SQLiteNoteRepository = SQLiteNoteRepository(context)
 
-    private var activeRepository: NotesRepository = firestoreRepository
+    private var activeRepository: NotesInterface = firestoreRepository
 
     init {
         observeFirestoreNotes()
