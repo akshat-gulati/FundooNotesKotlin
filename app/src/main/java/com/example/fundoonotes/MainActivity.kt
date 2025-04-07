@@ -43,10 +43,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var labelDataBridge: LabelDataBridge
     private var menuLabelsGroup: Menu? = null
     private val LABEL_MENU_GROUP_ID = 1001
-
     // State variables
     private var currentNavItemId: Int = R.id.navNotes
     private var isGridLayout = true
+    private var currentLabelName: String? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -185,22 +185,6 @@ class MainActivity : AppCompatActivity() {
         drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
-    private fun navigateToLabelNotes(labelName: String) {
-        clearToolbarBackground()
-        // Find the label ID from the name
-        val label = labelDataBridge.labelsState.value.find { it.name == labelName }
-
-        if (label != null) {
-            val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_LABELS, label.id)
-            titleText.text = labelName
-            updateHeaderVisibility(
-                layoutToggle = true,
-                profile = false,
-                search = true
-            )
-            loadFragment(fragment)
-        }
-    }
 
     private fun updateUIForNavItem(itemId: Int) {
         when (itemId) {
@@ -322,10 +306,62 @@ class MainActivity : AppCompatActivity() {
         outState.putInt("currentNavItemId", currentNavItemId)
     }
 
-    //Highlights Correct Navigation item
+
+    // When navigating to label notes, store the label name
+    private fun navigateToLabelNotes(labelName: String) {
+        clearToolbarBackground()
+        currentLabelName = labelName // Store the current label name
+
+        // Find the label ID from the name
+        val label = labelDataBridge.labelsState.value.find { it.name == labelName }
+
+        if (label != null) {
+            val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_LABELS, label.id)
+            titleText.text = labelName
+            updateHeaderVisibility(
+                layoutToggle = true,
+                profile = false,
+                search = true
+            )
+            loadFragment(fragment)
+        }
+    }
+
+    // Modify onResume to handle label menu items
     override fun onResume() {
         super.onResume()
-        navView.menu.findItem(currentNavItemId).isChecked = true
+
+        // First try to find the menu item directly
+        val menuItem = navView.menu.findItem(currentNavItemId)
+
+        if (menuItem != null) {
+            menuItem.isChecked = true
+        } else if (currentLabelName != null) {
+            // If we were on a label, try to find it by name in the current menu
+            var found = false
+            if (menuLabelsGroup != null) {
+                for (i in 0 until menuLabelsGroup!!.size()) {
+                    val item = menuLabelsGroup!!.getItem(i)
+                    if (item.title.toString() == currentLabelName) {
+                        item.isChecked = true
+                        currentNavItemId = item.itemId
+                        found = true
+                        break
+                    }
+                }
+            }
+
+            // If we couldn't find the label, reset to default
+            if (!found) {
+                currentNavItemId = R.id.navNotes
+                navView.menu.findItem(currentNavItemId)?.isChecked = true
+                currentLabelName = null
+            }
+        } else {
+            // If all else fails, reset to Notes
+            currentNavItemId = R.id.navNotes
+            navView.menu.findItem(currentNavItemId)?.isChecked = true
+        }
     }
 
     // Interface for fragment communication
