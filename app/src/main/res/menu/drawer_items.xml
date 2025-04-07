@@ -3,61 +3,53 @@
 
     <group
         android:id="@+id/group1"
-        android:checkableBehavior="single"
-        >
+        android:checkableBehavior="single">
         <item
             android:id="@+id/navNotes"
             android:title="@string/notes"
-            android:icon="@drawable/lightbulb"
-            />
+            android:icon="@drawable/lightbulb"/>
         <item
             android:id="@+id/navReminders"
             android:title="@string/reminders"
-            android:icon="@drawable/alarm"
-            />
+            android:icon="@drawable/alarm"/>
     </group>
+
     <group
         android:id="@+id/group2"
-        android:checkableBehavior="single"
-        >
-    <item
-        android:id="@+id/navLabels"
-        android:title="@string/create_labels"
-        android:icon="@drawable/brush"
-        />
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/navLabels"
+            android:title="@string/create_labels"
+            android:icon="@drawable/brush"/>
     </group>
+
     <group
         android:checkableBehavior="single"
-        android:id="@+id/group3"
-        >
-    <item
-        android:id="@+id/navArchive"
-        android:title="@string/archive"
-        android:icon="@drawable/archive"
-        />
-    <item
-        android:id="@+id/navBin"
-        android:title="@string/bin"
-        android:icon="@drawable/bin"
-        />
+        android:id="@+id/group3">
+        <item
+            android:id="@+id/navArchive"
+            android:title="@string/archive"
+            android:icon="@drawable/archive"/>
+        <item
+            android:id="@+id/navBin"
+            android:title="@string/bin"
+            android:icon="@drawable/bin"/>
     </group>
-    <group android:checkableBehavior="single"
-        android:id="@+id/group4"
-        >
-    <item
-        android:id="@+id/navSettings"
-        android:title="Settings"
-        android:icon="@drawable/gear"
-        />
-    <item
-        android:id="@+id/navFeedback"
-        android:title="Send app feedback"
-        android:icon="@drawable/info"
-        />
-    <item
-        android:id="@+id/navHelp"
-        android:title="Help"
-        android:icon="@drawable/help"
-        />
+
+    <group
+        android:checkableBehavior="single"
+        android:id="@+id/group4">
+        <item
+            android:id="@+id/navSettings"
+            android:title="Settings"
+            android:icon="@drawable/gear"/>
+        <item
+            android:id="@+id/navFeedback"
+            android:title="Send app feedback"
+            android:icon="@drawable/info"/>
+        <item
+            android:id="@+id/navHelp"
+            android:title="Help"
+            android:icon="@drawable/help"/>
     </group>
 </menu>

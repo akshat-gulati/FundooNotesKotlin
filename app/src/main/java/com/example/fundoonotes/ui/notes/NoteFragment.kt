@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
+import androidx.core.content.ContextCompat.startActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -24,6 +25,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DefaultItemAnimator
+import com.example.fundoonotes.ui.notes.NoteFragment.Companion.DISPLAY_BIN
 
 class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.OnNoteClickListener {
     private lateinit var recyclerView: RecyclerView
@@ -180,8 +182,9 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
             DISPLAY_ARCHIVE -> notes.filter { it.archived && !it.deleted }
             DISPLAY_BIN -> notes.filter { it.deleted }
             DISPLAY_LABELS -> {
-                currentLabel?.let { label ->
-                    notes.filter { !it.archived && !it.deleted && it.labels.contains(label) }
+                currentLabel?.let { labelId ->
+                    // Filter notes that have this label ID in their labels list
+                    notes.filter { !it.archived && !it.deleted && it.labels.contains(labelId) }
                 } ?: emptyList()
             }
             else -> emptyList()

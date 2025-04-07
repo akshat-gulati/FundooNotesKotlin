@@ -1,6 +1,8 @@
 package com.example.fundoonotes
 
+import android.R.attr.searchIcon
 import android.os.Bundle
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageButton
@@ -15,11 +17,17 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.example.fundoonotes.data.model.Label
 import com.example.fundoonotes.ui.notes.NoteFragment
 import com.google.android.material.navigation.NavigationView
 import com.example.fundoonotes.data.repository.AuthManager
+import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
 import com.example.fundoonotes.ui.AccountActionDialog.AccountActionDialog
 import com.example.fundoonotes.ui.labels.LabelsFragment
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -31,6 +39,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var profileIcon: ImageView
     private lateinit var toolbar: Toolbar
     private lateinit var authManager: AuthManager
+    // Add new property
+    private lateinit var labelDataBridge: LabelDataBridge
+    private var menuLabelsGroup: Menu? = null
+    private val LABEL_MENU_GROUP_ID = 1001
 
     // State variables
     private var currentNavItemId: Int = R.id.navNotes
@@ -57,6 +69,7 @@ class MainActivity : AppCompatActivity() {
         initializeViews()
         setupDrawer()
         setupNavigation()
+        observeLabels()
 
         // Load default fragment if no fragment is loaded
         if (savedInstanceState == null) {
@@ -66,6 +79,46 @@ class MainActivity : AppCompatActivity() {
             currentNavItemId = savedInstanceState.getInt("currentNavItemId", R.id.navNotes)
             // Update UI based on the restored navigation item
             updateUIForNavItem(currentNavItemId)
+        }
+    }
+
+    private fun observeLabels() {
+        labelDataBridge = LabelDataBridge(this)
+
+        // Observe labels and update navigation dynamically
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                labelDataBridge.labelsState.collect { labels ->
+                    updateLabelMenu(labels)
+                }
+            }
+        }
+
+        // Fetch labels initially
+        labelDataBridge.fetchLabels()
+    }
+
+    private fun updateLabelMenu(labels: List<Label>) {
+        // Get the menu from NavigationView
+        val menu = navView.menu
+
+        // Find the Reminders menu item
+        val remindersMenuItem = menu.findItem(R.id.navReminders)
+
+        // Clear existing label items if any
+        if (menuLabelsGroup != null) {
+            menuLabelsGroup?.clear()
+        } else {
+            // Create a new group for labels between group1 (which contains Reminders) and group2
+            menuLabelsGroup = menu.addSubMenu(Menu.NONE, Menu.NONE,
+                remindersMenuItem.order + 1, "Labels")
+        }
+
+        // Add each label as a menu item
+        labels.forEach { label ->
+            menuLabelsGroup?.add(LABEL_MENU_GROUP_ID, View.generateViewId(), Menu.NONE, label.name)
+                ?.setIcon(R.drawable.tag)
+                ?.setCheckable(true)
         }
     }
 
@@ -116,20 +169,37 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleNavigation(item: MenuItem): Boolean {
-        if (currentNavItemId != item.itemId) {
-            // Update the current selected item ID
-            currentNavItemId = item.itemId
-
-            // Check/highlight the selected item
+        if (item.groupId == LABEL_MENU_GROUP_ID) {
+            // This is a label item, handle label navigation
+            navigateToLabelNotes(item.title.toString())
+            currentNavItemId = item.itemId // Store the current item ID
             item.isChecked = true
-
-            // Update UI based on the selected item
+        } else if (currentNavItemId != item.itemId) {
+            // Existing code for standard navigation items
+            currentNavItemId = item.itemId
+            item.isChecked = true
             updateUIForNavItem(currentNavItemId)
         }
 
         val drawerLayout: DrawerLayout = findViewById(R.id.main)
         drawerLayout.closeDrawer(GravityCompat.START)
         return true
+    }
+    private fun navigateToLabelNotes(labelName: String) {
+        clearToolbarBackground()
+        // Find the label ID from the name
+        val label = labelDataBridge.labelsState.value.find { it.name == labelName }
+
+        if (label != null) {
+            val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_LABELS, label.id)
+            titleText.text = labelName
+            updateHeaderVisibility(
+                layoutToggle = true,
+                profile = false,
+                search = true
+            )
+            loadFragment(fragment)
+        }
     }
 
     private fun updateUIForNavItem(itemId: Int) {
