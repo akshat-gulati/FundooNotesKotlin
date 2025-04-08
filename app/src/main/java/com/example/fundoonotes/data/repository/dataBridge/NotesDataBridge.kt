@@ -98,6 +98,32 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
         fetchNotes()
     }
 
+    fun moveNoteToTrash(noteId: String) {
+        fetchNoteById(noteId) { note ->
+            val updatedFields = mapOf(
+                "deleted" to true,
+                "deletedTime" to System.currentTimeMillis()
+            )
+
+            if (activeRepository == firestoreRepository) {
+                firestoreRepository.updateNoteFields(noteId, updatedFields)
+            }
+            // Add SQLite implementation when needed
+        }
+    }
+
+    fun moveNoteToArchive(noteId: String) {
+        fetchNoteById(noteId) { note ->
+            val updatedFields = mapOf(
+                "archived" to true
+            )
+
+            if (activeRepository == firestoreRepository) {
+                firestoreRepository.updateNoteFields(noteId, updatedFields)
+            }
+        }
+    }
+
     fun syncRepositories() {
         Log.d(TAG, "Repository sync not yet implemented")
     }

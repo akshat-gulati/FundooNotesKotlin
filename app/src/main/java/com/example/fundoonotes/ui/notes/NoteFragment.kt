@@ -58,16 +58,21 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
             return when (item.itemId) {
                 R.id.action_delete -> {
-
                     val noteIds = selectedNotes.map { it.id }
 
                     noteIds.forEach { noteId ->
-                        noteLabelRepository.deleteNote(noteId)
+                        notesDataBridge.moveNoteToTrash(noteId)
                     }
                     actionMode?.finish()
                     true
                 }
                 R.id.action_archive -> {
+
+                    val noteIds = selectedNotes.map { it.id }
+
+                    noteIds.forEach { noteId ->
+                        notesDataBridge.moveNoteToArchive(noteId)
+                    }
                     actionMode?.finish()
                     true
                 }
