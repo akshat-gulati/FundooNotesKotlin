@@ -24,11 +24,12 @@ import com.example.fundoonotes.ui.notes.NoteFragment
 import com.google.android.material.navigation.NavigationView
 import com.example.fundoonotes.data.repository.AuthManager
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
-import com.example.fundoonotes.ui.accountActionDialog.AccountActionDialog
 import com.example.fundoonotes.ui.labels.LabelsFragment
 import kotlinx.coroutines.launch
 import androidx.core.view.size
 import androidx.core.view.get
+import com.example.fundoonotes.ui.accountActionDialog.AccountActionDialog
+
 
 class MainActivity : AppCompatActivity() {
 

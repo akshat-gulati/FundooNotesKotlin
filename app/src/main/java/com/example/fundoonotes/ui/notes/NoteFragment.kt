@@ -1,17 +1,16 @@
 package com.example.fundoonotes.ui.notes
 
+import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
-import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
-import androidx.core.content.ContextCompat.startActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -27,10 +26,10 @@ import kotlinx.coroutines.launch
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DefaultItemAnimator
 import com.example.fundoonotes.data.repository.NoteLabelRepository
-import com.example.fundoonotes.ui.notes.NoteFragment.Companion.DISPLAY_BIN
-import android.graphics.Color
-import android.os.Build
-import androidx.annotation.RequiresApi
+import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.ScrollView
 
 class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.OnNoteClickListener {
     private lateinit var recyclerView: RecyclerView
@@ -93,6 +92,8 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
                     true
                 }
                 R.id.action_labels -> {
+
+                    showCustomDialog(context)
                     mode.finish()
                     true
                 }
@@ -273,6 +274,47 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         if (activity != null) {
             (activity as MainActivity).setToolbarVisibility(true)
         }
+    }
+
+    fun showCustomDialog(context: Context?) {
+        val dialogBuilder = AlertDialog.Builder(context)
+        dialogBuilder.setTitle("Custom Dialog")
+
+        val scrollView = ScrollView(context)
+        val layout = LinearLayout(context)
+        layout.orientation = LinearLayout.VERTICAL
+
+        // Create checkboxes
+        val checkBoxes = mutableListOf<CheckBox>()
+        for (i in 1..5) {
+            val checkBox = CheckBox(context)
+            checkBox.text = "Option $i"
+            checkBoxes.add(checkBox)
+            layout.addView(checkBox)
+        }
+
+        // Create text input
+        val editText = EditText(context)
+        editText.hint = "Enter your text here"
+        layout.addView(editText)
+
+        scrollView.addView(layout)
+        dialogBuilder.setView(scrollView)
+
+        dialogBuilder.setPositiveButton("OK") { dialog, _ ->
+            // Handle OK button click
+            val selectedOptions = checkBoxes.filter { it.isChecked }.map { it.text }
+            val inputText = editText.text.toString()
+            // Do something with selectedOptions and inputText
+            dialog.dismiss()
+        }
+
+        dialogBuilder.setNegativeButton("Cancel") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        val dialog = dialogBuilder.create()
+        dialog.show()
     }
 
 
