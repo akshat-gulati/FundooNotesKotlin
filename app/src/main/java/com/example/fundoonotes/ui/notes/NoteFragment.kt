@@ -56,8 +56,17 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
             // Update action mode title with count of selected items
             if (displayMode == DISPLAY_BIN) {
+                menu.findItem(R.id.action_archive).isVisible = false
+                menu.findItem(R.id.action_labels).isVisible = false
+
                 val menuItem = menu.findItem(R.id.action_delete)
                 menuItem.setIcon(R.drawable.restore)
+            }
+
+            if (displayMode == DISPLAY_ARCHIVE){
+                val menuItem = menu.findItem(R.id.action_archive)
+                menuItem.setIcon(R.drawable.unarchive)
+
             }
             mode.title = "${selectedNotes.size} selected"
             return true
@@ -78,7 +87,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
                     val noteIds = selectedNotes.map { it.id }
 
                     noteIds.forEach { noteId ->
-                        notesDataBridge.moveNoteToArchive(noteId)
+                        notesDataBridge.toggleNoteToArchive(noteId)
                     }
                     mode.finish()
                     true

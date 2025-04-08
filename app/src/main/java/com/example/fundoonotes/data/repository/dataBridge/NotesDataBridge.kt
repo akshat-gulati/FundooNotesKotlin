@@ -119,15 +119,22 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
         }
     }
 
-    fun moveNoteToArchive(noteId: String) {
+    fun toggleNoteToArchive(noteId: String) {
         fetchNoteById(noteId) { note ->
-            val updatedFields = mapOf(
-                "archived" to true
-            )
+            val updatedFields = if (note.archived == true) {
+                mapOf(
+                    "archived" to false,
+                )
+            } else {
+                mapOf(
+                    "archived" to true,
+                )
+            }
 
             if (activeRepository == firestoreRepository) {
                 firestoreRepository.updateNoteFields(noteId, updatedFields)
             }
+            // Add SQLite implementation when needed
         }
     }
 
