@@ -1,6 +1,5 @@
 package com.example.fundoonotes
 
-import android.R.attr.searchIcon
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -25,9 +24,11 @@ import com.example.fundoonotes.ui.notes.NoteFragment
 import com.google.android.material.navigation.NavigationView
 import com.example.fundoonotes.data.repository.AuthManager
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
-import com.example.fundoonotes.ui.AccountActionDialog.AccountActionDialog
+import com.example.fundoonotes.ui.accountActionDialog.AccountActionDialog
 import com.example.fundoonotes.ui.labels.LabelsFragment
 import kotlinx.coroutines.launch
+import androidx.core.view.size
+import androidx.core.view.get
 
 class MainActivity : AppCompatActivity() {
 
@@ -340,8 +341,8 @@ class MainActivity : AppCompatActivity() {
             // If we were on a label, try to find it by name in the current menu
             var found = false
             if (menuLabelsGroup != null) {
-                for (i in 0 until menuLabelsGroup!!.size()) {
-                    val item = menuLabelsGroup!!.getItem(i)
+                for (i in 0 until menuLabelsGroup!!.size) {
+                    val item = menuLabelsGroup!![i]
                     if (item.title.toString() == currentLabelName) {
                         item.isChecked = true
                         currentNavItemId = item.itemId

@@ -1,4 +1,4 @@
-package com.example.fundoonotes.ui.AccountActionDialog
+package com.example.fundoonotes.ui.accountActionDialog
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
