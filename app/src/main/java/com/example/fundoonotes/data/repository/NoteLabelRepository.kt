@@ -129,5 +129,18 @@ class NoteLabelRepository(context: Context) {
         }
     }
 
+    fun deleteNote(noteId: String){
+        notesDataBridge.fetchNoteById(noteId){ note ->
+            val associatedLabelIds = note.labels
+
+            associatedLabelIds.forEach{ labelId ->
+                labelDataBridge.fetchLabelById(labelId){
+                    val updatedNoteIds = it.noteIds.filter { it != noteId }
+                    labelDataBridge.updateLabel(labelId, it.name, updatedNoteIds)
+                }
+            }
+        }
+    }
+
 
 }
