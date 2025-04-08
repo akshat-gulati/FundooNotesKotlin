@@ -142,6 +142,3 @@ class NoteLabelRepository(context: Context) {
     }
 
 }
-//var note = notesDataBridge.getNoteById(noteId)
-//note?.deleted = true
-//note?.deletedTime = System.currentTimeMillis()
