@@ -98,12 +98,19 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
         fetchNotes()
     }
 
-    fun moveNoteToTrash(noteId: String) {
+    fun toggleNoteToTrash(noteId: String) {
         fetchNoteById(noteId) { note ->
-            val updatedFields = mapOf(
-                "deleted" to true,
-                "deletedTime" to System.currentTimeMillis()
-            )
+            val updatedFields = if (note.deleted == true) {
+                mapOf(
+                    "deleted" to false,
+                    "deletedTime" to null
+                )
+            } else {
+                mapOf(
+                    "deleted" to true,
+                    "deletedTime" to System.currentTimeMillis()
+                )
+            }
 
             if (activeRepository == firestoreRepository) {
                 firestoreRepository.updateNoteFields(noteId, updatedFields)

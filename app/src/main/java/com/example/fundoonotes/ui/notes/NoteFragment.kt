@@ -1,6 +1,7 @@
 package com.example.fundoonotes.ui.notes
 
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.Menu
@@ -27,6 +28,9 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DefaultItemAnimator
 import com.example.fundoonotes.data.repository.NoteLabelRepository
 import com.example.fundoonotes.ui.notes.NoteFragment.Companion.DISPLAY_BIN
+import android.graphics.Color
+import android.os.Build
+import androidx.annotation.RequiresApi
 
 class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.OnNoteClickListener {
     private lateinit var recyclerView: RecyclerView
@@ -51,6 +55,10 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
 
         override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
             // Update action mode title with count of selected items
+            if (displayMode == DISPLAY_BIN) {
+                val menuItem = menu.findItem(R.id.action_delete)
+                menuItem.setIcon(R.drawable.restore)
+            }
             mode.title = "${selectedNotes.size} selected"
             return true
         }
@@ -60,24 +68,23 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
                 R.id.action_delete -> {
                     val noteIds = selectedNotes.map { it.id }
 
-                    noteIds.forEach { noteId ->
-                        notesDataBridge.moveNoteToTrash(noteId)
-                    }
-                    actionMode?.finish()
+                        noteIds.forEach { noteId ->
+                            notesDataBridge.toggleNoteToTrash(noteId)
+                        }
+                    mode.finish()
                     true
                 }
                 R.id.action_archive -> {
-
                     val noteIds = selectedNotes.map { it.id }
 
                     noteIds.forEach { noteId ->
                         notesDataBridge.moveNoteToArchive(noteId)
                     }
-                    actionMode?.finish()
+                    mode.finish()
                     true
                 }
                 R.id.action_labels -> {
-                    actionMode?.finish()
+                    mode.finish()
                     true
                 }
                 R.id.action_select_all -> {
