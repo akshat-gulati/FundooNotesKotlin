@@ -25,6 +25,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.DefaultItemAnimator
+import com.example.fundoonotes.data.repository.NoteLabelRepository
 import com.example.fundoonotes.ui.notes.NoteFragment.Companion.DISPLAY_BIN
 
 class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.OnNoteClickListener {
@@ -32,6 +33,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
     private lateinit var noteAdapter: NoteAdapter
     private lateinit var fabAddNote: FloatingActionButton
     private lateinit var notesDataBridge: NotesDataBridge
+    private lateinit var noteLabelRepository: NoteLabelRepository
 
     private var isGridLayout = true
     private var displayMode = DISPLAY_NOTES // Default mode
@@ -56,6 +58,12 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
             return when (item.itemId) {
                 R.id.action_delete -> {
+
+                    val noteIds = selectedNotes.map { it.id }
+
+                    noteIds.forEach { noteId ->
+                        noteLabelRepository.deleteNote(noteId)
+                    }
                     actionMode?.finish()
                     true
                 }
@@ -115,6 +123,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
 
         // Initialize repository
         notesDataBridge = NotesDataBridge(requireContext())
+        noteLabelRepository = NoteLabelRepository(requireContext())
     }
 
     override fun onCreateView(

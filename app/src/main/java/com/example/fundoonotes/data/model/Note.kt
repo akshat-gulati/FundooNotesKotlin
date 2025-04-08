@@ -7,7 +7,8 @@ data class Note(
     var description: String = "",
     val timestamp: Long = System.currentTimeMillis(),
     val labels: List<String> = listOf(), // List of label IDs
-    val deleted: Boolean = false,
-    val archived: Boolean = false,
-    val reminderTime: Long? = null // Optional reminder time
+    var deleted: Boolean = false,
+    var archived: Boolean = false,
+    val reminderTime: Long? = null, // Optional reminder time
+    var deletedTime: Long? = null
 )

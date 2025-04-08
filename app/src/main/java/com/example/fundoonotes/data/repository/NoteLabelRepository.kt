@@ -5,6 +5,7 @@ import android.util.Log
 import com.example.fundoonotes.data.model.Note
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
 import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
+import java.time.Clock.system
 
 class NoteLabelRepository(context: Context) {
 
@@ -104,8 +105,6 @@ class NoteLabelRepository(context: Context) {
         }
     }
 
-
-    // This is a recursive function to ensure that the lable gets deleted only when there are no notes associated with it
     fun deleteLabel(labelId: String) {
         val associatedNoteIds = mutableListOf<Note>()
         getNotesWithLabel(labelId) { notes ->
@@ -130,9 +129,9 @@ class NoteLabelRepository(context: Context) {
     }
 
     fun deleteNote(noteId: String){
+        notesDataBridge.deleteNote(noteId)
         notesDataBridge.fetchNoteById(noteId){ note ->
             val associatedLabelIds = note.labels
-
             associatedLabelIds.forEach{ labelId ->
                 labelDataBridge.fetchLabelById(labelId){
                     val updatedNoteIds = it.noteIds.filter { it != noteId }
@@ -142,5 +141,7 @@ class NoteLabelRepository(context: Context) {
         }
     }
 
-
 }
+//var note = notesDataBridge.getNoteById(noteId)
+//note?.deleted = true
+//note?.deletedTime = System.currentTimeMillis()
