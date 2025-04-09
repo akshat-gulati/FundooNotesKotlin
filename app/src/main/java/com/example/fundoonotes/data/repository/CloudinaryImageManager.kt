@@ -8,6 +8,7 @@ import android.widget.Toast
 import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
+import com.example.fundoonotes.BuildConfig
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
@@ -22,12 +23,14 @@ class CloudinaryImageManager(private val context: Context) {
 
     private fun initializeCloudinary() {
         try {
-            // Just initialize - no need to check if already initialized
-            val config = hashMapOf(
-                "cloud_name" to "dmn9c0m0u",
-                "api_key" to "682551899794755",
-                "api_secret" to "ZLCZWh8gJ1O7ZTiXxpOJjYKFv1k"
-            )
+            val cloudName = BuildConfig.CLOUDINARY_CLOUD_NAME
+            val apiKey = BuildConfig.CLOUDINARY_API_KEY
+            val apiSecret = BuildConfig.CLOUDINARY_API_SECRET
+
+            val config = HashMap<String, String>()
+            config["cloud_name"] = cloudName
+            config["api_key"] = apiKey
+            config["api_secret"] = apiSecret
             MediaManager.init(context, config)
             isInitialized = true
             Log.d(TAG, "Cloudinary initialized successfully")

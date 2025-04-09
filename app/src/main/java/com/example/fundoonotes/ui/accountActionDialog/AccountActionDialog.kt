@@ -1,22 +1,29 @@
 package com.example.fundoonotes.ui.accountActionDialog
 
+import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.TransformationUtils.circleCrop
 import com.example.fundoonotes.R
 import com.example.fundoonotes.data.repository.AuthManager
 import com.example.fundoonotes.data.repository.firebase.FirestoreUserDataRepository
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlin.math.log
 
 class AccountActionDialog : DialogFragment() {
 
@@ -26,15 +33,16 @@ class AccountActionDialog : DialogFragment() {
     private lateinit var tvEmail: TextView
     private lateinit var cvManage: CardView
     private lateinit var cvLogout: CardView
-    private lateinit var authManager: AuthManager
 
     // Repositories
+    private lateinit var authManager: AuthManager
     private lateinit var userRepository: FirestoreUserDataRepository
+    private val firebaseAuth = FirebaseAuth.getInstance()
 
     // Coroutine job
     private var userStateCollector: Job? = null
 
-    override fun onAttach(context: android.content.Context) {
+    override fun onAttach(context: Context) {
         super.onAttach(context)
         authManager = AuthManager(context)
         userRepository = FirestoreUserDataRepository(context)
@@ -75,6 +83,30 @@ class AccountActionDialog : DialogFragment() {
         cvLogout = view.findViewById(R.id.cvLogout)
     }
 
+    private fun collectUserData() {
+        userStateCollector = lifecycleScope.launch {
+            userRepository.userState.collect { user ->
+                user?.let {
+                    // Set user info text
+                    tvName.text = it.name
+                    tvEmail.text = it.email
+
+                    // Load profile image
+                    Log.d("AccountActionDialog", "User from state: $it")
+                    Log.d("AccountActionDialog", "Profile Image URL: ${it.profileImageUrl}")
+
+                    context?.let { ctx ->
+                        Glide.with(ctx)
+                            .load(it.profileImageUrl)
+                            .circleCrop()
+                            .placeholder(R.drawable.person)
+                            .into(ivProfile)
+                    }
+                }
+            }
+        }
+    }
+
     private fun setupDialogWindow() {
         dialog?.window?.apply {
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -88,26 +120,13 @@ class AccountActionDialog : DialogFragment() {
             }
         }
     }
-
-    private fun setupUserInfo() { userRepository.fetchUserData() }
-
-    private fun collectUserData() {
-        userStateCollector = lifecycleScope.launch {
-            userRepository.userState.collect { user ->
-                user?.let {
-                    tvName.text = it.name
-                    tvEmail.text = it.email
-                }
-            }
-        }
+    private fun setupUserInfo() {
+        userRepository.fetchUserData()
     }
-
     private fun setupClickListeners() {
         cvLogout.setOnClickListener {
             authManager.logout()
             dismiss()
         }
-
-        // cvManage click listener is missing - is this intentional?
     }
 }
