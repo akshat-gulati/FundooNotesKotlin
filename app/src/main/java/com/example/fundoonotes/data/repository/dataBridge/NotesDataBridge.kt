@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.example.fundoonotes.data.model.Note
 import com.example.fundoonotes.data.repository.interfaces.NotesInterface
-import com.example.fundoonotes.data.repository.SQLiteNoteRepository
+import com.example.fundoonotes.data.repository.sqlite.SQLiteNoteRepository
 import com.example.fundoonotes.data.repository.firebase.FirestoreNoteRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
