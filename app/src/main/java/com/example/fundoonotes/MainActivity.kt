@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
     // Add new property
     private lateinit var labelDataBridge: LabelDataBridge
     private var menuLabelsGroup: Menu? = null
-    private val LABEL_MENU_GROUP_ID = 1001
+    private val LABEL_MENU_GROUP_ID = 3
     // State variables
     private var currentNavItemId: Int = R.id.navNotes
     private var isGridLayout = true

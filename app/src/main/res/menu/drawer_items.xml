@@ -5,10 +5,12 @@
         android:id="@+id/group1"
         android:checkableBehavior="single">
         <item
+            android:orderInCategory="1"
             android:id="@+id/navNotes"
             android:title="@string/notes"
             android:icon="@drawable/lightbulb"/>
         <item
+            android:orderInCategory="2"
             android:id="@+id/navReminders"
             android:title="@string/reminders"
             android:icon="@drawable/alarm"/>
@@ -18,6 +20,7 @@
         android:id="@+id/group2"
         android:checkableBehavior="single">
         <item
+            android:orderInCategory="400"
             android:id="@+id/navLabels"
             android:title="@string/create_labels"
             android:icon="@drawable/brush"/>
@@ -27,10 +30,12 @@
         android:checkableBehavior="single"
         android:id="@+id/group3">
         <item
+            android:orderInCategory="500"
             android:id="@+id/navArchive"
             android:title="@string/archive"
             android:icon="@drawable/archive"/>
         <item
+            android:orderInCategory="600"
             android:id="@+id/navBin"
             android:title="@string/bin"
             android:icon="@drawable/bin"/>
@@ -40,14 +45,17 @@
         android:checkableBehavior="single"
         android:id="@+id/group4">
         <item
+            android:orderInCategory="600"
             android:id="@+id/navSettings"
             android:title="Settings"
             android:icon="@drawable/gear"/>
         <item
+            android:orderInCategory="700"
             android:id="@+id/navFeedback"
             android:title="Send app feedback"
             android:icon="@drawable/info"/>
         <item
+            android:orderInCategory="800"
             android:id="@+id/navHelp"
             android:title="Help"
             android:icon="@drawable/help"/>
