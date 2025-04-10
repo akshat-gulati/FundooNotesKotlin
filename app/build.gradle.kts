@@ -106,4 +106,8 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment:2.7.7")
     implementation("androidx.navigation:navigation-ui:2.7.7")
 
+    val paging_version = "3.3.6"
+    implementation("androidx.paging:paging-common:$paging_version")
+    implementation("androidx.paging:paging-runtime:$paging_version")
+
 }
