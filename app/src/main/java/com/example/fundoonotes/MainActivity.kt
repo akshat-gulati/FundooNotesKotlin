@@ -1,9 +1,16 @@
 package com.example.fundoonotes
 
+import android.content.Context
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
+import android.view.MotionEvent
 import android.view.View
+import android.view.View.GONE
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -29,6 +36,7 @@ import kotlinx.coroutines.launch
 import androidx.core.view.size
 import androidx.core.view.get
 import com.example.fundoonotes.ui.accountActionDialog.AccountActionDialog
+import com.google.android.material.internal.ViewUtils.hideKeyboard
 
 
 class MainActivity : AppCompatActivity() {
@@ -41,6 +49,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var profileIcon: ImageView
     private lateinit var toolbar: Toolbar
     private lateinit var authManager: AuthManager
+    private lateinit var etSearch: EditText
+    private var isInSearchMode = false
+    private lateinit var drawerButton: ImageButton
+
     // Add new property
     private lateinit var labelDataBridge: LabelDataBridge
     private var menuLabelsGroup: Menu? = null
@@ -137,6 +149,24 @@ class MainActivity : AppCompatActivity() {
         layoutToggleIcon = findViewById(R.id.layout_toggle_icon)
         searchIcon = findViewById(R.id.search_icon)
         profileIcon = findViewById(R.id.profile_icon)
+        etSearch = findViewById(R.id.etSearch)
+        drawerButton = findViewById(R.id.drawer_button)
+
+
+        searchIcon.setOnClickListener {
+            toggleSearchMode(true)
+        }
+
+        etSearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                handleSearchQuery(s.toString())
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
 
         profileIcon.setOnClickListener {
                 val dialog = AccountActionDialog()
@@ -159,7 +189,13 @@ class MainActivity : AppCompatActivity() {
         val drawerButton: ImageButton = findViewById(R.id.drawer_button)
 
         drawerButton.setOnClickListener {
-            drawerLayout.openDrawer(GravityCompat.START)
+            if (isInSearchMode) {
+                // Act as back button in search mode
+                toggleSearchMode(false)
+            } else {
+                // Act as drawer button normally
+                drawerLayout.openDrawer(GravityCompat.START)
+            }
         }
     }
 
@@ -169,7 +205,16 @@ class MainActivity : AppCompatActivity() {
             handleNavigation(item)
         }
     }
-
+    @Deprecated("This method has been deprecated in favor of using the\n      {@link OnBackPressedDispatcher} via {@link #getOnBackPressedDispatcher()}.\n      The OnBackPressedDispatcher controls how back button events are dispatched\n      to one or more {@link OnBackPressedCallback} objects.")
+    override fun onBackPressed() {
+        if (isInSearchMode) {
+            // Exit search mode if back is pressed while searching
+            toggleSearchMode(false)
+            dismissKeyboardShortcutsHelper()
+        } else {
+            super.onBackPressed()
+        }
+    }
     private fun handleNavigation(item: MenuItem): Boolean {
         if (item.groupId == LABEL_MENU_GROUP_ID) {
             // This is a label item, handle label navigation
@@ -326,6 +371,44 @@ class MainActivity : AppCompatActivity() {
                 search = true
             )
             loadFragment(fragment)
+        }
+    }
+    private fun toggleSearchMode(enable: Boolean) {
+        isInSearchMode = enable
+
+        // Toggle visibility of UI elements
+        titleText.visibility = if (enable) View.GONE else View.VISIBLE
+        layoutToggleIcon.visibility = if (enable) View.GONE else View.VISIBLE
+        profileIcon.visibility = if (enable) View.GONE else View.VISIBLE
+        searchIcon.visibility = if (enable) View.GONE else View.VISIBLE
+        etSearch.visibility = if (enable) View.VISIBLE else View.GONE
+
+        // Change drawer button to back button
+        if (enable) {
+            drawerButton.setImageResource(R.drawable.arrow_back) // Make sure you have this drawable
+            etSearch.requestFocus()
+        } else {
+            drawerButton.setImageResource(R.drawable.menu) // Your original drawer icon
+            etSearch.setText("") // Clear search text when exiting search mode
+        }
+    }
+
+    //Hide keyboard (Need to be checked - copied from stack overflow 😬)
+    override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
+        if (currentFocus != null) {
+            val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(currentFocus!!.windowToken, 0)
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
+    private fun handleSearchQuery(query: String) {
+        // Get the current fragment
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+
+        // If it's a NoteFragment, pass the search query
+        if (currentFragment is NoteFragment) {
+            currentFragment.filterNotes(query)
         }
     }
 

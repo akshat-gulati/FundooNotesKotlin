@@ -25,6 +25,21 @@
             android:layout_gravity="start" />
 
         <!-- Title (Centered) -->
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etSearch"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginStart="1dp"
+            android:layout_marginEnd="25dp"
+            android:hint="Search Your Notes here"
+            android:textSize="18sp"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:maxLines="1"
+            android:inputType="text"
+            android:imeOptions="actionSearch"
+            />
         <TextView
             android:id="@+id/tvHeaderTitle"
             android:layout_width="wrap_content"

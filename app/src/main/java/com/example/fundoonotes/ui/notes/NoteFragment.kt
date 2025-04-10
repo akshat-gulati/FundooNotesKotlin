@@ -279,6 +279,39 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
             (activity as MainActivity).setToolbarVisibility(true)
         }
     }
+    // Public method to filter notes by search query
+    fun filterNotes(query: String) {
+        if (::noteAdapter.isInitialized) {
+            val trimmedQuery = query.trim().lowercase()
+
+            // If query is empty, show all notes for the current display mode
+            if (trimmedQuery.isEmpty()) {
+                viewLifecycleOwner.lifecycleScope.launch {
+                    notesDataBridge.notesState.collect { notes ->
+                        val filteredNotes = getFilteredNotes(notes)
+                        noteAdapter.updateNotes(filteredNotes)
+                    }
+                }
+                return
+            }
+
+            // Filter notes based on current notes in the adapter
+            viewLifecycleOwner.lifecycleScope.launch {
+                notesDataBridge.notesState.collect { allNotes ->
+                    // First apply the display mode filter
+                    val displayModeFiltered = getFilteredNotes(allNotes)
+
+                    // Then apply the search query filter
+                    val searchFiltered = displayModeFiltered.filter { note ->
+                        note.title.lowercase().contains(trimmedQuery) ||
+                                note.description.lowercase().contains(trimmedQuery)
+                    }
+
+                    noteAdapter.updateNotes(searchFiltered)
+                }
+            }
+        }
+    }
 
     fun showLabelDialog() {
         if (context == null) return
