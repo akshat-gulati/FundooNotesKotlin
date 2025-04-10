@@ -1,6 +1,7 @@
 package com.example.fundoonotes
 
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -73,6 +74,9 @@ class MainActivity : AppCompatActivity() {
             return
         }
         setupUI(savedInstanceState)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 100)
+        }
 
     }
 

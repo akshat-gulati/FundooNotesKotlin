@@ -56,6 +56,12 @@ android {
     }
 }
 
+buildscript {
+    dependencies {
+        classpath("com.google.gms:google-services:4.4.2")
+    }
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -66,6 +72,7 @@ dependencies {
     implementation(libs.firebase.auth.ktx)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
+    implementation(libs.firebase.messaging)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -109,5 +116,11 @@ dependencies {
     val paging_version = "3.3.6"
     implementation("androidx.paging:paging-common:$paging_version")
     implementation("androidx.paging:paging-runtime:$paging_version")
+
+        // Firebase Cloud Messaging
+        implementation("com.google.firebase:firebase-messaging:23.4.0")
+
+        // For handling notifications
+        implementation("androidx.core:core-ktx:1.12.0")
 
 }
