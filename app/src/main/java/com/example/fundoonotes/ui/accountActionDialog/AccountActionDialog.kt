@@ -81,6 +81,9 @@ class AccountActionDialog : DialogFragment() {
         tvEmail = view.findViewById(R.id.tvEmail)
         cvManage = view.findViewById(R.id.cvManage)
         cvLogout = view.findViewById(R.id.cvLogout)
+
+        cvManage.visibility =GONE
+
     }
 
     private fun collectUserData() {
