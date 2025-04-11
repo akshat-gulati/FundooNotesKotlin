@@ -19,7 +19,7 @@ class SQLiteNoteRepository(context: Context): NotesInterface, SQLiteOpenHelper(c
 
     companion object{
         private const val TAG = "SQLiteRepository"
-        private const val DATABASE_NAME = "notesapp.db"
+        private const val DATABASE_NAME = "FundooNotes.db"
         private const val DATABASE_VERSION = 1
         private const val TABLE_NAME = "all_notes"
 
@@ -43,7 +43,10 @@ class SQLiteNoteRepository(context: Context): NotesInterface, SQLiteOpenHelper(c
             $COLUMN_TIMESTAMP INTEGER,
             $COLUMN_LABELS TEXT,
             $COLUMN_DELETED INTEGER,
-            $COLUMN_ARCHIVED INTEGER
+            $COLUMN_ARCHIVED INTEGER,
+            $COLUMN_REMINDER_TIME INTEGER,
+            $COLUMN_DELETED_TIME INTEGER
+            
         )
     """.trimIndent()
         db?.execSQL(createTableQuery)
@@ -58,7 +61,6 @@ class SQLiteNoteRepository(context: Context): NotesInterface, SQLiteOpenHelper(c
         db?.execSQL(dropTableQuery)
         onCreate(db)
     }
-
     override fun fetchNoteById(noteId: String, onSuccess: (Note) -> Unit) {
 
         Log.d(TAG, "fetchNoteById not yet implemented")
