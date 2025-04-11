@@ -384,7 +384,8 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
                 }
 
                 // Update the note with the final set of labels
-                notesDataBridge.updateNoteLabels(note.id, finalLabels)
+                noteLabelRepository.updateNoteLabels(note.id, finalLabels)
+                noteLabelRepository.updateLabelsWithNoteReference(note.id, finalLabels)
             }
         }
 

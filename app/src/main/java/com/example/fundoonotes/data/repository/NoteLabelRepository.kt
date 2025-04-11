@@ -45,7 +45,7 @@ class NoteLabelRepository(context: Context) {
         updateNoteLabels(noteId, labels)
     }
 
-    private fun updateNoteLabels(noteId: String, labels: List<String>) {
+    internal fun updateNoteLabels(noteId: String, labels: List<String>) {
         // Get the current note
         notesDataBridge.fetchNoteById(noteId) { note ->
             // Create an updated note with new labels
@@ -59,7 +59,7 @@ class NoteLabelRepository(context: Context) {
         }
     }
 
-    private fun updateLabelsWithNoteReference(noteId: String, labelIds: List<String>) {
+    internal fun updateLabelsWithNoteReference(noteId: String, labelIds: List<String>) {
         // First, fetch all labels to find which ones were previously associated with this note
         labelDataBridge.fetchLabels()
 

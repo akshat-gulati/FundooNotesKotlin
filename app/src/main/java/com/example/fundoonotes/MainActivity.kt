@@ -216,7 +216,7 @@ class MainActivity : AppCompatActivity() {
             toggleSearchMode(false)
             dismissKeyboardShortcutsHelper()
         } else {
-            super.onBackPressed()
+            super.onBackPressedDispatcher
         }
     }
     private fun handleNavigation(item: MenuItem): Boolean {
