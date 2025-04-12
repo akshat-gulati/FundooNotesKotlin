@@ -1,6 +1,8 @@
 package com.example.fundoonotes.data.repository.dataBridge
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.util.Log
 import com.example.fundoonotes.data.model.Note
 import com.example.fundoonotes.data.repository.interfaces.NotesInterface
@@ -26,7 +28,6 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
     private val firestoreRepository: FirestoreNoteRepository = FirestoreNoteRepository(context)
     private val sqliteNoteRepository: SQLiteNoteRepository = SQLiteNoteRepository(context)
 
-    private var activeRepository: NotesInterface = firestoreRepository
 
     init {
         observeFirestoreNotes()
@@ -42,23 +43,26 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
     }
 
     override fun fetchNoteById(noteId: String, onSuccess: (Note) -> Unit) {
-        activeRepository.fetchNoteById(noteId, onSuccess)
+        firestoreRepository.fetchNoteById(noteId, onSuccess)
+        sqliteNoteRepository.fetchNoteById(noteId, onSuccess)
     }
 
     override fun fetchNotes() {
-        activeRepository.fetchNotes()
+            firestoreRepository.fetchNotes()
     }
 
     override fun addNewNote(title: String, description: String, reminderTime: Long?): String {
-        return activeRepository.addNewNote(title, description, reminderTime)
+        return firestoreRepository.addNewNote(title, description, reminderTime)
     }
 
     override fun updateNote(noteId: String, title: String, description: String, reminderTime: Long?) {
-        activeRepository.updateNote(noteId, title, description, reminderTime)
+        firestoreRepository.updateNote(noteId, title, description, reminderTime)
+//        sqliteNoteRepository.updateNote(noteId, title, description, reminderTime)
     }
 
     override fun deleteNote(noteId: String) {
-        activeRepository.deleteNote(noteId)
+        firestoreRepository.deleteNote(noteId)
+//        sqliteNoteRepository.deleteNote(noteId)
     }
 
     fun getNoteById(noteId: String): Note? {
@@ -71,32 +75,11 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
         fetchNoteById(noteId) { note ->
             // Extract the relevant properties we want to keep
             val updatedFields = mapOf("labels" to labels)
-
-            // Use the appropriate repository to update the note
-            if (activeRepository == firestoreRepository) {
                 firestoreRepository.updateNoteFields(noteId, updatedFields)
-            }
-//            else {
 //                sqliteNoteRepository.updateNoteFields(noteId, updatedFields)
-//            }
         }
     }
 
-    fun switchRepository(repositoryType: RepositoryType) {
-        // Clean up the current repository if it's Firestore
-        if (activeRepository == firestoreRepository) {
-            firestoreRepository.cleanup()
-        }
-
-        activeRepository = when (repositoryType) {
-            RepositoryType.FIRESTORE -> firestoreRepository
-            RepositoryType.SQLITE -> {
-                Log.d(TAG, "SQLite repository not yet implemented")
-                firestoreRepository
-            }
-        }
-        fetchNotes()
-    }
 
     fun toggleNoteToTrash(noteId: String) {
         fetchNoteById(noteId) { note ->
@@ -112,10 +95,9 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
                 )
             }
 
-            if (activeRepository == firestoreRepository) {
+
                 firestoreRepository.updateNoteFields(noteId, updatedFields)
-            }
-            // Add SQLite implementation when needed
+//                sqliteNoteRepository.updateNoteFields(noteId, updatedFields)
         }
     }
 
@@ -131,10 +113,8 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
                 )
             }
 
-            if (activeRepository == firestoreRepository) {
                 firestoreRepository.updateNoteFields(noteId, updatedFields)
-            }
-            // Add SQLite implementation when needed
+//              sqliteNoteRepository.updateNoteFields(noteId, updatedFields)
         }
     }
 
@@ -144,13 +124,32 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
 
     // Method to clean up resources when no longer needed
     fun cleanup() {
-        if (activeRepository == firestoreRepository) {
             firestoreRepository.cleanup()
-        }
     }
 
-    enum class RepositoryType {
-        FIRESTORE,
-        SQLITE
+    // This code is taken from Satck Overflow, needs to be looked at once
+    fun isOnline(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+        capabilities?.let {
+            when {
+                it.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
+                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_CELLULAR")
+                    return true
+                }
+                it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
+                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_WIFI")
+                    return true
+                }
+                it.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
+                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_ETHERNET")
+                    return true
+                }
+            }
+        }
+        return false
     }
+
+
+
 }
