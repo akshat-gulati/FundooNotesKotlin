@@ -5,12 +5,12 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
+import android.widget.Toast
 import com.example.fundoonotes.data.model.Note
 import com.example.fundoonotes.data.repository.interfaces.NotesInterface
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.util.UUID
 
 class SQLiteNoteRepository(context: Context): NotesInterface, SQLiteOpenHelper(context,
     DATABASE_NAME, null,
@@ -149,29 +149,58 @@ class SQLiteNoteRepository(context: Context): NotesInterface, SQLiteOpenHelper(c
     }
 
     override fun addNewNote(title: String, description: String, reminderTime: Long?): String {
+        return ""
+    }
+
+// In SQLiteNoteRepository.kt, modify the addNewNote method:
+
+    override fun addNewNote(
+        noteId: String,
+        title: String,
+        description: String,
+        reminderTime: Long?
+    ): String {
         val db = writableDatabase
-        val noteId = UUID.randomUUID().toString()
+        var success = false
 
-        val values = ContentValues().apply {
-            put(COLUMN_ID, noteId)
-            put(COLUMN_TITLE, title)
-            put(COLUMN_DESCRIPTION, description)
-            put(COLUMN_TIMESTAMP, System.currentTimeMillis())
-            put(COLUMN_LABELS, "")
-            put(COLUMN_DELETED, 0)
-            put(COLUMN_ARCHIVED, 0)
-            if (reminderTime != null) {
-                put(COLUMN_REMINDER_TIME, reminderTime)
+        try {
+            val values = ContentValues().apply {
+                put(COLUMN_ID, noteId)
+                put(COLUMN_TITLE, title)
+                put(COLUMN_DESCRIPTION, description)
+                put(COLUMN_TIMESTAMP, System.currentTimeMillis())
+                put(COLUMN_LABELS, "")
+                put(COLUMN_DELETED, 0)
+                put(COLUMN_ARCHIVED, 0)
+                if (reminderTime != null) {
+                    put(COLUMN_REMINDER_TIME, reminderTime)
+                }
             }
-        }
 
-        db.insert(TABLE_NAME, null, values)
-        db.close()
+            val result = db.insert(TABLE_NAME, null, values)
+            success = result != -1L
+
+            if (success) {
+                Log.d(TAG, "Note successfully added to SQLite with ID: $noteId")
+            } else {
+                Log.e(TAG, "Failed to insert note into SQLite")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error adding note to SQLite: ${e.message}")
+        } finally {
+            db.close()
+        }
 
         // Refresh notes after adding
         fetchNotes()
 
+        // Return success status along with the ID
         return noteId
+    }
+
+    // Add a method to show toast
+    private fun showToast(context: Context, message: String) {
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 
     override fun updateNote(noteId: String, title: String, description: String, reminderTime: Long?) {
@@ -214,7 +243,7 @@ class SQLiteNoteRepository(context: Context): NotesInterface, SQLiteOpenHelper(c
                 "title" -> if (value != null) values.put(COLUMN_TITLE, value as String)
                 "description" -> if (value != null) values.put(COLUMN_DESCRIPTION, value as String)
                 "labels" -> if (value != null) {
-                    val labelsList = value as List<String>
+                    val labelsList = value as List<*>
                     values.put(COLUMN_LABELS, labelsList.joinToString(","))
                 }
                 "deleted" -> values.put(COLUMN_DELETED, if (value as Boolean) 1 else 0)

@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
+import android.widget.Toast
 import com.example.fundoonotes.data.model.Note
 import com.example.fundoonotes.data.repository.interfaces.NotesInterface
 import com.example.fundoonotes.data.repository.sqlite.SQLiteNoteRepository
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 @Suppress("SpellCheckingInspection")
 class NotesDataBridge(private val context: Context) : NotesInterface {
@@ -33,8 +35,10 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
         observeFirestoreNotes()
     }
 
+
     private fun observeFirestoreNotes() {
         coroutineScope.launch {
+
             firestoreRepository.notesState.collect { notes ->
                 _notesState.value = notes
                 Log.d(TAG, "New notes received: ${notes.size}")
@@ -48,21 +52,62 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
     }
 
     override fun fetchNotes() {
+        if (isOnline(context)){
             firestoreRepository.fetchNotes()
+        }
+        else{
+            sqliteNoteRepository.fetchNotes()
+        }
+
     }
 
     override fun addNewNote(title: String, description: String, reminderTime: Long?): String {
-        return firestoreRepository.addNewNote(title, description, reminderTime)
+        val noteId = UUID.randomUUID().toString()
+
+        // Always save to SQLite regardless of online status
+        val sqliteSuccess = sqliteNoteRepository.addNewNote(noteId, title, description, reminderTime)
+
+        // Show toast for SQLite operation
+        if (sqliteSuccess.isNotEmpty()) {
+            // Need to add import: import android.widget.Toast
+            Toast.makeText(context, "Note saved locally", Toast.LENGTH_SHORT).show()
+        }
+
+        // If online, also save to Firestore
+        if (isOnline(context)) {
+            firestoreRepository.addNewNote(noteId, title, description, reminderTime)
+            Toast.makeText(context, "Note synced to cloud", Toast.LENGTH_SHORT).show()
+        }
+
+        return noteId
     }
 
+    // No need of this function
+    override fun addNewNote(
+        noteId: String,
+        title: String,
+        description: String,
+        reminderTime: Long?
+    ): String {
+        return ""
+    }
+
+    // Update other methods similarly to add toast notifications
     override fun updateNote(noteId: String, title: String, description: String, reminderTime: Long?) {
-        firestoreRepository.updateNote(noteId, title, description, reminderTime)
-//        sqliteNoteRepository.updateNote(noteId, title, description, reminderTime)
+        // Always update SQLite
+        sqliteNoteRepository.updateNote(noteId, title, description, reminderTime)
+        Toast.makeText(context, "Note updated locally", Toast.LENGTH_SHORT).show()
+
+        // If online, also update Firestore
+        if (isOnline(context)) {
+            firestoreRepository.updateNote(noteId, title, description, reminderTime)
+            Toast.makeText(context, "Note synced to cloud", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun deleteNote(noteId: String) {
         firestoreRepository.deleteNote(noteId)
-//        sqliteNoteRepository.deleteNote(noteId)
+        sqliteNoteRepository.deleteNote(noteId)
     }
 
     fun getNoteById(noteId: String): Note? {
@@ -76,7 +121,7 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
             // Extract the relevant properties we want to keep
             val updatedFields = mapOf("labels" to labels)
                 firestoreRepository.updateNoteFields(noteId, updatedFields)
-//                sqliteNoteRepository.updateNoteFields(noteId, updatedFields)
+                sqliteNoteRepository.updateNoteFields(noteId, updatedFields)
         }
     }
 
@@ -97,7 +142,7 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
 
 
                 firestoreRepository.updateNoteFields(noteId, updatedFields)
-//                sqliteNoteRepository.updateNoteFields(noteId, updatedFields)
+                sqliteNoteRepository.updateNoteFields(noteId, updatedFields)
         }
     }
 
@@ -114,7 +159,7 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
             }
 
                 firestoreRepository.updateNoteFields(noteId, updatedFields)
-//              sqliteNoteRepository.updateNoteFields(noteId, updatedFields)
+              sqliteNoteRepository.updateNoteFields(noteId, updatedFields)
         }
     }
 
@@ -148,6 +193,14 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
             }
         }
         return false
+    }
+    fun initializeDatabase() {
+        // Force the SQLiteOpenHelper to create/open the database
+        val db = sqliteNoteRepository.writableDatabase
+        db.close()
+
+        // Fetch initial data
+        fetchNotes()
     }
 
 

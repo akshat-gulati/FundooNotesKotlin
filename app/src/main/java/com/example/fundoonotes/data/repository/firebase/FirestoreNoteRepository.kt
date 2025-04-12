@@ -49,6 +49,14 @@ class FirestoreNoteRepository(private val context: Context): NotesInterface {
         setupRealtimeUpdates()
     }
 
+    override fun addNewNote(
+        title: String,
+        description: String,
+        reminderTime: Long?
+    ): String {
+        return ""
+    }
+
     private fun setupRealtimeUpdates() {
         // Remove any existing listener
         notesListener?.remove()
@@ -74,7 +82,7 @@ class FirestoreNoteRepository(private val context: Context): NotesInterface {
             }
     }
 
-    override fun addNewNote(title: String, description: String, reminderTime: Long?): String {
+    override fun addNewNote(noteId: String, title: String, description: String, reminderTime: Long?): String {
         val userId = getUserId()
         Log.d("NoteRepository", "User ID: $userId")
 
@@ -86,7 +94,7 @@ class FirestoreNoteRepository(private val context: Context): NotesInterface {
         // Use Firestore's auto-generated ID
         val noteRef = db.collection("notes").document()
         val note = Note(
-            id = noteRef.id,
+            id = noteId,
             userId = userId,
             title = title,
             description = description,

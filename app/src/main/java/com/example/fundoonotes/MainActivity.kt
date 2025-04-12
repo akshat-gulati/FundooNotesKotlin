@@ -36,6 +36,7 @@ import com.example.fundoonotes.ui.labels.LabelsFragment
 import kotlinx.coroutines.launch
 import androidx.core.view.size
 import androidx.core.view.get
+import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
 import com.example.fundoonotes.ui.accountActionDialog.AccountActionDialog
 import com.google.android.material.internal.ViewUtils.hideKeyboard
 
@@ -77,6 +78,8 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 100)
         }
+        val notesDataBridge = NotesDataBridge(applicationContext)
+        notesDataBridge.initializeDatabase()
 
     }
 
