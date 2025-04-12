@@ -4,22 +4,29 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
-import android.widget.Toast
 import com.example.fundoonotes.data.model.Note
 import com.example.fundoonotes.data.repository.interfaces.NotesInterface
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.util.Timer
+import java.util.TimerTask
 
-class SQLiteNoteRepository(context: Context): NotesInterface, SQLiteOpenHelper(context,
+class SQLiteNoteRepository(private val context: Context): NotesInterface, SQLiteOpenHelper(context,
     DATABASE_NAME, null,
     DATABASE_VERSION
 ) {
     private val _notesState = MutableStateFlow<List<Note>>(emptyList())
     val notesState: StateFlow<List<Note>> = _notesState.asStateFlow()
 
-    companion object{
+    // For simulating real-time updates
+    private var updateTimer: Timer? = null
+    private val handler = Handler(Looper.getMainLooper())
+
+    companion object {
         private const val TAG = "SQLiteRepository"
         private const val DATABASE_NAME = "FundooNotes.db"
         private const val DATABASE_VERSION = 1
@@ -34,6 +41,11 @@ class SQLiteNoteRepository(context: Context): NotesInterface, SQLiteOpenHelper(c
         private const val COLUMN_ARCHIVED = "archived"
         private const val COLUMN_REMINDER_TIME = "reminderTime"
         private const val COLUMN_DELETED_TIME = "deletedTime"
+    }
+
+    init {
+        // Initialize by setting up pseudo real-time updates
+        setupRealtimeUpdates()
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
@@ -61,6 +73,67 @@ class SQLiteNoteRepository(context: Context): NotesInterface, SQLiteOpenHelper(c
         val dropTableQuery = "DROP TABLE IF EXISTS $TABLE_NAME"
         db?.execSQL(dropTableQuery)
         onCreate(db)
+    }
+
+    private fun setupRealtimeUpdates() {
+        // Cancel any existing timer
+        updateTimer?.cancel()
+
+        // Create a new timer that periodically fetches notes
+        updateTimer = Timer().apply {
+            scheduleAtFixedRate(object : TimerTask() {
+                override fun run() {
+                    handler.post {
+                        refreshNotes()
+                    }
+                }
+            }, 0, 3000) // Refresh every 3 seconds
+        }
+    }
+
+    private fun refreshNotes() {
+        val noteList = mutableListOf<Note>()
+        val db = readableDatabase
+        val query = "SELECT * FROM $TABLE_NAME"
+        val cursor = db.rawQuery(query, null)
+
+        while (cursor.moveToNext()) {
+            val id = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ID))
+            val title = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITLE))
+            val description = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DESCRIPTION))
+            val timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP))
+            val labelsString = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_LABELS))
+            val deleted = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_DELETED)) == 1
+            val archived = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ARCHIVED)) == 1
+
+            val reminderTimeIndex = cursor.getColumnIndexOrThrow(COLUMN_REMINDER_TIME)
+            val reminderTime = if (cursor.isNull(reminderTimeIndex)) null else cursor.getLong(reminderTimeIndex)
+
+            val deletedTimeIndex = cursor.getColumnIndexOrThrow(COLUMN_DELETED_TIME)
+            val deletedTime = if (cursor.isNull(deletedTimeIndex)) null else cursor.getLong(deletedTimeIndex)
+
+            val labels = labelsString?.split(",")?.filter { it.isNotEmpty() } ?: listOf()
+
+            val note = Note(
+                id = id,
+                title = title,
+                description = description,
+                timestamp = timestamp,
+                labels = labels,
+                deleted = deleted,
+                archived = archived,
+                reminderTime = reminderTime,
+                deletedTime = deletedTime
+            )
+
+            noteList.add(note)
+        }
+        cursor.close()
+        db.close()
+
+        // Update the StateFlow with new data
+        _notesState.value = noteList
+        Log.d(TAG, "Real-time update received: ${noteList.size} notes")
     }
 
     override fun fetchNoteById(noteId: String, onSuccess: (Note) -> Unit) {
@@ -105,61 +178,10 @@ class SQLiteNoteRepository(context: Context): NotesInterface, SQLiteOpenHelper(c
     }
 
     override fun fetchNotes() {
-        val noteList = mutableListOf<Note>()
-        val db = readableDatabase
-        val query = "SELECT * FROM $TABLE_NAME"
-        val cursor = db.rawQuery(query, null)
-
-        while (cursor.moveToNext()){
-            val id = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ID))
-            val title = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TITLE))
-            val description = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DESCRIPTION))
-            val timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP))
-            val labelsString = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_LABELS))
-            val deleted = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_DELETED)) == 1
-            val archived = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ARCHIVED)) == 1
-
-            val reminderTimeIndex = cursor.getColumnIndexOrThrow(COLUMN_REMINDER_TIME)
-            val reminderTime = if (cursor.isNull(reminderTimeIndex)) null else cursor.getLong(reminderTimeIndex)
-
-            val deletedTimeIndex = cursor.getColumnIndexOrThrow(COLUMN_DELETED_TIME)
-            val deletedTime = if (cursor.isNull(deletedTimeIndex)) null else cursor.getLong(deletedTimeIndex)
-
-            val labels = labelsString?.split(",")?.filter { it.isNotEmpty() } ?: listOf()
-
-            val note = Note(
-                id = id,
-                title = title,
-                description = description,
-                timestamp = timestamp,
-                labels = labels,
-                deleted = deleted,
-                archived = archived,
-                reminderTime = reminderTime,
-                deletedTime = deletedTime
-            )
-
-            noteList.add(note)
-        }
-        cursor.close()
-        db.close()
-
-        // Update the StateFlow with new data
-        _notesState.value = noteList
+        refreshNotes()
     }
 
-    override fun addNewNote(title: String, description: String, reminderTime: Long?): String {
-        return ""
-    }
-
-// In SQLiteNoteRepository.kt, modify the addNewNote method:
-
-    override fun addNewNote(
-        noteId: String,
-        title: String,
-        description: String,
-        reminderTime: Long?
-    ): String {
+    override fun addNewNote(noteId: String, title: String, description: String, reminderTime: Long?): String {
         val db = writableDatabase
         var success = false
 
@@ -191,16 +213,7 @@ class SQLiteNoteRepository(context: Context): NotesInterface, SQLiteOpenHelper(c
             db.close()
         }
 
-        // Refresh notes after adding
-        fetchNotes()
-
-        // Return success status along with the ID
         return noteId
-    }
-
-    // Add a method to show toast
-    private fun showToast(context: Context, message: String) {
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 
     override fun updateNote(noteId: String, title: String, description: String, reminderTime: Long?) {
@@ -219,8 +232,6 @@ class SQLiteNoteRepository(context: Context): NotesInterface, SQLiteOpenHelper(c
         db.update(TABLE_NAME, values, "$COLUMN_ID = ?", arrayOf(noteId))
         db.close()
 
-        // Refresh notes after updating
-        fetchNotes()
     }
 
     override fun deleteNote(noteId: String) {
@@ -228,11 +239,7 @@ class SQLiteNoteRepository(context: Context): NotesInterface, SQLiteOpenHelper(c
         db.delete(TABLE_NAME, "$COLUMN_ID = ?", arrayOf(noteId))
         db.close()
 
-        // Refresh notes after deleting
-        fetchNotes()
     }
-
-    // Additional methods to match FirestoreNoteRepository functionality
 
     fun updateNoteFields(noteId: String, fields: Map<String, Any?>) {
         val db = writableDatabase
@@ -264,15 +271,26 @@ class SQLiteNoteRepository(context: Context): NotesInterface, SQLiteOpenHelper(c
         db.update(TABLE_NAME, values, "$COLUMN_ID = ?", arrayOf(noteId))
         db.close()
 
-        // Refresh notes after updating fields
-        fetchNotes()
     }
 
     fun getNoteById(noteId: String): Note? {
-        var note: Note? = null
-        fetchNoteById(noteId) {
-            note = it
-        }
-        return note
+        return _notesState.value.find { it.id == noteId }
+    }
+
+    // Clean up method to be called when the repository is no longer needed
+    fun cleanup() {
+        updateTimer?.cancel()
+        updateTimer = null
+    }
+
+    // Method to clear all data (to be called on logout)
+    fun clearAllData() {
+        val db = writableDatabase
+        db.delete(TABLE_NAME, null, null)
+        db.close()
+
+        // Refresh the state to reflect empty data
+        _notesState.value = emptyList()
+        Log.d(TAG, "All data cleared from SQLite database")
     }
 }

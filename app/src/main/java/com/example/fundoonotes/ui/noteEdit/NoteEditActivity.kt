@@ -37,6 +37,7 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 class NoteEditActivity : AppCompatActivity(){
     private lateinit var ivBack: ImageView
@@ -89,6 +90,9 @@ class NoteEditActivity : AppCompatActivity(){
         if (noteId != null) {
             loadNoteDetails(noteId!!)
         } else {
+            noteId = UUID.randomUUID().toString()
+
+
             val addLabelChip = Chip(this)
             addLabelChip.text = "+ Add Label"
             addLabelChip.isCheckable = false
@@ -360,45 +364,37 @@ class NoteEditActivity : AppCompatActivity(){
         val title = etNoteTitle.text.toString().trim()
         val description = etNoteDescription.text.toString().trim()
 
-        Log.d("NoteEditActivity", "Saving note - Title: $title, Description: $description")
-
         // Only save if there's content
         if (title.isNotEmpty() || description.isNotEmpty()) {
             val reminderScheduler = ReminderScheduler(applicationContext)
 
-            if (noteId != null) {
-                // Update existing note
-                Log.d("NoteEditActivity", "Updating existing note: $noteId")
-                // Include noteLabels when updating
-                noteLabelRepository.updateNoteWithLabels(noteId!!, title, description, reminderTime, noteLabels)
+            // At this point noteId should never be null since we either got it from intent or generated it with UUID.randomUUID()
+            val currentNoteId = noteId!! // We can safely use !! here since we ensure it's not null
 
-                // Schedule reminder for existing note
+            // Check if this note already exists in the database
+            val existingNote = notesDataBridge.getNoteById(currentNoteId)
+
+            if (existingNote != null) {
+                // Update existing note
+                Log.d("NoteEditActivity", "Updating existing note: $currentNoteId")
+                noteLabelRepository.updateNoteWithLabels(currentNoteId, title, description, reminderTime, noteLabels)
+
+                // Schedule reminder if needed
                 reminderTime?.let { time ->
-                    val note = notesDataBridge.getNoteById(noteId!!)
-                    note?.let {
-                        Log.d("NoteEditActivity", "About to schedule reminder for existing note: ${it.id} at time: $time")
-                        reminderScheduler.scheduleReminder(it, time)
-                    }
+                    Log.d("NoteEditActivity", "Scheduling reminder for existing note at time: $time")
+                    reminderScheduler.scheduleReminder(existingNote.copy(reminderTime = time), time)
                 }
             } else {
-                // Add new note and get the new ID
-                Log.d("NoteEditActivity", "Adding new note")
-                // Include noteLabels when adding
-                val newNoteId = noteLabelRepository.addNewNoteWithLabels(title, description, reminderTime, noteLabels)
-                Log.d("NoteEditActivity", "New note ID: $newNoteId")
+                // Add new note with our pre-generated ID
+                Log.d("NoteEditActivity", "Adding new note with ID: $currentNoteId")
+                noteLabelRepository.addNewNoteWithLabels(currentNoteId, title, description, reminderTime, noteLabels)
 
-                // Schedule reminder for new note
+                // Schedule reminder if needed
                 reminderTime?.let { time ->
-                    // Create a temporary Note object with the basic info we have
-                    val tempNote = Note(
-                        id = newNoteId,
-                        title = title,
-                        description = description,
-                        reminderTime = time,
-                        labels = noteLabels
-                    )
-                    Log.d("NoteEditActivity", "About to schedule reminder for new note: $newNoteId at time: $time")
-                    reminderScheduler.scheduleReminder(tempNote, time)
+                    // Create a Note object with our data
+                    val newNote = Note(id = currentNoteId, title = title, description = description, reminderTime = time, labels = noteLabels)
+                    Log.d("NoteEditActivity", "Scheduling reminder for new note at time: $time")
+                    reminderScheduler.scheduleReminder(newNote, time)
                 }
             }
         } else {

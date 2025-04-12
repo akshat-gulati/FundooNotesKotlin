@@ -17,12 +17,13 @@ class NoteLabelRepository(context: Context) {
     }
 
     fun addNewNoteWithLabels(
+        noteId: String,
         title: String,
         description: String,
         reminderTime: Long?,
         labels: List<String>
     ): String {
-        val noteId = notesDataBridge.addNewNote(title, description, reminderTime)
+        val noteId = notesDataBridge.addNewNote(noteId,title, description, reminderTime)
 
         // Update the note with labels
         if (noteId.isNotEmpty() && labels.isNotEmpty()) {
