@@ -9,6 +9,6 @@ interface NotesInterface {
     fun fetchNotes()
     fun addNewNote(noteId: String, title: String, description: String, reminderTime: Long?): String
     fun updateNote(noteId: String, title: String, description: String, reminderTime: Long?)
-    fun deleteNote(noteId: String) {}
+    fun deleteNote(noteId: String)
 
 }
