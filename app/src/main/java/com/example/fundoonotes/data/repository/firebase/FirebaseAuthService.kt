@@ -19,9 +19,9 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
 import androidx.core.content.edit
-import com.example.fundoonotes.data.repository.interfaces.AuthRepository
+import com.example.fundoonotes.data.repository.interfaces.AuthInterface
 
-class FirebaseAuthService(private val context: Context): AuthRepository {
+class FirebaseAuthService(private val context: Context): AuthInterface {
     private val auth: FirebaseAuth = Firebase.auth
     private val credentialManager: CredentialManager = CredentialManager.create(context)
 

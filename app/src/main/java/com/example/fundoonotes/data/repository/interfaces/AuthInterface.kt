@@ -5,7 +5,7 @@ import androidx.credentials.Credential
 import com.example.fundoonotes.data.repository.firebase.FirebaseAuthService.AuthResult
 import com.google.firebase.auth.FirebaseUser
 
-interface AuthRepository {
+interface AuthInterface {
     suspend fun loginWithEmailPassword(email: String, password: String): AuthResult
     suspend fun registerWithEmailPassword( email: String, password: String, confirmPassword: String, fullName: String): AuthResult
     suspend fun performGoogleSignIn(): AuthResult
