@@ -19,8 +19,9 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.tasks.await
 import androidx.core.content.edit
+import com.example.fundoonotes.data.repository.interfaces.AuthRepository
 
-class FirebaseAuthService(private val context: Context) {
+class FirebaseAuthService(private val context: Context): AuthRepository {
     private val auth: FirebaseAuth = Firebase.auth
     private val credentialManager: CredentialManager = CredentialManager.create(context)
 
@@ -34,7 +35,7 @@ class FirebaseAuthService(private val context: Context) {
         private const val TAG = "FirebaseAuthService"
     }
 
-    suspend fun loginWithEmailPassword(email: String, password: String): AuthResult {
+    override suspend fun loginWithEmailPassword(email: String, password: String): AuthResult {
         return try {
             // Input validation
             if (email.isEmpty() || password.isEmpty()) {
@@ -53,12 +54,7 @@ class FirebaseAuthService(private val context: Context) {
         }
     }
 
-    suspend fun registerWithEmailPassword(
-        email: String,
-        password: String,
-        confirmPassword: String,
-        fullName: String
-    ): AuthResult {
+    override suspend fun registerWithEmailPassword(email: String, password: String, confirmPassword: String, fullName: String): AuthResult {
         return try {
             // Input validation
             when {
@@ -85,7 +81,7 @@ class FirebaseAuthService(private val context: Context) {
         }
     }
 
-    suspend fun performGoogleSignIn(): AuthResult {
+    override suspend fun performGoogleSignIn(): AuthResult {
         return try {
             // Setup Google Sign-In
             val googleIdOption = GetGoogleIdOption.Builder()
@@ -112,7 +108,7 @@ class FirebaseAuthService(private val context: Context) {
         }
     }
 
-    private suspend fun handleSignIn(credential: Credential): AuthResult {
+    override suspend fun handleSignIn(credential: Credential): AuthResult {
         return try {
             if (credential is CustomCredential && credential.type == TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
                 val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
@@ -125,7 +121,7 @@ class FirebaseAuthService(private val context: Context) {
         }
     }
 
-    private suspend fun firebaseAuthWithGoogle(idToken: String): AuthResult {
+    override suspend fun firebaseAuthWithGoogle(idToken: String): AuthResult {
         return try {
             val credential = GoogleAuthProvider.getCredential(idToken, null)
             val authResult = auth.signInWithCredential(credential).await()
@@ -138,12 +134,12 @@ class FirebaseAuthService(private val context: Context) {
         }
     }
 
-    fun saveLoginState(user: FirebaseUser) {
+    override fun saveLoginState(user: FirebaseUser) {
         val sharedPreferences = context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
         sharedPreferences.edit() { putString("userId", user.uid) }
     }
 
-    fun navigateToMainActivity(currentContext: Context) {
+    override fun navigateToMainActivity(currentContext: Context) {
         val intent = Intent(currentContext, MainActivity::class.java)
         currentContext.startActivity(intent)
     }
