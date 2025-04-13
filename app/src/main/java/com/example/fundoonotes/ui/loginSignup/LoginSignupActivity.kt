@@ -64,7 +64,6 @@ class LoginSignupActivity : AppCompatActivity() {
     private var profileImageUrl: String? = null
 
     // Permission constants
-    private val CAMERA_PERMISSION_CODE = 102
     private val STORAGE_PERMISSION_CODE = 101
 
     // Activity result launchers
@@ -82,25 +81,6 @@ class LoginSignupActivity : AppCompatActivity() {
                 // Upload to Cloudinary
                 Toast.makeText(this, "Uploading profile picture...", Toast.LENGTH_SHORT).show()
                 cloudinaryImageManager.uploadProfileImage(uri) { imageUrl ->
-                    profileImageUrl = imageUrl
-                }
-            }
-        }
-    }
-
-    private val cameraLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            result.data?.extras?.get("data")?.let { bitmap ->
-                // Show captured image in the ImageButton
-                Glide.with(this)
-                    .load(bitmap)
-                    .circleCrop()
-                    .placeholder(R.drawable.person)
-                    .into(ibProfilePicture)
-
-                // Upload bitmap directly to Cloudinary
-                Toast.makeText(this, "Uploading profile picture...", Toast.LENGTH_SHORT).show()
-                cloudinaryImageManager.uploadBitmap(bitmap as android.graphics.Bitmap) { imageUrl ->
                     profileImageUrl = imageUrl
                 }
             }
@@ -145,15 +125,14 @@ class LoginSignupActivity : AppCompatActivity() {
     }
 
     private fun showImageSelectionDialog() {
-        val options = arrayOf("Take Photo", "Choose from Gallery", "Cancel")
+        val options = arrayOf("Choose from Gallery", "Cancel")
 
         MaterialAlertDialogBuilder(this)
             .setTitle("Select Profile Picture")
             .setItems(options) { dialog, which ->
                 when (which) {
-                    0 -> checkCameraPermissionAndOpenCamera()
-                    1 -> checkStoragePermissionAndOpenGallery()
-                    2 -> dialog.dismiss()
+                    0 -> checkStoragePermissionAndOpenGallery()
+                    1 -> dialog.dismiss()
                 }
             }
             .show()
@@ -212,30 +191,6 @@ class LoginSignupActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkCameraPermissionAndOpenCamera() {
-        when {
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                openCamera()
-            }
-            ActivityCompat.shouldShowRequestPermissionRationale(
-                this,
-                Manifest.permission.CAMERA
-            ) -> {
-                explainPermissionRationale("Camera", Manifest.permission.CAMERA, CAMERA_PERMISSION_CODE)
-            }
-            else -> {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.CAMERA),
-                    CAMERA_PERMISSION_CODE
-                )
-            }
-        }
-    }
-
     private fun explainPermissionRationale(permissionType: String, permission: String, requestCode: Int) {
         MaterialAlertDialogBuilder(this)
             .setTitle("$permissionType Permission Required")
@@ -263,10 +218,6 @@ class LoginSignupActivity : AppCompatActivity() {
         galleryLauncher.launch(intent)
     }
 
-    private fun openCamera() {
-        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        cameraLauncher.launch(intent)
-    }
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -292,20 +243,6 @@ class LoginSignupActivity : AppCompatActivity() {
                         showSettingsDialog("Storage")
                     } else {
                         Toast.makeText(this, "Storage permission denied", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-
-            CAMERA_PERMISSION_CODE -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    openCamera()
-                } else {
-                    // Check if permission was permanently denied
-                    if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
-                        // Show dialog to open app settings
-                        showSettingsDialog("Camera")
-                    } else {
-                        Toast.makeText(this, "Camera permission denied", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
