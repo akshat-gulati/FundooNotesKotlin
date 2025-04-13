@@ -55,6 +55,11 @@ class MainActivity : AppCompatActivity() {
     private var isInSearchMode = false
     private lateinit var drawerButton: ImageButton
 
+    // Fragment management
+    private lateinit var noteFragment: NoteFragment
+    private lateinit var labelsFragment: LabelsFragment
+    private var currentFragment: Fragment? = null
+
     // Add new property
     private lateinit var labelDataBridge: LabelDataBridge
     private var menuLabelsGroup: Menu? = null
@@ -91,6 +96,7 @@ class MainActivity : AppCompatActivity() {
         setupDrawer()
         setupNavigation()
         observeLabels()
+        setupFragments()
 
         // Load default fragment if no fragment is loaded
         if (savedInstanceState == null) {
@@ -101,6 +107,11 @@ class MainActivity : AppCompatActivity() {
             // Update UI based on the restored navigation item
             updateUIForNavItem(currentNavItemId)
         }
+    }
+    private fun setupFragments() {
+        // Initialize fragments that will be reused
+        noteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_NOTES)
+        labelsFragment = LabelsFragment()
     }
 
     private fun observeLabels() {
@@ -276,11 +287,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateHeaderVisibility(
-        layoutToggle: Boolean,
-        profile: Boolean,
-        search: Boolean
-    ) {
+    private fun updateHeaderVisibility(layoutToggle: Boolean, profile: Boolean, search: Boolean) {
         layoutToggleIcon.visibility = if (layoutToggle) View.VISIBLE else View.GONE
         profileIcon.visibility = if (profile) View.VISIBLE else View.GONE
         searchIcon.visibility = if (search) View.VISIBLE else View.GONE
@@ -292,30 +299,48 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+// Replace these navigation methods in MainActivity.kt
+
     private fun navigateToNotes() {
-
         toolbar.setBackgroundResource(R.drawable.toolbar_rounded)
-
-        val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_NOTES)
         titleText.text = getString(R.string.notes)
         updateHeaderVisibility(
             layoutToggle = true,
             profile = true,
             search = true
         )
-        loadFragment(fragment)
+
+        // Check if NoteFragment is already loaded
+        if (currentFragment !is NoteFragment) {
+            // Only create a new fragment if we don't already have a NoteFragment
+            noteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_NOTES)
+            loadFragment(noteFragment)
+            currentFragment = noteFragment
+        } else {
+            // Just update the existing fragment's display mode
+            (currentFragment as NoteFragment).updateDisplayMode(NoteFragment.DISPLAY_NOTES)
+        }
     }
 
     private fun navigateToReminders() {
         clearToolbarBackground() // Clear the background
-        val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_REMINDERS)
         titleText.text = getString(R.string.reminders)
         updateHeaderVisibility(
             layoutToggle = true,
             profile = false,
             search = true
         )
-        loadFragment(fragment)
+
+        // Check if NoteFragment is already loaded
+        if (currentFragment !is NoteFragment) {
+            // Only create a new fragment if we don't already have a NoteFragment
+            noteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_REMINDERS)
+            loadFragment(noteFragment)
+            currentFragment = noteFragment
+        } else {
+            // Just update the existing fragment's display mode
+            (currentFragment as NoteFragment).updateDisplayMode(NoteFragment.DISPLAY_REMINDERS)
+        }
     }
 
     private fun navigateToLabels() {
@@ -332,34 +357,45 @@ class MainActivity : AppCompatActivity() {
 
     private fun navigateToArchive() {
         clearToolbarBackground() // Clear the background
-        val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_ARCHIVE)
         titleText.text = getString(R.string.archive)
         updateHeaderVisibility(
             layoutToggle = true,
             profile = false,
             search = true
         )
-        loadFragment(fragment)
+
+        // Check if NoteFragment is already loaded
+        if (currentFragment !is NoteFragment) {
+            // Only create a new fragment if we don't already have a NoteFragment
+            noteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_ARCHIVE)
+            loadFragment(noteFragment)
+            currentFragment = noteFragment
+        } else {
+            // Just update the existing fragment's display mode
+            (currentFragment as NoteFragment).updateDisplayMode(NoteFragment.DISPLAY_ARCHIVE)
+        }
     }
 
     private fun navigateToBin() {
         clearToolbarBackground() // Clear the background
-        val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_BIN)
         titleText.text = getString(R.string.bin)
         updateHeaderVisibility(
             layoutToggle = true,
             profile = false,
             search = false
         )
-        loadFragment(fragment)
-    }
 
-    // Lifecycle methods
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putInt("currentNavItemId", currentNavItemId)
+        // Check if NoteFragment is already loaded
+        if (currentFragment !is NoteFragment) {
+            // Only create a new fragment if we don't already have a NoteFragment
+            noteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_BIN)
+            loadFragment(noteFragment)
+            currentFragment = noteFragment
+        } else {
+            // Just update the existing fragment's display mode
+            (currentFragment as NoteFragment).updateDisplayMode(NoteFragment.DISPLAY_BIN)
+        }
     }
-
 
     // When navigating to label notes, store the label name
     private fun navigateToLabelNotes(labelName: String) {
@@ -370,16 +406,36 @@ class MainActivity : AppCompatActivity() {
         val label = labelDataBridge.labelsState.value.find { it.name == labelName }
 
         if (label != null) {
-            val fragment = NoteFragment.newInstance(NoteFragment.DISPLAY_LABELS, label.id)
             titleText.text = labelName
             updateHeaderVisibility(
                 layoutToggle = true,
                 profile = false,
                 search = true
             )
-            loadFragment(fragment)
+
+            // Check if NoteFragment is already loaded
+            if (currentFragment !is NoteFragment) {
+                // Only create a new fragment if we don't already have a NoteFragment
+                noteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_LABELS)
+                loadFragment(noteFragment)
+                currentFragment = noteFragment
+            }
+
+            // Update the display mode with the label ID
+            (currentFragment as NoteFragment).updateDisplayMode(NoteFragment.DISPLAY_LABELS, label.id)
         }
     }
+
+    // Lifecycle methods
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("currentNavItemId", currentNavItemId)
+    }
+
+
+    // When navigating to label notes, store the label name
+
+
     private fun toggleSearchMode(enable: Boolean) {
         isInSearchMode = enable
 

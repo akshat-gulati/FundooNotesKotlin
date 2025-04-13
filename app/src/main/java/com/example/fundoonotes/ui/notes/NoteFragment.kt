@@ -43,10 +43,10 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
     private lateinit var labelDataBridge: LabelDataBridge
     private lateinit var noteLabelRepository: NoteLabelRepository
 
-
     private var isGridLayout = true
     private var displayMode = DISPLAY_NOTES // Default mode
-    private var currentLabel: String? = null // For label filtering
+    private var currentLabelId: String? = null // For label filtering
+    private var searchQuery: String = "" // For search filtering
 
     // Multi-selection action mode
     private var actionMode: ActionMode? = null
@@ -71,8 +71,8 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
             if (displayMode == DISPLAY_ARCHIVE){
                 val menuItem = menu.findItem(R.id.action_archive)
                 menuItem.setIcon(R.drawable.unarchive)
-
             }
+
             mode.title = "${selectedNotes.size} selected"
             return true
         }
@@ -81,16 +81,14 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
             return when (item.itemId) {
                 R.id.action_delete -> {
                     val noteIds = selectedNotes.map { it.id }
-
-                        noteIds.forEach { noteId ->
-                            notesDataBridge.toggleNoteToTrash(noteId)
-                        }
+                    noteIds.forEach { noteId ->
+                        notesDataBridge.toggleNoteToTrash(noteId)
+                    }
                     mode.finish()
                     true
                 }
                 R.id.action_archive -> {
                     val noteIds = selectedNotes.map { it.id }
-
                     noteIds.forEach { noteId ->
                         notesDataBridge.toggleNoteToArchive(noteId)
                     }
@@ -98,7 +96,6 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
                     true
                 }
                 R.id.action_labels -> {
-
                     showLabelDialog()
                     mode.finish()
                     true
@@ -111,7 +108,6 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
             }
         }
 
-        // In the actionModeCallback in NoteFragment.kt
         override fun onDestroyActionMode(mode: ActionMode?) {
             actionMode = null
             noteAdapter.exitSelectionMode()
@@ -129,24 +125,18 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         const val DISPLAY_BIN = 3
         const val DISPLAY_LABELS = 4
 
-        const val ARG_DISPLAY_MODE = "display_mode"
-        const val ARG_LABEL = "label"
-
         @JvmStatic
-        fun newInstance(displayMode: Int, label: String? = null) =
-            NoteFragment().apply {
-                arguments = Bundle().apply {
-                    putInt(ARG_DISPLAY_MODE, displayMode)
-                    label?.let { putString(ARG_LABEL, it) }
-                }
+        fun newInstance(displayMode: Int) = NoteFragment().apply {
+            arguments = Bundle().apply {
+                putInt("initial_display_mode", displayMode)
             }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            displayMode = it.getInt(ARG_DISPLAY_MODE, DISPLAY_NOTES)
-            currentLabel = it.getString(ARG_LABEL)
+            displayMode = it.getInt("initial_display_mode", DISPLAY_NOTES)
         }
 
         // Initialize repository
@@ -180,23 +170,21 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
             startActivity(intent)
         }
 
-        // Adjust FAB visibility based on display mode
-        if (displayMode == DISPLAY_BIN) {
-            fabAddNote.visibility = View.GONE
-        } else {
-            fabAddNote.visibility = View.VISIBLE
-        }
+        // Initial FAB visibility based on display mode
+        updateFabVisibility()
 
         return view
     }
 
-    private fun setupNotesObserver() {
+    private fun updateFabVisibility() {
+        fabAddNote.visibility = if (displayMode == DISPLAY_BIN) View.GONE else View.VISIBLE
+    }
 
-//      Ensure the coroutine is tied to the view's lifecycle rather than the Fragment's lifecycle.
+    private fun setupNotesObserver() {
+        // Ensure the coroutine is tied to the view's lifecycle rather than the Fragment's lifecycle
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 notesDataBridge.notesState.collect { notes ->
-
                     withContext(Dispatchers.Main) {
                         val filteredNotes = getFilteredNotes(notes)
                         noteAdapter.updateNotes(filteredNotes)
@@ -218,18 +206,29 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
     }
 
     private fun getFilteredNotes(notes: List<Note>): List<Note> {
-        return when (displayMode) {
+        // First apply display mode filter
+        val displayModeFiltered = when (displayMode) {
             DISPLAY_NOTES -> notes.filter { !it.archived && !it.deleted }
             DISPLAY_REMINDERS -> notes.filter { !it.archived && !it.deleted && it.reminderTime != null }
             DISPLAY_ARCHIVE -> notes.filter { it.archived && !it.deleted }
             DISPLAY_BIN -> notes.filter { it.deleted }
             DISPLAY_LABELS -> {
-                currentLabel?.let { labelId ->
-                    // Filter notes that have this label ID in their labels list
+                currentLabelId?.let { labelId ->
                     notes.filter { !it.archived && !it.deleted && it.labels.contains(labelId) }
                 } ?: emptyList()
             }
             else -> emptyList()
+        }
+
+        // Then apply search filter if any
+        return if (searchQuery.isNotEmpty()) {
+            val query = searchQuery.lowercase().trim()
+            displayModeFiltered.filter { note ->
+                note.title.lowercase().contains(query) ||
+                        note.description.lowercase().contains(query)
+            }
+        } else {
+            displayModeFiltered
         }
     }
 
@@ -264,9 +263,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         actionMode?.finish()
 
         // Show FAB if we're not in trash
-        if (displayMode != DISPLAY_BIN) {
-            fabAddNote.visibility = View.VISIBLE
-        }
+        updateFabVisibility()
 
         // Show the toolbar again
         (activity as MainActivity).setToolbarVisibility(true)
@@ -286,40 +283,30 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
             (activity as MainActivity).setToolbarVisibility(true)
         }
     }
+
     // Public method to filter notes by search query
     fun filterNotes(query: String) {
-        if (::noteAdapter.isInitialized) {
-            val trimmedQuery = query.trim().lowercase()
+        this.searchQuery = query
+        refreshNotes()
+    }
 
-            // If query is empty, show all notes for the current display mode
-            if (trimmedQuery.isEmpty()) {
-                viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-                    notesDataBridge.notesState.collect { notes ->
-                        withContext(Dispatchers.Main) {
-                            val filteredNotes = getFilteredNotes(notes)
-                            noteAdapter.updateNotes(filteredNotes)
-                        }
-                    }
-                }
-                return
-            }
+    // New method to update display mode
+    fun updateDisplayMode(newMode: Int, labelId: String? = null) {
+        displayMode = newMode
+        currentLabelId = labelId
+        searchQuery = "" // Reset search when changing modes
+        updateFabVisibility()
+        refreshNotes()
+    }
 
-            // Filter notes based on current notes in the adapter
-            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-                notesDataBridge.notesState.collect { allNotes ->
-                    // First apply the display mode filter
-                    val displayModeFiltered = getFilteredNotes(allNotes)
+    // Helper method to refresh notes based on current filters
+    private fun refreshNotes() {
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            val currentNotes = notesDataBridge.notesState.value
+            val filteredNotes = getFilteredNotes(currentNotes)
 
-                    // Then apply the search query filter
-                    val searchFiltered = displayModeFiltered.filter { note ->
-                        note.title.lowercase().contains(trimmedQuery) ||
-                                note.description.lowercase().contains(trimmedQuery)
-                    }
-
-                    withContext(Dispatchers.Main) {
-                        noteAdapter.updateNotes(searchFiltered)
-                    }
-                }
+            withContext(Dispatchers.Main) {
+                noteAdapter.updateNotes(filteredNotes)
             }
         }
     }
@@ -464,6 +451,4 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
             }
         }
     }
-
-
 }
