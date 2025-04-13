@@ -9,11 +9,12 @@ import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
 import com.example.fundoonotes.BuildConfig
+import com.example.fundoonotes.data.repository.interfaces.CloudinaryImageManagerInterface
 import java.io.File
 import java.io.FileOutputStream
 import java.util.UUID
 
-class CloudinaryImageManager(private val context: Context) {
+class CloudinaryImageManager(private val context: Context): CloudinaryImageManagerInterface {
     private var uploadCallback: ((String?) -> Unit)? = null
     private var isInitialized = false
 
@@ -21,7 +22,7 @@ class CloudinaryImageManager(private val context: Context) {
         initializeCloudinary()
     }
 
-    private fun initializeCloudinary() {
+    override fun initializeCloudinary() {
         try {
             val cloudName = BuildConfig.CLOUDINARY_CLOUD_NAME
             val apiKey = BuildConfig.CLOUDINARY_API_KEY
@@ -40,7 +41,7 @@ class CloudinaryImageManager(private val context: Context) {
         }
     }
 
-    fun uploadProfileImage(imageUri: Uri, callback: (String?) -> Unit) {
+    override fun uploadProfileImage(imageUri: Uri, callback: (String?) -> Unit) {
         uploadCallback = callback
 
         // Make sure Cloudinary is initialized before upload
@@ -106,7 +107,7 @@ class CloudinaryImageManager(private val context: Context) {
         }
     }
 
-    fun uploadBitmap(bitmap: Bitmap, callback: (String?) -> Unit) {
+    override fun uploadBitmap(bitmap: Bitmap, callback: (String?) -> Unit) {
         uploadCallback = callback
 
         // Make sure Cloudinary is initialized before upload
@@ -187,7 +188,7 @@ class CloudinaryImageManager(private val context: Context) {
         }
     }
 
-    private fun bitmapToFile(bitmap: Bitmap): File? {
+    override fun bitmapToFile(bitmap: Bitmap): File? {
         return try {
             val file = File(context.cacheDir, "temp_profile_${UUID.randomUUID()}.jpg")
             FileOutputStream(file).use { out ->
