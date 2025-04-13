@@ -296,11 +296,18 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         currentLabelId = labelId
         searchQuery = "" // Reset search when changing modes
         updateFabVisibility()
-        refreshNotes()
+
+        // Only refresh if we have a view
+        if (view != null && isAdded) {
+            refreshNotes()
+        }
     }
 
     // Helper method to refresh notes based on current filters
     private fun refreshNotes() {
+        // Only proceed if view exists and fragment is in a valid state
+        if (view == null || !isAdded) return
+
         viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             val currentNotes = notesDataBridge.notesState.value
             val filteredNotes = getFilteredNotes(currentNotes)
