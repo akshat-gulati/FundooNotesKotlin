@@ -30,7 +30,10 @@ import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
+import androidx.lifecycle.LifecycleCoroutineScope
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.OnNoteClickListener {
     private lateinit var recyclerView: RecyclerView
@@ -188,16 +191,20 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
     }
 
     private fun setupNotesObserver() {
-        // This ensures proper collection lifecycle management
-        viewLifecycleOwner.lifecycleScope.launch {
+
+//      Ensure the coroutine is tied to the view's lifecycle rather than the Fragment's lifecycle.
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 notesDataBridge.notesState.collect { notes ->
-                    val filteredNotes = getFilteredNotes(notes)
-                    noteAdapter.updateNotes(filteredNotes)
 
-                    // If we're in selection mode, update the selection count
-                    if (actionMode != null) {
-                        actionMode?.title = "${selectedNotes.size} selected"
+                    withContext(Dispatchers.Main) {
+                        val filteredNotes = getFilteredNotes(notes)
+                        noteAdapter.updateNotes(filteredNotes)
+
+                        // If we're in selection mode, update the selection count
+                        if (actionMode != null) {
+                            actionMode?.title = "${selectedNotes.size} selected"
+                        }
                     }
                 }
             }
@@ -286,17 +293,19 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
 
             // If query is empty, show all notes for the current display mode
             if (trimmedQuery.isEmpty()) {
-                viewLifecycleOwner.lifecycleScope.launch {
+                viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
                     notesDataBridge.notesState.collect { notes ->
-                        val filteredNotes = getFilteredNotes(notes)
-                        noteAdapter.updateNotes(filteredNotes)
+                        withContext(Dispatchers.Main) {
+                            val filteredNotes = getFilteredNotes(notes)
+                            noteAdapter.updateNotes(filteredNotes)
+                        }
                     }
                 }
                 return
             }
 
             // Filter notes based on current notes in the adapter
-            viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
                 notesDataBridge.notesState.collect { allNotes ->
                     // First apply the display mode filter
                     val displayModeFiltered = getFilteredNotes(allNotes)
@@ -307,7 +316,9 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
                                 note.description.lowercase().contains(trimmedQuery)
                     }
 
-                    noteAdapter.updateNotes(searchFiltered)
+                    withContext(Dispatchers.Main) {
+                        noteAdapter.updateNotes(searchFiltered)
+                    }
                 }
             }
         }
@@ -365,27 +376,30 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
                 }
             }
 
-            // Apply changes to all selected notes
-            for (note in selectedNotes) {
-                // Start with the current labels of the note
-                val currentLabels = note.labels.toMutableList()
+            // Apply changes to all selected notes on IO thread
+            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                // Apply changes to all selected notes
+                for (note in selectedNotes) {
+                    // Start with the current labels of the note
+                    val currentLabels = note.labels.toMutableList()
 
-                // Remove labels that were unchecked
-                currentLabels.removeAll(uncheckedLabelIds)
+                    // Remove labels that were unchecked
+                    currentLabels.removeAll(uncheckedLabelIds)
 
-                // Add labels that were checked (and weren't there before)
-                val updatedLabels = (currentLabels + checkedLabelIds).distinct()
+                    // Add labels that were checked (and weren't there before)
+                    val updatedLabels = (currentLabels + checkedLabelIds).distinct()
 
-                // Add the newly created label if there is one
-                val finalLabels = if (newLabelId.isNotEmpty()) {
-                    (updatedLabels + newLabelId).distinct()
-                } else {
-                    updatedLabels
+                    // Add the newly created label if there is one
+                    val finalLabels = if (newLabelId.isNotEmpty()) {
+                        (updatedLabels + newLabelId).distinct()
+                    } else {
+                        updatedLabels
+                    }
+
+                    // Update the note with the final set of labels
+                    noteLabelRepository.updateNoteLabels(note.id, finalLabels)
+                    noteLabelRepository.updateLabelsWithNoteReference(note.id, finalLabels)
                 }
-
-                // Update the note with the final set of labels
-                noteLabelRepository.updateNoteLabels(note.id, finalLabels)
-                noteLabelRepository.updateLabelsWithNoteReference(note.id, finalLabels)
             }
         }
 
@@ -400,50 +414,52 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         val initialLabelStates = mutableMapOf<String, Boolean>()
 
         // Now observe the labels and update the dialog
-        viewLifecycleOwner.lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
             labelDataBridge.labelsState.collect { labels ->
                 // Only update if we have the dialog showing
-                if (dialog.isShowing) {
-                    // Clear the current views
-                    layout.removeAllViews()
-                    checkBoxes.clear()
+                withContext(Dispatchers.Main) {
+                    if (dialog.isShowing) {
+                        // Clear the current views
+                        layout.removeAllViews()
+                        checkBoxes.clear()
 
-                    if (labels.isEmpty()) {
-                        val noLabelsText = EditText(context)
-                        noLabelsText.isEnabled = false
-                        noLabelsText.setText("No existing labels. Create one below.")
-                        layout.addView(noLabelsText)
-                    } else {
-                        // Initialize the label states map for all labels
-                        labels.forEach { label ->
-                            // A label is considered "on" if ANY selected note has it
-                            val anyNoteHasLabel = selectedNotes.any { it.labels.contains(label.id) }
-                            initialLabelStates[label.id] = anyNoteHasLabel
+                        if (labels.isEmpty()) {
+                            val noLabelsText = EditText(context)
+                            noLabelsText.isEnabled = false
+                            noLabelsText.setText("No existing labels. Create one below.")
+                            layout.addView(noLabelsText)
+                        } else {
+                            // Initialize the label states map for all labels
+                            labels.forEach { label ->
+                                // A label is considered "on" if ANY selected note has it
+                                val anyNoteHasLabel = selectedNotes.any { it.labels.contains(label.id) }
+                                initialLabelStates[label.id] = anyNoteHasLabel
+                            }
+
+                            // Create checkboxes for existing labels
+                            labels.forEach { label ->
+                                val checkBox = CheckBox(context)
+                                checkBox.text = label.name
+
+                                // Set the initial checked state based on our map
+                                checkBox.isChecked = initialLabelStates[label.id] ?: false
+
+                                checkBoxes[checkBox] = label.id
+                                layout.addView(checkBox)
+                            }
                         }
 
-                        // Create checkboxes for existing labels
-                        labels.forEach { label ->
-                            val checkBox = CheckBox(context)
-                            checkBox.text = label.name
+                        // Add some padding before the new label section
+                        val paddingView = View(context)
+                        paddingView.layoutParams = ViewGroup.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            24
+                        )
+                        layout.addView(paddingView)
 
-                            // Set the initial checked state based on our map
-                            checkBox.isChecked = initialLabelStates[label.id] ?: false
-
-                            checkBoxes[checkBox] = label.id
-                            layout.addView(checkBox)
-                        }
+                        // Add the edit text for creating new labels
+                        layout.addView(editText)
                     }
-
-                    // Add some padding before the new label section
-                    val paddingView = View(context)
-                    paddingView.layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        24
-                    )
-                    layout.addView(paddingView)
-
-                    // Add the edit text for creating new labels
-                    layout.addView(editText)
                 }
             }
         }
