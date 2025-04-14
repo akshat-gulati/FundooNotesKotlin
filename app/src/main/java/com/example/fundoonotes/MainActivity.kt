@@ -310,14 +310,13 @@ class MainActivity : AppCompatActivity() {
             search = true
         )
 
-        // Check if NoteFragment is already loaded
         if (currentFragment !is NoteFragment) {
-            // Only create a new fragment if we don't already have a NoteFragment
+            // If we're coming from a different fragment type, create and load a new NoteFragment
             noteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_NOTES)
             loadFragment(noteFragment)
             currentFragment = noteFragment
         } else {
-            // Just update the existing fragment's display mode
+            // If we're already on a NoteFragment, just update its display mode
             (currentFragment as NoteFragment).updateDisplayMode(NoteFragment.DISPLAY_NOTES)
         }
     }
@@ -353,6 +352,7 @@ class MainActivity : AppCompatActivity() {
             search = false
         )
         loadFragment(fragment)
+        currentFragment = fragment
     }
 
     private fun navigateToArchive() {
