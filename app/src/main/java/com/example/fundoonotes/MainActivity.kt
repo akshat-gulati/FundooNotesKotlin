@@ -1,6 +1,5 @@
 package com.example.fundoonotes
 
-import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -9,7 +8,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
-import android.view.View.GONE
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ImageButton
@@ -38,7 +36,6 @@ import androidx.core.view.size
 import androidx.core.view.get
 import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
 import com.example.fundoonotes.ui.accountActionDialog.AccountActionDialog
-import com.google.android.material.internal.ViewUtils.hideKeyboard
 
 
 class MainActivity : AppCompatActivity() {
@@ -431,9 +428,6 @@ class MainActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
         outState.putInt("currentNavItemId", currentNavItemId)
     }
-
-
-    // When navigating to label notes, store the label name
 
 
     private fun toggleSearchMode(enable: Boolean) {
