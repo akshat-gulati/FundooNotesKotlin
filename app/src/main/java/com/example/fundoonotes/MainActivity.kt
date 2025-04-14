@@ -4,7 +4,6 @@ import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
@@ -21,22 +20,16 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.example.fundoonotes.data.model.Label
-import com.example.fundoonotes.ui.notes.NoteFragment
 import com.google.android.material.navigation.NavigationView
 import com.example.fundoonotes.data.repository.AuthManager
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
-import com.example.fundoonotes.ui.labels.LabelsFragment
-import kotlinx.coroutines.launch
-import androidx.core.view.size
-import androidx.core.view.get
 import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
 import com.example.fundoonotes.ui.accountActionDialog.AccountActionDialog
-
+import com.example.fundoonotes.ui.navigation.NavigationManager
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -49,23 +42,14 @@ class MainActivity : AppCompatActivity() {
     private lateinit var toolbar: Toolbar
     private lateinit var authManager: AuthManager
     private lateinit var etSearch: EditText
-    private var isInSearchMode = false
     private lateinit var drawerButton: ImageButton
+    private lateinit var drawerLayout: DrawerLayout
 
-    // Fragment management
-    private lateinit var noteFragment: NoteFragment
-    private lateinit var labelsFragment: LabelsFragment
-    private var currentFragment: Fragment? = null
+    // Navigation manager
+    private lateinit var navigationManager: NavigationManager
 
-    // Add new property
+    // Data bridges
     private lateinit var labelDataBridge: LabelDataBridge
-    private var menuLabelsGroup: Menu? = null
-    private val LABEL_MENU_GROUP_ID = 3
-    // State variables
-    private var currentNavItemId: Int = R.id.navNotes
-    private var isGridLayout = true
-    private var currentLabelName: String? = null
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,7 +66,6 @@ class MainActivity : AppCompatActivity() {
         }
         val notesDataBridge = NotesDataBridge(applicationContext)
         notesDataBridge.initializeDatabase()
-
     }
 
     private fun setupUI(savedInstanceState: Bundle?) {
@@ -92,63 +75,50 @@ class MainActivity : AppCompatActivity() {
         initializeViews()
         setupDrawer()
         setupNavigation()
+
+        // Initialize data bridges
+        labelDataBridge = LabelDataBridge(this)
+
+        // Initialize navigation manager
+        navigationManager = NavigationManager(activity = this,
+            fragmentManager = supportFragmentManager,
+            toolbar = toolbar,
+            titleText = titleText,
+            layoutToggleIcon = layoutToggleIcon,
+            searchIcon = searchIcon,
+            profileIcon = profileIcon,
+            drawerButton = drawerButton,
+            etSearch = etSearch,
+            navView = navView
+        )
+        navigationManager.initialize(labelDataBridge)
+
+        // Observe labels for navigation
         observeLabels()
-        setupFragments()
 
         // Load default fragment if no fragment is loaded
         if (savedInstanceState == null) {
-            loadDefaultFragment()
+            navigationManager.loadDefaultFragment()
         } else {
             // Restore the current navigation item
-            currentNavItemId = savedInstanceState.getInt("currentNavItemId", R.id.navNotes)
+            navigationManager.setCurrentNavItemId(savedInstanceState.getInt("currentNavItemId", R.id.navNotes))
             // Update UI based on the restored navigation item
-            updateUIForNavItem(currentNavItemId)
+            navigationManager.updateUIForNavItem(navigationManager.getCurrentNavItemId())
         }
-    }
-    private fun setupFragments() {
-        // Initialize fragments that will be reused
-        noteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_NOTES)
-        labelsFragment = LabelsFragment()
     }
 
     private fun observeLabels() {
-        labelDataBridge = LabelDataBridge(this)
-
         // Observe labels and update navigation dynamically
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 labelDataBridge.labelsState.collect { labels ->
-                    updateLabelMenu(labels)
+                    navigationManager.updateLabelMenu(labels)
                 }
             }
         }
 
         // Fetch labels initially
         labelDataBridge.fetchLabels()
-    }
-
-    private fun updateLabelMenu(labels: List<Label>) {
-        // Get the menu from NavigationView
-        val menu = navView.menu
-
-        // Find the Reminders menu item
-        val remindersMenuItem = menu.findItem(R.id.navReminders)
-
-        // Clear existing label items if any
-        if (menuLabelsGroup != null) {
-            menuLabelsGroup?.clear()
-        } else {
-            // Create a new group for labels between group1 (which contains Reminders) and group2
-            menuLabelsGroup = menu.addSubMenu(Menu.NONE, Menu.NONE,
-                remindersMenuItem.order + 1, "Labels")
-        }
-
-        // Add each label as a menu item
-        labels.forEach { label ->
-            menuLabelsGroup?.add(LABEL_MENU_GROUP_ID, View.generateViewId(), Menu.NONE, label.name)
-                ?.setIcon(R.drawable.tag)
-                ?.setCheckable(true)
-        }
     }
 
     private fun setupWindowInsets() {
@@ -166,287 +136,64 @@ class MainActivity : AppCompatActivity() {
         profileIcon = findViewById(R.id.profile_icon)
         etSearch = findViewById(R.id.etSearch)
         drawerButton = findViewById(R.id.drawer_button)
+        toolbar = findViewById(R.id.toolbar)
+        drawerLayout = findViewById(R.id.main)
 
-
-        searchIcon.setOnClickListener {
-            toggleSearchMode(true)
+        // Setup profile click listener
+        profileIcon.setOnClickListener {
+            val dialog = AccountActionDialog()
+            dialog.show(supportFragmentManager, "AccountActionDialog")
         }
 
+        // Setup search text change listener
         etSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                handleSearchQuery(s.toString())
+                navigationManager.handleSearchQuery(s.toString())
             }
 
             override fun afterTextChanged(s: Editable?) {}
         })
-
-
-        profileIcon.setOnClickListener {
-                val dialog = AccountActionDialog()
-                dialog.show(supportFragmentManager, "AccountActionDialog")
-            }
-
-        layoutToggleIcon.setOnClickListener {
-            toggleLayout()
-        }
-
-        // Set initial icon for layout toggle
-        layoutToggleIcon.setImageResource(
-            if (isGridLayout) R.drawable.rectangle2x2 else R.drawable.rectangle1x2
-        )
-        toolbar = findViewById(R.id.toolbar)
     }
 
     private fun setupDrawer() {
-        val drawerLayout: DrawerLayout = findViewById(R.id.main)
-        val drawerButton: ImageButton = findViewById(R.id.drawer_button)
-
         drawerButton.setOnClickListener {
-            if (isInSearchMode) {
+            if (navigationManager.isInSearchMode()) {
                 // Act as back button in search mode
-                toggleSearchMode(false)
+                navigationManager.toggleSearchMode(false)
             } else {
                 // Act as drawer button normally
-                drawerLayout.openDrawer(GravityCompat.START)
+                openDrawer()
             }
         }
+    }
+
+    fun openDrawer() {
+        drawerLayout.openDrawer(GravityCompat.START)
+    }
+
+    fun closeDrawer() {
+        drawerLayout.closeDrawer(GravityCompat.START)
     }
 
     private fun setupNavigation() {
         navView = findViewById(R.id.nav_view)
         navView.setNavigationItemSelectedListener { item: MenuItem ->
-            handleNavigation(item)
+            val result = navigationManager.handleNavigation(item)
+            closeDrawer()
+            result
         }
     }
+
     @Deprecated("This method has been deprecated in favor of using the\n      {@link OnBackPressedDispatcher} via {@link #getOnBackPressedDispatcher()}.\n      The OnBackPressedDispatcher controls how back button events are dispatched\n      to one or more {@link OnBackPressedCallback} objects.")
     override fun onBackPressed() {
-        if (isInSearchMode) {
+        if (navigationManager.isInSearchMode()) {
             // Exit search mode if back is pressed while searching
-            toggleSearchMode(false)
+            navigationManager.toggleSearchMode(false)
             dismissKeyboardShortcutsHelper()
         } else {
             super.onBackPressedDispatcher
-        }
-    }
-    private fun handleNavigation(item: MenuItem): Boolean {
-        if (item.groupId == LABEL_MENU_GROUP_ID) {
-            // This is a label item, handle label navigation
-            navigateToLabelNotes(item.title.toString())
-            currentNavItemId = item.itemId // Store the current item ID
-            item.isChecked = true
-        } else if (currentNavItemId != item.itemId) {
-            // Existing code for standard navigation items
-            currentNavItemId = item.itemId
-            item.isChecked = true
-            updateUIForNavItem(currentNavItemId)
-        }
-
-        val drawerLayout: DrawerLayout = findViewById(R.id.main)
-        drawerLayout.closeDrawer(GravityCompat.START)
-        return true
-    }
-
-    private fun updateUIForNavItem(itemId: Int) {
-        when (itemId) {
-            R.id.navNotes -> navigateToNotes()
-            R.id.navReminders -> navigateToReminders()
-            R.id.navLabels -> navigateToLabels()
-            R.id.navArchive -> navigateToArchive()
-            R.id.navBin -> navigateToBin()
-        }
-    }
-
-    private fun loadDefaultFragment() {
-        // Set the default item as checked
-        navView.menu.findItem(currentNavItemId).isChecked = true
-        updateUIForNavItem(currentNavItemId)
-    }
-
-    private fun loadFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment)
-            .commit()
-    }
-
-    private fun toggleLayout() {
-        isGridLayout = !isGridLayout
-        // Set thw icon for layout toggle
-        layoutToggleIcon.setImageResource(
-            if (isGridLayout) R.drawable.rectangle2x2 else R.drawable.rectangle1x2
-        )
-
-        // Get the current fragment and notify it about the layout change
-        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
-        if (currentFragment is LayoutToggleListener) {
-            currentFragment.onLayoutToggle(isGridLayout)
-        }
-    }
-
-    private fun updateHeaderVisibility(layoutToggle: Boolean, profile: Boolean, search: Boolean) {
-        layoutToggleIcon.visibility = if (layoutToggle) View.VISIBLE else View.GONE
-        profileIcon.visibility = if (profile) View.VISIBLE else View.GONE
-        searchIcon.visibility = if (search) View.VISIBLE else View.GONE
-    }
-
-
-    private fun clearToolbarBackground() {
-        toolbar.background = null
-    }
-
-
-// Replace these navigation methods in MainActivity.kt
-
-    private fun navigateToNotes() {
-        toolbar.setBackgroundResource(R.drawable.toolbar_rounded)
-        titleText.text = getString(R.string.notes)
-        updateHeaderVisibility(
-            layoutToggle = true,
-            profile = true,
-            search = true
-        )
-
-        if (currentFragment !is NoteFragment) {
-            // If we're coming from a different fragment type, create and load a new NoteFragment
-            noteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_NOTES)
-            loadFragment(noteFragment)
-            currentFragment = noteFragment
-        } else {
-            // If we're already on a NoteFragment, just update its display mode
-            (currentFragment as NoteFragment).updateDisplayMode(NoteFragment.DISPLAY_NOTES)
-        }
-    }
-
-    private fun navigateToReminders() {
-        clearToolbarBackground() // Clear the background
-        titleText.text = getString(R.string.reminders)
-        updateHeaderVisibility(
-            layoutToggle = true,
-            profile = false,
-            search = true
-        )
-
-        // Check if NoteFragment is already loaded
-        if (currentFragment !is NoteFragment) {
-            // Only create a new fragment if we don't already have a NoteFragment
-            noteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_REMINDERS)
-            loadFragment(noteFragment)
-            currentFragment = noteFragment
-        } else {
-            // Just update the existing fragment's display mode
-            (currentFragment as NoteFragment).updateDisplayMode(NoteFragment.DISPLAY_REMINDERS)
-        }
-    }
-
-    private fun navigateToLabels() {
-        clearToolbarBackground() // Clear the background
-        val fragment = LabelsFragment()
-        titleText.text = getString(R.string.create_labels)
-        updateHeaderVisibility(
-            layoutToggle = false,
-            profile = false,
-            search = false
-        )
-        loadFragment(fragment)
-        currentFragment = fragment
-    }
-
-    private fun navigateToArchive() {
-        clearToolbarBackground() // Clear the background
-        titleText.text = getString(R.string.archive)
-        updateHeaderVisibility(
-            layoutToggle = true,
-            profile = false,
-            search = true
-        )
-
-        // Check if NoteFragment is already loaded
-        if (currentFragment !is NoteFragment) {
-            // Only create a new fragment if we don't already have a NoteFragment
-            noteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_ARCHIVE)
-            loadFragment(noteFragment)
-            currentFragment = noteFragment
-        } else {
-            // Just update the existing fragment's display mode
-            (currentFragment as NoteFragment).updateDisplayMode(NoteFragment.DISPLAY_ARCHIVE)
-        }
-    }
-
-    private fun navigateToBin() {
-        clearToolbarBackground() // Clear the background
-        titleText.text = getString(R.string.bin)
-        updateHeaderVisibility(
-            layoutToggle = true,
-            profile = false,
-            search = false
-        )
-
-        // Check if NoteFragment is already loaded
-        if (currentFragment !is NoteFragment) {
-            // Only create a new fragment if we don't already have a NoteFragment
-            noteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_BIN)
-            loadFragment(noteFragment)
-            currentFragment = noteFragment
-        } else {
-            // Just update the existing fragment's display mode
-            (currentFragment as NoteFragment).updateDisplayMode(NoteFragment.DISPLAY_BIN)
-        }
-    }
-
-    // When navigating to label notes, store the label name
-    private fun navigateToLabelNotes(labelName: String) {
-        clearToolbarBackground()
-        currentLabelName = labelName // Store the current label name
-
-        // Find the label ID from the name
-        val label = labelDataBridge.labelsState.value.find { it.name == labelName }
-
-        if (label != null) {
-            titleText.text = labelName
-            updateHeaderVisibility(
-                layoutToggle = true,
-                profile = false,
-                search = true
-            )
-
-            // Check if NoteFragment is already loaded
-            if (currentFragment !is NoteFragment) {
-                // Only create a new fragment if we don't already have a NoteFragment
-                noteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_LABELS)
-                loadFragment(noteFragment)
-                currentFragment = noteFragment
-            }
-
-            // Update the display mode with the label ID
-            (currentFragment as NoteFragment).updateDisplayMode(NoteFragment.DISPLAY_LABELS, label.id)
-        }
-    }
-
-    // Lifecycle methods
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putInt("currentNavItemId", currentNavItemId)
-    }
-
-
-    private fun toggleSearchMode(enable: Boolean) {
-        isInSearchMode = enable
-
-        // Toggle visibility of UI elements
-        titleText.visibility = if (enable) View.GONE else View.VISIBLE
-        layoutToggleIcon.visibility = if (enable) View.GONE else View.VISIBLE
-        profileIcon.visibility = if (enable) View.GONE else View.VISIBLE
-        searchIcon.visibility = if (enable) View.GONE else View.VISIBLE
-        etSearch.visibility = if (enable) View.VISIBLE else View.GONE
-
-        // Change drawer button to back button
-        if (enable) {
-            drawerButton.setImageResource(R.drawable.arrow_back) // Make sure you have this drawable
-            etSearch.requestFocus()
-        } else {
-            drawerButton.setImageResource(R.drawable.menu) // Your original drawer icon
-            etSearch.setText("") // Clear search text when exiting search mode
         }
     }
 
@@ -459,51 +206,15 @@ class MainActivity : AppCompatActivity() {
         return super.dispatchTouchEvent(ev)
     }
 
-    private fun handleSearchQuery(query: String) {
-        // Get the current fragment
-        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
-
-        // If it's a NoteFragment, pass the search query
-        if (currentFragment is NoteFragment) {
-            currentFragment.filterNotes(query)
-        }
+    // Lifecycle methods
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        navigationManager.saveState(outState)
     }
 
-    // Modify onResume to handle label menu items
     override fun onResume() {
         super.onResume()
-
-        // First try to find the menu item directly
-        val menuItem = navView.menu.findItem(currentNavItemId)
-
-        if (menuItem != null) {
-            menuItem.isChecked = true
-        } else if (currentLabelName != null) {
-            // If we were on a label, try to find it by name in the current menu
-            var found = false
-            if (menuLabelsGroup != null) {
-                for (i in 0 until menuLabelsGroup!!.size) {
-                    val item = menuLabelsGroup!![i]
-                    if (item.title.toString() == currentLabelName) {
-                        item.isChecked = true
-                        currentNavItemId = item.itemId
-                        found = true
-                        break
-                    }
-                }
-            }
-
-            // If we couldn't find the label, reset to default
-            if (!found) {
-                currentNavItemId = R.id.navNotes
-                navView.menu.findItem(currentNavItemId)?.isChecked = true
-                currentLabelName = null
-            }
-        } else {
-            // If all else fails, reset to Notes
-            currentNavItemId = R.id.navNotes
-            navView.menu.findItem(currentNavItemId)?.isChecked = true
-        }
+        navigationManager.restoreState()
     }
 
     // Interface for fragment communication
@@ -511,10 +222,8 @@ class MainActivity : AppCompatActivity() {
         fun onLayoutToggle(isGridLayout: Boolean)
     }
 
-
-//   A communication channel between NoteFragment and MainActivity to control the toolbar visibility.
+    // A communication channel between NoteFragment and MainActivity to control the toolbar visibility.
     fun setToolbarVisibility(isVisible: Boolean) {
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
         toolbar.visibility = if (isVisible) View.VISIBLE else View.GONE
     }
 }
