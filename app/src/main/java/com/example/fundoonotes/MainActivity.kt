@@ -1,5 +1,6 @@
 package com.example.fundoonotes
 
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -20,6 +21,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -27,11 +29,13 @@ import com.google.android.material.navigation.NavigationView
 import com.example.fundoonotes.data.repository.AuthManager
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
 import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
+import com.example.fundoonotes.ui.NavigationInterface
 import com.example.fundoonotes.ui.accountActionDialog.AccountActionDialog
+import com.example.fundoonotes.ui.navigation.NavigationComponent
 import com.example.fundoonotes.ui.navigation.NavigationManager
 import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), NavigationInterface {
 
     // UI components
     private lateinit var navView: NavigationView
@@ -47,6 +51,7 @@ class MainActivity : AppCompatActivity() {
 
     // Navigation manager
     private lateinit var navigationManager: NavigationManager
+    private lateinit var navigationComponent: NavigationComponent
 
     // Data bridges
     private lateinit var labelDataBridge: LabelDataBridge
@@ -79,9 +84,9 @@ class MainActivity : AppCompatActivity() {
         // Initialize data bridges
         labelDataBridge = LabelDataBridge(this)
 
-        // Initialize navigation manager
-        navigationManager = NavigationManager(activity = this,
-            fragmentManager = supportFragmentManager,
+        navigationComponent = NavigationComponent(
+            navigationInterface = this,  // Changed from navigationContract to match the class definition
+            labelDataBridge = labelDataBridge,
             toolbar = toolbar,
             titleText = titleText,
             layoutToggleIcon = layoutToggleIcon,
@@ -91,19 +96,17 @@ class MainActivity : AppCompatActivity() {
             etSearch = etSearch,
             navView = navView
         )
-        navigationManager.initialize(labelDataBridge)
+        navigationComponent.initialize()
+        navigationManager = navigationComponent.getNavigationManager()
 
         // Observe labels for navigation
         observeLabels()
 
         // Load default fragment if no fragment is loaded
         if (savedInstanceState == null) {
-            navigationManager.loadDefaultFragment()
+            navigationComponent.getNavigationManager().loadDefaultFragment()
         } else {
-            // Restore the current navigation item
-            navigationManager.setCurrentNavItemId(savedInstanceState.getInt("currentNavItemId", R.id.navNotes))
-            // Update UI based on the restored navigation item
-            navigationManager.updateUIForNavItem(navigationManager.getCurrentNavItemId())
+            navigationComponent.onRestoreInstanceState()
         }
     }
 
@@ -112,7 +115,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 labelDataBridge.labelsState.collect { labels ->
-                    navigationManager.updateLabelMenu(labels)
+                    navigationComponent.getNavigationManager().updateLabelMenu(labels)
                 }
             }
         }
@@ -169,11 +172,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun openDrawer() {
+    override fun openDrawer() {
         drawerLayout.openDrawer(GravityCompat.START)
     }
 
-    fun closeDrawer() {
+    override fun closeDrawer() {
         drawerLayout.closeDrawer(GravityCompat.START)
     }
 
@@ -209,7 +212,7 @@ class MainActivity : AppCompatActivity() {
     // Lifecycle methods
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        navigationManager.saveState(outState)
+        navigationComponent.onSaveInstanceState(outState)
     }
 
     override fun onResume() {
@@ -223,7 +226,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     // A communication channel between NoteFragment and MainActivity to control the toolbar visibility.
-    fun setToolbarVisibility(isVisible: Boolean) {
+    override fun setToolbarVisibility(isVisible: Boolean) {
         toolbar.visibility = if (isVisible) View.VISIBLE else View.GONE
     }
+
+    override fun getContext(): Context = this
+
+    override fun getSupportFragmentManager(): FragmentManager = super.getSupportFragmentManager()
 }

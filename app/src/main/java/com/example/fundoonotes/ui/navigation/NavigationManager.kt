@@ -13,13 +13,13 @@ import com.example.fundoonotes.MainActivity
 import com.example.fundoonotes.R
 import com.example.fundoonotes.data.model.Label
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
+import com.example.fundoonotes.ui.NavigationInterface
 import com.example.fundoonotes.ui.labels.LabelsFragment
 import com.example.fundoonotes.ui.notes.NoteFragment
 import com.google.android.material.navigation.NavigationView
 
 class NavigationManager(
-    private val activity: MainActivity,
-    private val fragmentManager: FragmentManager,
+    private val navigationInterface: NavigationInterface,
     private val toolbar: androidx.appcompat.widget.Toolbar,
     private val titleText: TextView,
     private val layoutToggleIcon: ImageView,
@@ -33,6 +33,9 @@ class NavigationManager(
     private var noteFragment: NoteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_NOTES)
     private var labelsFragment: LabelsFragment = LabelsFragment()
     private var currentFragment: Fragment? = null
+
+    private val activity: MainActivity get() = navigationInterface.getContext() as MainActivity
+    private val fragmentManager: FragmentManager get() = navigationInterface.getSupportFragmentManager()
 
     // State variables
     private var currentNavItemId: Int = R.id.navNotes
@@ -74,7 +77,7 @@ class NavigationManager(
                 toggleSearchMode(false)
             } else {
                 // Act as drawer button normally
-                activity.openDrawer()
+                navigationInterface.openDrawer()
             }
         }
     }
