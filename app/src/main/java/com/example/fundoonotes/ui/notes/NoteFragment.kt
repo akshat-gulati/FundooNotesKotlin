@@ -205,7 +205,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         recyclerView.itemAnimator = DefaultItemAnimator()
     }
 
-    private fun getFilteredNotes(notes: List<Note>): List<Note> {
+    suspend fun getFilteredNotes(notes: List<Note>): List<Note> = withContext(Dispatchers.Default) {
         // First apply display mode filter
         val displayModeFiltered = when (displayMode) {
             DISPLAY_NOTES -> notes.filter { !it.archived && !it.deleted }
@@ -221,7 +221,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         }
 
         // Then apply search filter if any
-        return if (searchQuery.isNotEmpty()) {
+        if (searchQuery.isNotEmpty()) {
             val query = searchQuery.lowercase().trim()
             displayModeFiltered.filter { note ->
                 note.title.lowercase().contains(query) ||
@@ -231,6 +231,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
             displayModeFiltered
         }
     }
+
 
     override fun onLayoutToggle(isGridLayout: Boolean) {
         this.isGridLayout = isGridLayout
