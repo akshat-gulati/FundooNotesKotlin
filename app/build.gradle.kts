@@ -123,4 +123,6 @@ dependencies {
         // For handling notifications
         implementation("androidx.core:core-ktx:1.12.0")
 
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
+
 }
