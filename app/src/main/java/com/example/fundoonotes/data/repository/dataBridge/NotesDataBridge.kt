@@ -143,12 +143,10 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
         // Always save to Room regardless of online status
         val localNoteId = roomNoteRepository.addNewNote(noteId, title, description, reminderTime)
 
-        Toast.makeText(context, "Note saved locally", Toast.LENGTH_SHORT).show()
-
         // If online, also save to Firestore
-        if (isOnline(context)) {
+//        if (isOnline(context)) {
             firestoreRepository.addNewNote(noteId, title, description, reminderTime)
-        }
+//        }
 
         return localNoteId
     }
@@ -159,17 +157,17 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
         Toast.makeText(context, "Note updated locally", Toast.LENGTH_SHORT).show()
 
         // If online, also update Firestore
-        if (isOnline(context)) {
+//        if (isOnline(context)) {
             firestoreRepository.updateNote(noteId, title, description, reminderTime)
-        }
+//        }
     }
 
     override fun deleteNote(noteId: String) {
         roomNoteRepository.deleteNote(noteId)
 
-        if (isOnline(context)) {
+//        if (isOnline(context)) {
             firestoreRepository.deleteNote(noteId)
-        }
+//        }
     }
 
     fun getNoteById(noteId: String): Note? {
@@ -186,9 +184,9 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
             roomNoteRepository.updateNoteFields(noteId, updatedFields)
 
             // If online, update in Firestore
-            if (isOnline(context)) {
+//            if (isOnline(context)) {
                 firestoreRepository.updateNoteFields(noteId, updatedFields)
-            }
+//            }
         }
     }
 
@@ -210,9 +208,9 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
             roomNoteRepository.updateNoteFields(noteId, updatedFields)
 
             // If online, update in Firestore
-            if (isOnline(context)) {
+//            if (isOnline(context)) {
                 firestoreRepository.updateNoteFields(noteId, updatedFields)
-            }
+//            }
         }
     }
 
@@ -232,9 +230,9 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
             roomNoteRepository.updateNoteFields(noteId, updatedFields)
 
             // If online, update in Firestore
-            if (isOnline(context)) {
+//            if (isOnline(context)) {
                 firestoreRepository.updateNoteFields(noteId, updatedFields)
-            }
+//            }
         }
     }
 
