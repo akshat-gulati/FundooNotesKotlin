@@ -9,7 +9,7 @@ import android.util.Log
 import android.widget.Toast
 import com.example.fundoonotes.data.model.Note
 import com.example.fundoonotes.data.repository.interfaces.NotesInterface
-import com.example.fundoonotes.data.repository.sqlite.SQLiteNoteRepository
+import com.example.fundoonotes.data.repository.room.RoomNoteRepository
 import com.example.fundoonotes.data.repository.firebase.FirestoreNoteRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 @Suppress("SpellCheckingInspection")
 class NotesDataBridge(private val context: Context) : NotesInterface {
@@ -30,14 +29,11 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
     private val _notesState = MutableStateFlow<List<Note>>(emptyList())
     val notesState: StateFlow<List<Note>> = _notesState.asStateFlow()
     private val firestoreRepository: FirestoreNoteRepository = FirestoreNoteRepository(context)
-    private val sqliteNoteRepository: SQLiteNoteRepository = SQLiteNoteRepository(context)
-
-
+    private val roomNoteRepository: RoomNoteRepository = RoomNoteRepository(context)
 
     init {
         observeNotes()
     }
-
 
     private fun observeNotes() {
         // Observe network state changes
@@ -49,14 +45,14 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
                 // When network becomes available, switch to Firestore data and sync
                 coroutineScope.launch {
                     _notesState.value = firestoreRepository.notesState.value
-                    syncSQLiteToFirestore() // Sync any changes made while offline
+                    syncRoomToFirestore() // Sync any changes made while offline
                 }
             }
 
             override fun onLost(network: Network) {
-                // When network is lost, switch to SQLite data
+                // When network is lost, switch to Room data
                 coroutineScope.launch {
-                    _notesState.value = sqliteNoteRepository.notesState.value
+                    _notesState.value = roomNoteRepository.notesState.value
                 }
             }
         }
@@ -69,12 +65,12 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
 
         // Start collecting from both repositories
         coroutineScope.launch {
-            // Always collect from SQLite for local changes
+            // Always collect from Room for local changes
             launch {
-                sqliteNoteRepository.notesState.collect { sqliteNotes ->
+                roomNoteRepository.notesState.collect { roomNotes ->
                     if (!isOnline(context)) {
-                        _notesState.value = sqliteNotes
-                        Log.d(TAG, "New SQLite notes received: ${sqliteNotes.size}")
+                        _notesState.value = roomNotes
+                        Log.d(TAG, "New Room notes received: ${roomNotes.size}")
                     }
                 }
             }
@@ -86,31 +82,30 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
                         _notesState.value = firestoreNotes
                         Log.d(TAG, "New Firestore notes received: ${firestoreNotes.size}")
 
-                        // Update SQLite with the latest Firestore data to keep local copy updated
-                        updateSQLiteFromFirestore(firestoreNotes)
+                        // Update Room with the latest Firestore data to keep local copy updated
+                        updateRoomFromFirestore(firestoreNotes)
                     }
                 }
             }
         }
     }
 
-    // Helper method to sync SQLite changes to Firestore when back online
-    private fun syncSQLiteToFirestore() {
+    // Helper method to sync Room changes to Firestore when back online
+    private fun syncRoomToFirestore() {
         // Implementation would compare timestamps or use a "dirty" flag
         // to sync any changes made while offline
-        Log.d(TAG, "Syncing SQLite changes to Firestore")
+        Log.d(TAG, "Syncing Room changes to Firestore")
         // Implementation details would go here
     }
 
-
-    // Helper method to update SQLite with latest Firestore data
-    private fun updateSQLiteFromFirestore(firestoreNotes: List<Note>) {
-        // For each Firestore note, update or insert into SQLite
+    // Helper method to update Room with latest Firestore data
+    private fun updateRoomFromFirestore(firestoreNotes: List<Note>) {
+        // For each Firestore note, update or insert into Room
         for (note in firestoreNotes) {
             // You might want to check timestamps to avoid overwriting newer local changes
-            val sqliteNote = sqliteNoteRepository.getNoteById(note.id)
-            if (sqliteNote == null || sqliteNote.timestamp < note.timestamp) {
-                // Update SQLite with this note
+            val roomNote = roomNoteRepository.getNoteById(note.id)
+            if (roomNote == null || roomNote.timestamp < note.timestamp) {
+                // Update Room with this note
                 val fields = mapOf(
                     "title" to note.title,
                     "description" to note.description,
@@ -121,7 +116,7 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
                     "deletedTime" to note.deletedTime,
                     "timestamp" to note.timestamp
                 )
-                sqliteNoteRepository.updateNoteFields(note.id, fields)
+                roomNoteRepository.updateNoteFields(note.id, fields)
             }
         }
     }
@@ -130,7 +125,9 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
         if (isOnline(context)) {
             firestoreRepository.fetchNoteById(noteId, onSuccess)
         }
-        else{sqliteNoteRepository.fetchNoteById(noteId, onSuccess)}
+        else {
+            roomNoteRepository.fetchNoteById(noteId, onSuccess)
+        }
     }
 
     override fun fetchNotes() {
@@ -138,38 +135,41 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
             firestoreRepository.fetchNotes()
         }
         else{
-            sqliteNoteRepository.fetchNotes()
+            roomNoteRepository.fetchNotes()
         }
-
     }
 
-    // No need of this function
     override fun addNewNote(noteId: String, title: String, description: String, reminderTime: Long?): String {
+        // Always save to Room regardless of online status
+        val localNoteId = roomNoteRepository.addNewNote(noteId, title, description, reminderTime)
 
-        // Always save to SQLite regardless of online status
-        val sqliteSuccess = sqliteNoteRepository.addNewNote(noteId, title, description, reminderTime)
-
-        if (sqliteSuccess.isNotEmpty()) {
-            Toast.makeText(context, "Note saved locally", Toast.LENGTH_SHORT).show()
-        }
+        Toast.makeText(context, "Note saved locally", Toast.LENGTH_SHORT).show()
 
         // If online, also save to Firestore
-        firestoreRepository.addNewNote(noteId, title, description, reminderTime)
+        if (isOnline(context)) {
+            firestoreRepository.addNewNote(noteId, title, description, reminderTime)
+        }
 
-        return noteId
+        return localNoteId
     }
 
-    // Update other methods similarly to add toast notifications
     override fun updateNote(noteId: String, title: String, description: String, reminderTime: Long?) {
-        // Always update SQLite
-        sqliteNoteRepository.updateNote(noteId, title, description, reminderTime)
+        // Always update Room
+        roomNoteRepository.updateNote(noteId, title, description, reminderTime)
         Toast.makeText(context, "Note updated locally", Toast.LENGTH_SHORT).show()
+
+        // If online, also update Firestore
+        if (isOnline(context)) {
             firestoreRepository.updateNote(noteId, title, description, reminderTime)
+        }
     }
 
     override fun deleteNote(noteId: String) {
-        firestoreRepository.deleteNote(noteId)
-        sqliteNoteRepository.deleteNote(noteId)
+        roomNoteRepository.deleteNote(noteId)
+
+        if (isOnline(context)) {
+            firestoreRepository.deleteNote(noteId)
+        }
     }
 
     fun getNoteById(noteId: String): Note? {
@@ -181,11 +181,16 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
         // First, get the current note to preserve its other properties
         fetchNoteById(noteId) { note ->
             val updatedFields = mapOf("labels" to labels)
-            firestoreRepository.updateNoteFields(noteId, updatedFields)
-            sqliteNoteRepository.updateNoteFields(noteId, updatedFields)
+
+            // Update in Room
+            roomNoteRepository.updateNoteFields(noteId, updatedFields)
+
+            // If online, update in Firestore
+            if (isOnline(context)) {
+                firestoreRepository.updateNoteFields(noteId, updatedFields)
+            }
         }
     }
-
 
     fun toggleNoteToTrash(noteId: String) {
         fetchNoteById(noteId) { note ->
@@ -200,8 +205,14 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
                     "deletedTime" to System.currentTimeMillis()
                 )
             }
+
+            // Update in Room
+            roomNoteRepository.updateNoteFields(noteId, updatedFields)
+
+            // If online, update in Firestore
+            if (isOnline(context)) {
                 firestoreRepository.updateNoteFields(noteId, updatedFields)
-                sqliteNoteRepository.updateNoteFields(noteId, updatedFields)
+            }
         }
     }
 
@@ -217,8 +228,13 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
                 )
             }
 
+            // Update in Room
+            roomNoteRepository.updateNoteFields(noteId, updatedFields)
+
+            // If online, update in Firestore
+            if (isOnline(context)) {
                 firestoreRepository.updateNoteFields(noteId, updatedFields)
-              sqliteNoteRepository.updateNoteFields(noteId, updatedFields)
+            }
         }
     }
 
@@ -228,10 +244,12 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
 
     // Method to clean up resources when no longer needed
     fun cleanup() {
+        if (isOnline(context)) {
             firestoreRepository.cleanup()
+        }
     }
 
-    // This code is taken from Satck Overflow, needs to be looked at once
+    // This code is taken from Stack Overflow, needs to be looked at once
     fun isOnline(context: Context): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
@@ -253,15 +271,10 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
         }
         return false
     }
-    fun initializeDatabase() {
-        // Force the SQLiteOpenHelper to create/open the database
-        val db = sqliteNoteRepository.writableDatabase
-        db.close()
 
-        // Fetch initial data
+    fun initializeDatabase() {
+        // The Room database is created automatically when accessed
+        // Just fetch initial data
         fetchNotes()
     }
-
-
-
 }

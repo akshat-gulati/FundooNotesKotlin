@@ -1,17 +1,13 @@
-package com.example.fundoonotes.data.room
+package com.example.fundoonotes.data.repository.room
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.fundoonotes.data.room.dao.NoteDao
-import com.example.fundoonotes.data.room.entity.NoteEntity
+import androidx.room.TypeConverters
 
-@Database(
-    entities = [NoteEntity::class],
-    version = 1,
-    exportSchema = false
-)
+@Database(entities = [NoteEntity::class], version = 1, exportSchema = false)
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun noteDao(): NoteDao
 
@@ -24,7 +20,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "FundooNotes.db"
+                    "fundoo_notes_database"
                 ).build()
                 INSTANCE = instance
                 instance

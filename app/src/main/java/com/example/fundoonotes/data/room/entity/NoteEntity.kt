@@ -1,47 +1,34 @@
-package com.example.fundoonotes.data.room.entity
+package com.example.fundoonotes.data.repository.room
 
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.TypeConverter
+import androidx.room.TypeConverters
 import com.example.fundoonotes.data.model.Note
 
 @Entity(tableName = "notes")
 data class NoteEntity(
     @PrimaryKey
-    @ColumnInfo(name = "id")
     val id: String,
-
-    @ColumnInfo(name = "title")
+    val userId: String,
     val title: String,
-
-    @ColumnInfo(name = "description")
     val description: String,
-
-    @ColumnInfo(name = "timestamp")
     val timestamp: Long,
-
-    @ColumnInfo(name = "labels")
-    val labels: String,  // Stored as comma-separated string
-
-    @ColumnInfo(name = "deleted")
+    val labels: String, // Stored as comma-separated string
     val deleted: Boolean,
-
-    @ColumnInfo(name = "archived")
     val archived: Boolean,
-
-    @ColumnInfo(name = "reminderTime")
     val reminderTime: Long?,
-
-    @ColumnInfo(name = "deletedTime")
     val deletedTime: Long?
 ) {
+    // Converter function to convert NoteEntity to Note
     fun toNote(): Note {
         return Note(
             id = id,
+            userId = userId,
             title = title,
             description = description,
             timestamp = timestamp,
-            labels = labels.split(",").filter { it.isNotEmpty() },
+            labels = if (labels.isEmpty()) emptyList() else labels.split(","),
             deleted = deleted,
             archived = archived,
             reminderTime = reminderTime,
@@ -50,9 +37,11 @@ data class NoteEntity(
     }
 
     companion object {
+        // Converter function to convert Note to NoteEntity
         fun fromNote(note: Note): NoteEntity {
             return NoteEntity(
                 id = note.id,
+                userId = note.userId,
                 title = note.title,
                 description = note.description,
                 timestamp = note.timestamp,
@@ -63,5 +52,18 @@ data class NoteEntity(
                 deletedTime = note.deletedTime
             )
         }
+    }
+}
+
+// Type converters for Room
+class Converters {
+    @TypeConverter
+    fun fromBoolean(value: Boolean): Int {
+        return if (value) 1 else 0
+    }
+
+    @TypeConverter
+    fun toBoolean(value: Int): Boolean {
+        return value == 1
     }
 }
