@@ -62,13 +62,13 @@ class FirestoreLabelRepository(private val context: Context): LabelInterface {
             }
     }
 
-    override fun addNewLabel(labelName: String): String {
+    override fun addNewLabel(labelId:String, labelName: String): String {
         if (userId == null) {
             Log.e("LabelRepository", "No user ID found. Cannot add label.")
             return ""
         }
 
-        val labelRef = db.collection("labels").document()
+        val labelRef = db.collection("labels").document(labelId)
         val label = Label(
             id = labelRef.id,
             userId = userId,

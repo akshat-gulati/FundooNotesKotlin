@@ -140,7 +140,6 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
     }
 
     override fun addNewNote(noteId: String, title: String, description: String, reminderTime: Long?): String {
-        // Always save to Room regardless of online status
         val localNoteId = roomNoteRepository.addNewNote(noteId, title, description, reminderTime)
 
         // If online, also save to Firestore

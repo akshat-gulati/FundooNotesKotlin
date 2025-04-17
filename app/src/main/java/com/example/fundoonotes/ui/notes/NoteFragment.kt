@@ -34,6 +34,7 @@ import androidx.lifecycle.LifecycleCoroutineScope
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.util.UUID
 
 class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.OnNoteClickListener {
     private lateinit var recyclerView: RecyclerView
@@ -365,7 +366,8 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
 
             if (newLabelName.isNotEmpty()) {
                 // Create new label
-                newLabelId = labelDataBridge.addNewLabel(newLabelName)
+                val labelId = UUID.randomUUID().toString()
+                newLabelId = labelDataBridge.addNewLabel(labelId,newLabelName)
                 // Add the new label ID to the checked labels
                 if (newLabelId.isNotEmpty()) {
                     checkedLabelIds.plus(newLabelId)

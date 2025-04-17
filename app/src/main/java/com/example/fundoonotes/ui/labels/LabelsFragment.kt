@@ -19,6 +19,7 @@ import android.view.View
 import com.example.fundoonotes.data.model.Label
 import com.example.fundoonotes.R
 import com.example.fundoonotes.data.repository.NoteLabelRepository
+import java.util.UUID
 import kotlin.String
 
 
@@ -104,7 +105,8 @@ class LabelsFragment : Fragment() {
         btnAddLabel.setOnClickListener {
             val labelName = etNewLabel.text.toString().trim()
             if (labelName.isNotEmpty()) {
-                labelDataBridge.addNewLabel(labelName)
+                val labelId = UUID.randomUUID().toString()
+                labelDataBridge.addNewLabel(labelId,labelName)
                 etNewLabel.text.clear()
             }
         }
