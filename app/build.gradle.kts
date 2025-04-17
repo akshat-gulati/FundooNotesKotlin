@@ -6,8 +6,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("com.google.gms.google-services")
-    id("kotlin-kapt")
-//    id("com.google.devtools.ksp")
+    id("com.google.devtools.ksp")
+
 }
 
 android {
@@ -135,6 +135,8 @@ dependencies {
 
     // optional - Kotlin Extensions and Coroutines support for Room
     implementation("androidx.room:room-ktx:$room_version")
+
+    ksp("androidx.room:room-compiler:$room_version")
 
     // optional - Test helpers
     testImplementation("androidx.room:room-testing:$room_version")
