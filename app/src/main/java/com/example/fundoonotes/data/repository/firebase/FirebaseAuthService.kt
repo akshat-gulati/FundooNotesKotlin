@@ -86,7 +86,7 @@ class FirebaseAuthService(private val context: Context): AuthInterface {
             // Setup Google Sign-In
             val googleIdOption = GetGoogleIdOption.Builder()
                 .setServerClientId(context.getString(R.string.default_web_client_id))
-                .setFilterByAuthorizedAccounts(true)
+                .setFilterByAuthorizedAccounts(false)
                 .build()
 
             val request = GetCredentialRequest.Builder()
@@ -104,6 +104,14 @@ class FirebaseAuthService(private val context: Context): AuthInterface {
 
         } catch (e: Exception) {
             Log.e(TAG, "Google Sign-In failed", e)
+            when (e) {
+                is androidx.credentials.exceptions.NoCredentialException -> {
+                    // Handle specifically this type of error
+                    Log.d(TAG, "No credentials available - user might have canceled or no suitable accounts")
+                }
+                // Add other specific exceptions as needed
+                else -> Log.e(TAG, "Unknown error during Google Sign-In", e)
+            }
             AuthResult.Error("Google Sign-In failed: ${e.localizedMessage}")
         }
     }

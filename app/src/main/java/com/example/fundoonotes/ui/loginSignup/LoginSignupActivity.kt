@@ -67,9 +67,6 @@ class LoginSignupActivity : AppCompatActivity() {
     private var profileImageUri: Uri? = null
     private var profileImageUrl: String? = null
 
-    // Permission constants
-    private val STORAGE_PERMISSION_CODE = 101
-
     // Activity result launchers
     private val galleryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
