@@ -141,12 +141,7 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
 
     override fun addNewNote(noteId: String, title: String, description: String, reminderTime: Long?): String {
         val localNoteId = roomNoteRepository.addNewNote(noteId, title, description, reminderTime)
-
-        // If online, also save to Firestore
-//        if (isOnline(context)) {
-            firestoreRepository.addNewNote(noteId, title, description, reminderTime)
-//        }
-
+        firestoreRepository.addNewNote(noteId, title, description, reminderTime)
         return localNoteId
     }
 
@@ -154,19 +149,12 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
         // Always update Room
         roomNoteRepository.updateNote(noteId, title, description, reminderTime)
         Toast.makeText(context, "Note updated locally", Toast.LENGTH_SHORT).show()
-
-        // If online, also update Firestore
-//        if (isOnline(context)) {
             firestoreRepository.updateNote(noteId, title, description, reminderTime)
-//        }
     }
 
     override fun deleteNote(noteId: String) {
         roomNoteRepository.deleteNote(noteId)
-
-//        if (isOnline(context)) {
-            firestoreRepository.deleteNote(noteId)
-//        }
+        firestoreRepository.deleteNote(noteId)
     }
 
     fun getNoteById(noteId: String): Note? {
@@ -181,11 +169,7 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
 
             // Update in Room
             roomNoteRepository.updateNoteFields(noteId, updatedFields)
-
-            // If online, update in Firestore
-//            if (isOnline(context)) {
-                firestoreRepository.updateNoteFields(noteId, updatedFields)
-//            }
+            firestoreRepository.updateNoteFields(noteId, updatedFields)
         }
     }
 
@@ -202,14 +186,8 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
                     "deletedTime" to System.currentTimeMillis()
                 )
             }
-
-            // Update in Room
             roomNoteRepository.updateNoteFields(noteId, updatedFields)
-
-            // If online, update in Firestore
-//            if (isOnline(context)) {
-                firestoreRepository.updateNoteFields(noteId, updatedFields)
-//            }
+            firestoreRepository.updateNoteFields(noteId, updatedFields)
         }
     }
 
@@ -224,14 +202,8 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
                     "archived" to true,
                 )
             }
-
-            // Update in Room
             roomNoteRepository.updateNoteFields(noteId, updatedFields)
-
-            // If online, update in Firestore
-//            if (isOnline(context)) {
-                firestoreRepository.updateNoteFields(noteId, updatedFields)
-//            }
+            firestoreRepository.updateNoteFields(noteId, updatedFields)
         }
     }
 
@@ -239,7 +211,6 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
         Log.d(TAG, "Repository sync not yet implemented")
     }
 
-    // Method to clean up resources when no longer needed
     fun cleanup() {
         if (isOnline(context)) {
             firestoreRepository.cleanup()
