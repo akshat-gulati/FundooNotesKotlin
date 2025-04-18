@@ -1,6 +1,7 @@
 package com.example.fundoonotes.ui.notes
 
 import android.app.AlertDialog
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -128,8 +129,10 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        viewModel = NoteViewModel(requireContext())
+//        viewModel.fetchLabels()
+
         // Initialize ViewModel
-        viewModel = ViewModelProvider(this).get(NoteViewModel::class.java)
 
         // Set initial display mode from arguments
         arguments?.let {
@@ -266,9 +269,6 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
     fun showLabelDialog() {
         if (context == null) return
 
-        // First, ensure we fetch the latest labels
-        viewModel.fetchLabels()
-
         // Create the dialog builder
         val dialogBuilder = AlertDialog.Builder(context)
         dialogBuilder.setTitle("Manage Labels")
@@ -278,14 +278,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         layout.orientation = LinearLayout.VERTICAL
         layout.setPadding(24, 16, 24, 0)
 
-        // We'll set up the checkboxes after we get the labels
-        val checkBoxes = mutableMapOf<CheckBox, String>() // CheckBox to labelId mapping
-
-        // Create text input for new label
-        val editText = EditText(context)
-        editText.hint = "Create a New Label"
-
-        // Create and show the dialog with a loading state initially
+        // Add loading indicator initially
         val loadingText = EditText(context)
         loadingText.isEnabled = false
         loadingText.setText("Loading labels...")
@@ -294,88 +287,84 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         scrollView.addView(layout)
         dialogBuilder.setView(scrollView)
 
-        val dialog = dialogBuilder.create()
+        // Create text input for new label
+        val editText = EditText(context)
+        editText.hint = "Create a New Label"
 
         // Set up the buttons
-        dialog.setButton(AlertDialog.BUTTON_POSITIVE, "OK") { _, _ ->
-            // Track which labels are checked and which are unchecked
-            val checkedLabelIds = checkBoxes.filter { it.key.isChecked }.map { it.value }
-            val uncheckedLabelIds = checkBoxes.filter { !it.key.isChecked }.map { it.value }
-
-            // Handle new label creation if text is entered
-            val newLabelName = editText.text.toString().trim()
-            var newLabelId = ""
-
-            if (newLabelName.isNotEmpty()) {
-                // Create new label
-                newLabelId = viewModel.addNewLabel(newLabelName)
-            }
-
-            // Apply changes to all selected notes
-            viewModel.updateSelectedNotesLabels(checkedLabelIds, uncheckedLabelIds, newLabelId)
+        dialogBuilder.setPositiveButton("OK") { _, _ ->
+            // This will be implemented after we show the dialog
         }
+        dialogBuilder.setNegativeButton("Cancel") { _, _ -> }
 
-        dialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel") { _, _ ->
-            // No action needed
-        }
-
-        // Show the dialog
+        // Create and show the dialog
+        val dialog = dialogBuilder.create()
         dialog.show()
 
-        // Store initial label states for all selected notes
+        // Store checkboxes mapping
+        val checkBoxes = mutableMapOf<CheckBox, String>()
         val initialLabelStates = mutableMapOf<String, Boolean>()
 
-        // Now observe the labels and update the dialog
+        // Fetch labels first, then update the dialog
+        viewModel.fetchLabels()
+
+        // Now observe the labels and update the dialog when they're available
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                val labelDataBridge = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-                    val labelDataBridge = LabelDataBridge(requireContext())
-                    labelDataBridge.labelsState.collect { labels ->
-                        // Only update if we have the dialog showing
-                        withContext(Dispatchers.Main) {
-                            if (dialog.isShowing) {
-                                // Clear the current views
-                                layout.removeAllViews()
-                                checkBoxes.clear()
+            viewModel.labelDataBridge.labelsState.collect { labels ->
+                // Only update if dialog is showing
+                if (dialog.isShowing) {
+                    // Clear the current views
+                    layout.removeAllViews()
+                    checkBoxes.clear()
 
-                                if (labels.isEmpty()) {
-                                    val noLabelsText = EditText(context)
-                                    noLabelsText.isEnabled = false
-                                    noLabelsText.setText("No existing labels. Create one below.")
-                                    layout.addView(noLabelsText)
-                                } else {
-                                    // Initialize the label states map for all labels
-                                    labels.forEach { label ->
-                                        // A label is considered "on" if ANY selected note has it
-                                        val anyNoteHasLabel = viewModel.selectedNotes.value.any { it.labels.contains(label.id) }
-                                        initialLabelStates[label.id] = anyNoteHasLabel
-                                    }
+                    if (labels.isEmpty()) {
+                        val noLabelsText = EditText(context)
+                        noLabelsText.isEnabled = false
+                        noLabelsText.setText("No existing labels. Create one below.")
+                        layout.addView(noLabelsText)
+                    } else {
+                        // Process and display labels
+                        labels.forEach { label ->
+                            // Check if any selected note has this label
+                            val anyNoteHasLabel = viewModel.selectedNotes.value.any { it.labels.contains(label.id) }
+                            initialLabelStates[label.id] = anyNoteHasLabel
 
-                                    // Create checkboxes for existing labels
-                                    labels.forEach { label ->
-                                        val checkBox = CheckBox(context)
-                                        checkBox.text = label.name
-
-                                        // Set the initial checked state based on our map
-                                        checkBox.isChecked = initialLabelStates[label.id] ?: false
-
-                                        checkBoxes[checkBox] = label.id
-                                        layout.addView(checkBox)
-                                    }
-                                }
-
-                                // Add some padding before the new label section
-                                val paddingView = View(context)
-                                paddingView.layoutParams = ViewGroup.LayoutParams(
-                                    ViewGroup.LayoutParams.MATCH_PARENT,
-                                    24
-                                )
-                                layout.addView(paddingView)
-
-                                // Add the edit text for creating new labels
-                                layout.addView(editText)
-                            }
+                            val checkBox = CheckBox(context)
+                            checkBox.text = label.name
+                            checkBox.isChecked = anyNoteHasLabel
+                            checkBoxes[checkBox] = label.id
+                            layout.addView(checkBox)
                         }
+                    }
+
+                    // Add padding and the edit text
+                    val paddingView = View(context)
+                    paddingView.layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        24
+                    )
+                    layout.addView(paddingView)
+                    layout.addView(editText)
+
+                    // Now that we have labels, override the OK button action
+                    val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                    positiveButton.setOnClickListener {
+                        // Track which labels are checked and which are unchecked
+                        val checkedLabelIds = checkBoxes.filter { it.key.isChecked }.map { it.value }
+                        val uncheckedLabelIds = checkBoxes.filter { !it.key.isChecked }.map { it.value }
+
+                        // Handle new label creation if text is entered
+                        val newLabelName = editText.text.toString().trim()
+                        var newLabelId = ""
+
+                        if (newLabelName.isNotEmpty()) {
+                            // Create new label
+                            newLabelId = viewModel.addNewLabel(newLabelName)
+                        }
+
+                        // Apply changes to all selected notes
+                        viewModel.updateSelectedNotesLabels(checkedLabelIds, uncheckedLabelIds, newLabelId)
+                        dialog.dismiss()
                     }
                 }
             }

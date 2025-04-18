@@ -19,12 +19,12 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.util.UUID
 
-class NoteViewModel(application: Application) : AndroidViewModel(application) {
+class NoteViewModel(context: Context) : ViewModel() {
 
     // Data repositories
-    private val notesDataBridge = NotesDataBridge(application)
-    private val labelDataBridge = LabelDataBridge(application)
-    private val noteLabelRepository = NoteLabelRepository(application)
+    private val notesDataBridge = NotesDataBridge(context)
+    internal val labelDataBridge = LabelDataBridge(context)
+    private val noteLabelRepository = NoteLabelRepository(context)
 
     // UI State
     private val _displayMode = MutableStateFlow(NoteFragment.DISPLAY_NOTES)
