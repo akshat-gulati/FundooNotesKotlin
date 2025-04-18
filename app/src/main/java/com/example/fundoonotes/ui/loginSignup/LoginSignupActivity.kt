@@ -133,7 +133,11 @@ class LoginSignupActivity : AppCompatActivity() {
             .setTitle("Select Profile Picture")
             .setItems(options) { dialog, which ->
                 when (which) {
-                    0 -> permissionManager.checkStoragePermission(this)
+                    0 -> {
+                        if (permissionManager.checkStoragePermission(this)) {
+                            openGallery()
+                        }
+                    }
                     1 -> dialog.dismiss()
                 }
             }
