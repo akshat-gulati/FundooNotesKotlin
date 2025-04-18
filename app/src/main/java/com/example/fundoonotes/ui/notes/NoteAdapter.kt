@@ -99,14 +99,12 @@ class NoteAdapter(
             true
         }
     }
-
     override fun getItemCount(): Int = notes.size
 
     fun updateNotes(newNotes: List<Note>) {
         notes = newNotes
         notifyDataSetChanged()
     }
-
     // Methods for multi-selection mode
     private fun toggleSelection(note: Note) {
         if (selectedItems.contains(note.id)) {
@@ -123,7 +121,6 @@ class NoteAdapter(
             notifyDataSetChanged()
         }
     }
-
     fun exitSelectionMode() {
         if (isInSelectionMode) {
             isInSelectionMode = false
@@ -132,28 +129,12 @@ class NoteAdapter(
             notifyDataSetChanged()
         }
     }
-
-    fun isInSelectionMode(): Boolean {
-        return isInSelectionMode
-    }
-
-    fun getSelectedItems(): Set<String> {
-        return selectedItems.toSet()
-    }
-
     fun getSelectedNotes(): Set<Note> {
         return notes.filter { note -> selectedItems.contains(note.id) }.toSet()
     }
-
     fun selectAll() {
         selectedItems.clear()
         selectedItems.addAll(notes.map { it.id })
-        onNoteClickListener.onSelectionChanged(getSelectedNotes())
-        notifyDataSetChanged()
-    }
-
-    fun clearSelections() {
-        selectedItems.clear()
         onNoteClickListener.onSelectionChanged(getSelectedNotes())
         notifyDataSetChanged()
     }

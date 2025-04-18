@@ -27,6 +27,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.fundoonotes.R
+import com.example.fundoonotes.core.PermissionManager
 import com.example.fundoonotes.data.model.Label
 import com.example.fundoonotes.data.model.Note
 import com.example.fundoonotes.data.repository.NoteLabelRepository
@@ -61,6 +62,7 @@ class NoteEditActivity : AppCompatActivity(){
     private lateinit var notesDataBridge: NotesDataBridge
     private lateinit var labelDataBridge: LabelDataBridge
     private lateinit var noteLabelRepository: NoteLabelRepository
+    private lateinit var permissionManager: PermissionManager
 
     private var noteId: String? = null
 
@@ -80,6 +82,8 @@ class NoteEditActivity : AppCompatActivity(){
         notesDataBridge = NotesDataBridge(applicationContext)
         labelDataBridge = LabelDataBridge(applicationContext)
         noteLabelRepository = NoteLabelRepository(applicationContext)
+        permissionManager = PermissionManager(this)
+
 
         initializeViews()
 
@@ -102,55 +106,40 @@ class NoteEditActivity : AppCompatActivity(){
             labelChipGroup.addView(addLabelChip)
         }
 
-        checkNotificationPermission()
+//        checkNotificationPermission()
         labelDataBridge.fetchLabels()
     }
 
-    private fun checkNotificationPermission() {
-        // Check POST_NOTIFICATIONS for Android 13+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    android.Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
-                    PERMISSION_REQUEST_CODE
-                )
-            } else {
-                Log.d("NoteEditActivity", "Notification permission already granted")
-            }
-        }
-
-        // Check SCHEDULE_EXACT_ALARM for Android 12+
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            if (!alarmManager.canScheduleExactAlarms()) {
-                // Request permission
-                val intent = Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                startActivity(intent)
-            }
-        }
-    }
+//    private fun checkNotificationPermission() {
+//        // Check POST_NOTIFICATIONS for Android 13+
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//            if (ContextCompat.checkSelfPermission(
+//                    this,
+//                    android.Manifest.permission.POST_NOTIFICATIONS
+//                ) != PackageManager.PERMISSION_GRANTED) {
+//                ActivityCompat.requestPermissions(
+//                    this,
+//                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+//                    PERMISSION_REQUEST_CODE
+//                )
+//            } else {
+//                Log.d("NoteEditActivity", "Notification permission already granted")
+//            }
+//        }
+//
+//        // Check SCHEDULE_EXACT_ALARM for Android 12+
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+//            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+//            if (!alarmManager.canScheduleExactAlarms()) {
+//                // Request permission
+//                val intent = Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+//                startActivity(intent)
+//            }
+//        }
+//    }
 
     // Handle permission results
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        when (requestCode) {
-            PERMISSION_REQUEST_CODE -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Log.d("NoteEditActivity", "Notification permission granted")
-                } else {
-                    Log.d("NoteEditActivity", "Notification permission denied")
-                }
-            }
-        }
-    }
+
 
     private fun initializeViews() {
         ivBack = findViewById(R.id.ivBack)
@@ -170,8 +159,30 @@ class NoteEditActivity : AppCompatActivity(){
         }
     }
 
+    // In NoteEditActivity.kt
+
     private fun setupReminderPicker() {
-        // Remove the click listener here - it's already set in initializeViews()
+        // Check reminder permissions first
+        permissionManager.checkReminderPermissions(this)
+
+        // We'll continue with the date/time picker only if permissions are granted
+        // This is where we need a callback mechanism
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED) {
+                // We'll request in checkReminderPermissions and catch in onRequestPermissionsResult
+                return
+            }
+        }
+
+        // If we have permissions (or don't need them on older Android), proceed with pickers
+        showDateTimePicker()
+    }
+
+    private fun showDateTimePicker() {
         val currentDate = Calendar.getInstance()
 
         val dateListener = DatePickerDialog.OnDateSetListener { _, year, month, day ->
@@ -205,6 +216,28 @@ class NoteEditActivity : AppCompatActivity(){
             currentDate.get(Calendar.MONTH),
             currentDate.get(Calendar.DAY_OF_MONTH)
         ).show()
+    }
+
+    // Update the onRequestPermissionsResult method to call showDateTimePicker when permissions are granted
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        permissionManager.handlePermissionResult(
+            this,
+            requestCode,
+            permissions,
+            grantResults
+        ) { code ->
+            if (code == PermissionManager.NOTIFICATION_PERMISSION_CODE) {
+                // Continue with reminder setup after permission granted
+                Log.d(TAG, "Notification permission granted, can proceed with reminder")
+                showDateTimePicker()  // Show the date/time picker now that we have permission
+            }
+        }
     }
 
     private fun loadNoteDetails(noteId: String) {
@@ -402,7 +435,6 @@ class NoteEditActivity : AppCompatActivity(){
         }
     }
 
-
     @SuppressLint("SimpleDateFormat")
     private fun saveReminderTime(reminderTime: Long) {
         val currentTime = System.currentTimeMillis()
@@ -410,13 +442,22 @@ class NoteEditActivity : AppCompatActivity(){
         // Check if reminder time is in the future
         if (reminderTime <= currentTime) {
             Log.e("NoteEditActivity", "Cannot set reminder in the past")
-            // Show error toast or message to user
+            Toast.makeText(this, "Cannot set reminder in the past", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Check if we can schedule exact alarms
+        if (!permissionManager.canScheduleExactAlarms()) {
+            Log.e("NoteEditActivity", "Cannot schedule exact alarms")
+            Toast.makeText(this, "Permission to schedule exact alarms is required", Toast.LENGTH_SHORT).show()
+            permissionManager.checkScheduleExactAlarmPermission(this)
             return
         }
 
         // Save reminder time to the note
         val formattedDateTime = SimpleDateFormat("MMM dd, yyyy HH:mm").format(reminderTime)
         Log.d("NoteEditActivity", "Reminder set for: $formattedDateTime")
+        Toast.makeText(this, "Reminder set for: $formattedDateTime", Toast.LENGTH_SHORT).show()
 
         // Store temporarily until saved with the note
         this.reminderTime = reminderTime

@@ -1,10 +1,13 @@
 package com.example.fundoonotes
 
+import android.R.attr.searchIcon
 import android.content.Context
+import android.content.Context.INPUT_METHOD_SERVICE
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
@@ -16,6 +19,7 @@ import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -25,6 +29,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.example.fundoonotes.core.PermissionManager
 import com.google.android.material.navigation.NavigationView
 import com.example.fundoonotes.data.repository.AuthManager
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
@@ -52,6 +57,7 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
     // Navigation manager
     private lateinit var navigationManager: NavigationManager
     private lateinit var navigationComponent: NavigationComponent
+    private lateinit var permissionManager: PermissionManager
 
     // Data bridges
     private lateinit var labelDataBridge: LabelDataBridge
@@ -66,9 +72,7 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
             return
         }
         setupUI(savedInstanceState)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 100)
-        }
+
         val notesDataBridge = NotesDataBridge(applicationContext)
         notesDataBridge.initializeDatabase()
     }
@@ -83,6 +87,8 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
 
         // Initialize data bridges
         labelDataBridge = LabelDataBridge(this)
+        permissionManager = PermissionManager(this)
+        permissionManager.checkNotificationPermission(this)
 
         navigationComponent = NavigationComponent(
             navigationInterface = this,  // Changed from navigationContract to match the class definition
@@ -107,6 +113,24 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
             navigationComponent.getNavigationManager().loadDefaultFragment()
         } else {
             navigationComponent.onRestoreInstanceState()
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        permissionManager.handlePermissionResult(
+            this,
+            requestCode,
+            permissions,
+            grantResults
+        ) { code ->
+            // You can add specific handling if needed
+            Log.d(javaClass.simpleName.toString(), "Permission granted: $code")
         }
     }
 

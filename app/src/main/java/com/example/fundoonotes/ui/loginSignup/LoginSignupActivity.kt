@@ -33,6 +33,7 @@ import kotlinx.coroutines.launch
 import com.example.fundoonotes.data.repository.firebase.FirebaseAuthService
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import android.Manifest
+import com.example.fundoonotes.core.PermissionManager
 import com.example.fundoonotes.data.repository.firebase.FirestoreUserDataRepository
 
 class LoginSignupActivity : AppCompatActivity() {
@@ -59,6 +60,9 @@ class LoginSignupActivity : AppCompatActivity() {
     private lateinit var credentialManager: CredentialManager
     private lateinit var firebaseAuthService: FirebaseAuthService
     private lateinit var cloudinaryImageManager: CloudinaryImageManager
+    private lateinit var permissionManager: PermissionManager
+
+
 
     private var profileImageUri: Uri? = null
     private var profileImageUrl: String? = null
@@ -94,6 +98,7 @@ class LoginSignupActivity : AppCompatActivity() {
         firebaseAuthService = FirebaseAuthService(this)
         credentialManager = CredentialManager.create(this)
         cloudinaryImageManager = CloudinaryImageManager(this)
+        permissionManager = PermissionManager(this)
         initializeViews()
         setupTabLayout()
 
@@ -131,84 +136,9 @@ class LoginSignupActivity : AppCompatActivity() {
             .setTitle("Select Profile Picture")
             .setItems(options) { dialog, which ->
                 when (which) {
-                    0 -> checkStoragePermissionAndOpenGallery()
+                    0 -> permissionManager.checkStoragePermission(this)
                     1 -> dialog.dismiss()
                 }
-            }
-            .show()
-    }
-
-    private fun checkStoragePermissionAndOpenGallery() {
-        when {
-            // For Android 13+ (API 33+), use READ_MEDIA_IMAGES
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
-                when {
-                    ContextCompat.checkSelfPermission(
-                        this,
-                        Manifest.permission.READ_MEDIA_IMAGES
-                    ) == PackageManager.PERMISSION_GRANTED -> {
-                        openGallery()
-                    }
-                    ActivityCompat.shouldShowRequestPermissionRationale(
-                        this,
-                        Manifest.permission.READ_MEDIA_IMAGES
-                    ) -> {
-                        explainPermissionRationale("Storage", Manifest.permission.READ_MEDIA_IMAGES, STORAGE_PERMISSION_CODE)
-                    }
-                    else -> {
-                        ActivityCompat.requestPermissions(
-                            this,
-                            arrayOf(Manifest.permission.READ_MEDIA_IMAGES),
-                            STORAGE_PERMISSION_CODE
-                        )
-                    }
-                }
-            }
-            // For Android 12 and below, use READ_EXTERNAL_STORAGE
-            else -> {
-                when {
-                    ContextCompat.checkSelfPermission(
-                        this,
-                        Manifest.permission.READ_EXTERNAL_STORAGE
-                    ) == PackageManager.PERMISSION_GRANTED -> {
-                        openGallery()
-                    }
-                    ActivityCompat.shouldShowRequestPermissionRationale(
-                        this,
-                        Manifest.permission.READ_EXTERNAL_STORAGE
-                    ) -> {
-                        explainPermissionRationale("Storage", Manifest.permission.READ_EXTERNAL_STORAGE, STORAGE_PERMISSION_CODE)
-                    }
-                    else -> {
-                        ActivityCompat.requestPermissions(
-                            this,
-                            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
-                            STORAGE_PERMISSION_CODE
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    private fun explainPermissionRationale(permissionType: String, permission: String, requestCode: Int) {
-        MaterialAlertDialogBuilder(this)
-            .setTitle("$permissionType Permission Required")
-            .setMessage("This app needs $permissionType access to handle profile pictures.")
-            .setPositiveButton("Grant") { _, _ ->
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(permission),
-                    requestCode
-                )
-            }
-            .setNegativeButton("Cancel") { dialog, _ ->
-                dialog.dismiss()
-                Toast.makeText(
-                    this,
-                    "$permissionType permission is required for this feature",
-                    Toast.LENGTH_SHORT
-                ).show()
             }
             .show()
     }
@@ -219,6 +149,7 @@ class LoginSignupActivity : AppCompatActivity() {
     }
 
 
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -226,25 +157,9 @@ class LoginSignupActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        when (requestCode) {
-            STORAGE_PERMISSION_CODE -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    openGallery()
-                } else {
-                    // Check if permission was permanently denied
-                    val permissionToCheck = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        Manifest.permission.READ_MEDIA_IMAGES
-                    } else {
-                        Manifest.permission.READ_EXTERNAL_STORAGE
-                    }
-
-                    if (!ActivityCompat.shouldShowRequestPermissionRationale(this, permissionToCheck)) {
-                        // Show dialog to open app settings
-                        showSettingsDialog("Storage")
-                    } else {
-                        Toast.makeText(this, "Storage permission denied", Toast.LENGTH_SHORT).show()
-                    }
-                }
+        permissionManager.handlePermissionResult(this, requestCode, permissions, grantResults) { code ->
+            if (code == PermissionManager.STORAGE_PERMISSION_CODE) {
+                openGallery()
             }
         }
     }
