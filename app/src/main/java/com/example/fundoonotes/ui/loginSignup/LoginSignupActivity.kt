@@ -1,10 +1,6 @@
 package com.example.fundoonotes.ui.loginSignup
 
-import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.View
@@ -17,24 +13,16 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.fundoonotes.R
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.textfield.TextInputLayout
-import androidx.credentials.CredentialManager
-import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
-import com.example.fundoonotes.data.repository.CloudinaryImageManager
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
-import com.example.fundoonotes.data.repository.firebase.FirebaseAuthService
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import android.Manifest
-import com.example.fundoonotes.core.PermissionManager
-import com.example.fundoonotes.data.repository.firebase.FirestoreUserDataRepository
+import androidx.lifecycle.Observer
 
 class LoginSignupActivity : AppCompatActivity() {
 
@@ -57,22 +45,15 @@ class LoginSignupActivity : AppCompatActivity() {
     private lateinit var etFullName: TextInputEditText
     private lateinit var etConfirmPassword: TextInputEditText
 
-    private lateinit var credentialManager: CredentialManager
-    private lateinit var firebaseAuthService: FirebaseAuthService
-    private lateinit var cloudinaryImageManager: CloudinaryImageManager
-    private lateinit var permissionManager: PermissionManager
 
-
-
-    private var profileImageUri: Uri? = null
-    private var profileImageUrl: String? = null
+    private lateinit var viewModel: LoginSignupViewModel
 
     // Activity result launchers
     private val galleryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
+        if (result.resultCode == RESULT_OK) {
             result.data?.data?.let { uri ->
-                profileImageUri = uri
-                // Show selected image in the ImageButton
+                viewModel.setProfileImageUri(uri)
+
                 Glide.with(this)
                     .load(uri)
                     .circleCrop()
@@ -81,9 +62,6 @@ class LoginSignupActivity : AppCompatActivity() {
 
                 // Upload to Cloudinary
                 Toast.makeText(this, "Uploading profile picture...", Toast.LENGTH_SHORT).show()
-                cloudinaryImageManager.uploadProfileImage(uri) { imageUrl ->
-                    profileImageUrl = imageUrl
-                }
             }
         }
     }
@@ -92,12 +70,12 @@ class LoginSignupActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_login_signup)
-        firebaseAuthService = FirebaseAuthService(this)
-        credentialManager = CredentialManager.create(this)
-        cloudinaryImageManager = CloudinaryImageManager(this)
-        permissionManager = PermissionManager(this)
+
+        viewModel = LoginSignupViewModel(this)
+
         initializeViews()
         setupTabLayout()
+        observeViewModel()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -118,12 +96,49 @@ class LoginSignupActivity : AppCompatActivity() {
         }
 
         ivGoogle.setOnClickListener {
-            performGoogleSignIn()
+            viewModel.performGoogleSignIn()
         }
 
         cvProfilePicture.setOnClickListener{
             showImageSelectionDialog()
         }
+    }
+
+    private fun observeViewModel() {
+        // Observe tab changes
+        viewModel.currentTab.observe(this, Observer { tabPosition ->
+            tabLayout.getTabAt(tabPosition)?.select()
+        })
+
+        // Observe auth results
+        viewModel.authResult.observe(this, Observer { result ->
+            when(result) {
+                is LoginSignupViewModel.AuthResult.Success -> {
+                    viewModel.navigateToMainActivity(this)
+                    finish()
+                }
+                is LoginSignupViewModel.AuthResult.Error -> {
+                    Toast.makeText(this, result.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
+
+        // Observe loading state
+        viewModel.isLoading.observe(this, Observer { isLoading ->
+            // You can implement a loading indicator here if needed
+            btnAction.isEnabled = !isLoading
+        })
+
+        // Observe profile image URI
+        viewModel.profileImageUri.observe(this, Observer { uri ->
+            uri?.let {
+                Glide.with(this)
+                    .load(it)
+                    .circleCrop()
+                    .placeholder(R.drawable.person)
+                    .into(ibProfilePicture)
+            }
+        })
     }
 
     private fun showImageSelectionDialog() {
@@ -134,7 +149,7 @@ class LoginSignupActivity : AppCompatActivity() {
             .setItems(options) { dialog, which ->
                 when (which) {
                     0 -> {
-                        if (permissionManager.checkStoragePermission(this)) {
+                        if (viewModel.hasStoragePermission(this)) {
                             openGallery()
                         }
                     }
@@ -143,6 +158,7 @@ class LoginSignupActivity : AppCompatActivity() {
             }
             .show()
     }
+
 
     private fun openGallery() {
         val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
@@ -158,43 +174,8 @@ class LoginSignupActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
-        permissionManager.handlePermissionResult(this, requestCode, permissions, grantResults) { code ->
-            if (code == PermissionManager.STORAGE_PERMISSION_CODE) {
-                openGallery()
-            }
-        }
-    }
-
-    private fun showSettingsDialog(permissionType: String) {
-        MaterialAlertDialogBuilder(this)
-            .setTitle("$permissionType Permission Required")
-            .setMessage("$permissionType permission is needed but has been permanently denied. Please enable it in app settings.")
-            .setPositiveButton("Open Settings") { _, _ ->
-                // Open app settings
-                val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                val uri = Uri.fromParts("package", packageName, null)
-                intent.data = uri
-                startActivity(intent)
-            }
-            .setNegativeButton("Cancel") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .show()
-    }
-
-    private fun performGoogleSignIn() {
-        lifecycleScope.launch {
-            when (val result = firebaseAuthService.performGoogleSignIn()) {
-                is FirebaseAuthService.AuthResult.Success -> {
-                    firebaseAuthService.navigateToMainActivity(this@LoginSignupActivity)
-                    finish()
-                }
-
-                is FirebaseAuthService.AuthResult.Error -> {
-                    Toast.makeText(this@LoginSignupActivity, result.message, Toast.LENGTH_SHORT)
-                        .show()
-                }
-            }
+        if (viewModel.hasStoragePermission(this)) {
+            openGallery()
         }
     }
 
@@ -268,19 +249,8 @@ class LoginSignupActivity : AppCompatActivity() {
         val email = etEmail.text.toString().trim()
         val password = etPassword.text.toString().trim()
 
-        lifecycleScope.launch {
-            when (val result = firebaseAuthService.loginWithEmailPassword(email, password)) {
-                is FirebaseAuthService.AuthResult.Success -> {
-                    firebaseAuthService.navigateToMainActivity(this@LoginSignupActivity)
-                    finish()
-                }
+        viewModel.login(email, password)
 
-                is FirebaseAuthService.AuthResult.Error -> {
-                    Toast.makeText(this@LoginSignupActivity, result.message, Toast.LENGTH_SHORT)
-                        .show()
-                }
-            }
-        }
     }
 
     private fun registerUser() {
@@ -289,26 +259,6 @@ class LoginSignupActivity : AppCompatActivity() {
         val confirmPassword = etConfirmPassword.text.toString().trim()
         val fullName = etFullName.text.toString().trim()
 
-        lifecycleScope.launch {
-            when (val result = firebaseAuthService.registerWithEmailPassword(
-                email, password, confirmPassword, fullName
-            )) {
-                is FirebaseAuthService.AuthResult.Success -> {
-                    val userRepository = FirestoreUserDataRepository(this@LoginSignupActivity)
-
-                    // Add the user data including profile image URL
-                    userRepository.addNewUser(fullName, email, profileImageUrl)
-
-                    // Navigate to MainActivity
-                    firebaseAuthService.navigateToMainActivity(this@LoginSignupActivity)
-                    finish()
-                }
-
-                is FirebaseAuthService.AuthResult.Error -> {
-                    Toast.makeText(this@LoginSignupActivity, result.message, Toast.LENGTH_SHORT)
-                        .show()
-                }
-            }
-        }
+        viewModel.register(email, password, confirmPassword, fullName)
     }
 }
