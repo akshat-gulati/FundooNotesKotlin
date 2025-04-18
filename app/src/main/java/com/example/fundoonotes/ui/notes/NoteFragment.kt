@@ -31,27 +31,23 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import androidx.lifecycle.LifecycleCoroutineScope
+import androidx.lifecycle.ViewModelProvider
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.UUID
 
+
 class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.OnNoteClickListener {
     private lateinit var recyclerView: RecyclerView
     private lateinit var noteAdapter: NoteAdapter
     private lateinit var fabAddNote: FloatingActionButton
-    private lateinit var notesDataBridge: NotesDataBridge
-    private lateinit var labelDataBridge: LabelDataBridge
-    private lateinit var noteLabelRepository: NoteLabelRepository
 
-    private var isGridLayout = true
-    private var displayMode = DISPLAY_NOTES // Default mode
-    private var currentLabelId: String? = null // For label filtering
-    private var searchQuery: String = "" // For search filtering
+    // ViewModel
+    private lateinit var viewModel: NoteViewModel
 
     // Multi-selection action mode
     private var actionMode: ActionMode? = null
-    private var selectedNotes: Set<Note> = emptySet()
 
     private val actionModeCallback = object : ActionMode.Callback {
         override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
@@ -60,8 +56,8 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         }
 
         override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
-            // Update action mode title with count of selected items
-            if (displayMode == DISPLAY_BIN) {
+            // Update UI based on display mode
+            if (viewModel.displayMode.value == DISPLAY_BIN) {
                 menu.findItem(R.id.action_archive).isVisible = false
                 menu.findItem(R.id.action_labels).isVisible = false
 
@@ -69,30 +65,24 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
                 menuItem.setIcon(R.drawable.restore)
             }
 
-            if (displayMode == DISPLAY_ARCHIVE){
+            if (viewModel.displayMode.value == DISPLAY_ARCHIVE) {
                 val menuItem = menu.findItem(R.id.action_archive)
                 menuItem.setIcon(R.drawable.unarchive)
             }
 
-            mode.title = "${selectedNotes.size} selected"
+            mode.title = "${viewModel.selectedNotes.value.size} selected"
             return true
         }
 
         override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
             return when (item.itemId) {
                 R.id.action_delete -> {
-                    val noteIds = selectedNotes.map { it.id }
-                    noteIds.forEach { noteId ->
-                        notesDataBridge.toggleNoteToTrash(noteId)
-                    }
+                    viewModel.deleteSelectedNotes()
                     mode.finish()
                     true
                 }
                 R.id.action_archive -> {
-                    val noteIds = selectedNotes.map { it.id }
-                    noteIds.forEach { noteId ->
-                        notesDataBridge.toggleNoteToArchive(noteId)
-                    }
+                    viewModel.archiveSelectedNotes()
                     mode.finish()
                     true
                 }
@@ -112,6 +102,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         override fun onDestroyActionMode(mode: ActionMode?) {
             actionMode = null
             noteAdapter.exitSelectionMode()
+            viewModel.clearSelection()
 
             // Ensure toolbar is visible when action mode is destroyed
             (activity as MainActivity).setToolbarVisibility(true)
@@ -136,14 +127,15 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            displayMode = it.getInt("initial_display_mode", DISPLAY_NOTES)
-        }
 
-        // Initialize repository
-        notesDataBridge = NotesDataBridge(requireContext())
-        noteLabelRepository = NoteLabelRepository(requireContext())
-        labelDataBridge = LabelDataBridge(requireContext())
+        // Initialize ViewModel
+        viewModel = ViewModelProvider(this).get(NoteViewModel::class.java)
+
+        // Set initial display mode from arguments
+        arguments?.let {
+            val initialDisplayMode = it.getInt("initial_display_mode", DISPLAY_NOTES)
+            viewModel.updateDisplayMode(initialDisplayMode)
+        }
     }
 
     override fun onCreateView(
@@ -155,15 +147,13 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         recyclerView = view.findViewById(R.id.recyclerView)
         fabAddNote = view.findViewById(R.id.fab_add_note)
 
-        // Set up the RecyclerView layout manager
-        setupLayoutManager()
-
         // Initialize adapter
         noteAdapter = NoteAdapter(emptyList(), this)
         recyclerView.adapter = noteAdapter
+        recyclerView.itemAnimator = DefaultItemAnimator()
 
-        // Setup flow collection for notes - this is the key change
-        setupNotesObserver()
+        // Set up observers
+        setupObservers()
 
         // Set up FAB click listener
         fabAddNote.setOnClickListener {
@@ -171,26 +161,36 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
             startActivity(intent)
         }
 
-        // Initial FAB visibility based on display mode
-        updateFabVisibility()
-
         return view
     }
 
-    private fun updateFabVisibility() {
-        fabAddNote.visibility = if (displayMode == DISPLAY_BIN) View.GONE else View.VISIBLE
-    }
-
-    private fun setupNotesObserver() {
-        // Ensure the coroutine is tied to the view's lifecycle rather than the Fragment's lifecycle
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+    private fun setupObservers() {
+        viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                notesDataBridge.notesState.collect { notes ->
-                    withContext(Dispatchers.Main) {
-                        val filteredNotes = getFilteredNotes(notes)
-                        noteAdapter.updateNotes(filteredNotes)
+                // Observe filtered notes
+                launch {
+                    viewModel.filteredNotes.collect { notes ->
+                        noteAdapter.updateNotes(notes)
+                    }
+                }
 
-                        // If we're in selection mode, update the selection count
+                // Observe layout mode
+                launch {
+                    viewModel.isGridLayout.collect { isGrid ->
+                        setupLayoutManager(isGrid)
+                    }
+                }
+
+                // Observe display mode for FAB visibility
+                launch {
+                    viewModel.displayMode.collect { mode ->
+                        updateFabVisibility(mode)
+                    }
+                }
+
+                // Observe selection changes
+                launch {
+                    viewModel.selectedNotes.collect { selectedNotes ->
                         if (actionMode != null) {
                             actionMode?.title = "${selectedNotes.size} selected"
                         }
@@ -200,44 +200,17 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         }
     }
 
-    private fun setupLayoutManager() {
+    private fun setupLayoutManager(isGridLayout: Boolean) {
         val spanCount = if (isGridLayout) 2 else 1
         recyclerView.layoutManager = StaggeredGridLayoutManager(spanCount, StaggeredGridLayoutManager.VERTICAL)
-        recyclerView.itemAnimator = DefaultItemAnimator()
     }
 
-    fun getFilteredNotes(notes: List<Note>): List<Note> {
-        // First apply display mode filter
-        val displayModeFiltered = when (displayMode) {
-            DISPLAY_NOTES -> notes.filter { !it.archived && !it.deleted }
-            DISPLAY_REMINDERS -> notes.filter { !it.archived && !it.deleted && it.reminderTime != null }
-            DISPLAY_ARCHIVE -> notes.filter { it.archived && !it.deleted }
-            DISPLAY_BIN -> notes.filter { it.deleted }
-            DISPLAY_LABELS -> {
-                currentLabelId?.let { labelId ->
-                    notes.filter { !it.archived && !it.deleted && it.labels.contains(labelId) }
-                } ?: emptyList()
-            }
-            else -> emptyList()
-        }
-
-        // Then apply search filter if any
-        return if (searchQuery.isNotEmpty()) {
-            val query = searchQuery.lowercase().trim()
-            displayModeFiltered.filter { note ->
-                note.title.lowercase().contains(query) ||
-                        note.description.lowercase().contains(query)
-            }
-        } else {
-            displayModeFiltered
-        }
+    private fun updateFabVisibility(displayMode: Int) {
+        fabAddNote.visibility = if (displayMode == DISPLAY_BIN) View.GONE else View.VISIBLE
     }
-
-
 
     override fun onLayoutToggle(isGridLayout: Boolean) {
-        this.isGridLayout = isGridLayout
-        setupLayoutManager()
+        viewModel.toggleLayoutMode(isGridLayout)
     }
 
     // NoteAdapter.OnNoteClickListener implementation
@@ -264,17 +237,10 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
     override fun onSelectionModeEnded() {
         // End action mode when selection ends
         actionMode?.finish()
-
-        // Show FAB if we're not in trash
-        updateFabVisibility()
-
-        // Show the toolbar again
-        (activity as MainActivity).setToolbarVisibility(true)
     }
 
     override fun onSelectionChanged(selectedNotes: Set<Note>) {
-        this.selectedNotes = selectedNotes
-        actionMode?.invalidate() // Update action mode UI
+        viewModel.setSelectedNotes(selectedNotes)
     }
 
     override fun onDestroyView() {
@@ -289,43 +255,19 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
 
     // Public method to filter notes by search query
     fun filterNotes(query: String) {
-        this.searchQuery = query
-        refreshNotes()
+        viewModel.setSearchQuery(query)
     }
 
     // New method to update display mode
     fun updateDisplayMode(newMode: Int, labelId: String? = null) {
-        displayMode = newMode
-        currentLabelId = labelId
-        searchQuery = "" // Reset search when changing modes
-        updateFabVisibility()
-
-        // Only refresh if we have a view
-        if (view != null && isAdded) {
-            refreshNotes()
-        }
-    }
-
-    // Helper method to refresh notes based on current filters
-    private fun refreshNotes() {
-        // Only proceed if view exists and fragment is in a valid state
-        if (view == null || !isAdded) return
-
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            val currentNotes = notesDataBridge.notesState.value
-            val filteredNotes = getFilteredNotes(currentNotes)
-
-            withContext(Dispatchers.Main) {
-                noteAdapter.updateNotes(filteredNotes)
-            }
-        }
+        viewModel.updateDisplayMode(newMode, labelId)
     }
 
     fun showLabelDialog() {
         if (context == null) return
 
         // First, ensure we fetch the latest labels
-        labelDataBridge.fetchLabels()
+        viewModel.fetchLabels()
 
         // Create the dialog builder
         val dialogBuilder = AlertDialog.Builder(context)
@@ -366,39 +308,11 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
 
             if (newLabelName.isNotEmpty()) {
                 // Create new label
-                val labelId = UUID.randomUUID().toString()
-                newLabelId = labelDataBridge.addNewLabel(labelId,newLabelName)
-                // Add the new label ID to the checked labels
-                if (newLabelId.isNotEmpty()) {
-                    checkedLabelIds.plus(newLabelId)
-                }
+                newLabelId = viewModel.addNewLabel(newLabelName)
             }
 
-            // Apply changes to all selected notes on IO thread
-            viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-                // Apply changes to all selected notes
-                for (note in selectedNotes) {
-                    // Start with the current labels of the note
-                    val currentLabels = note.labels.toMutableList()
-
-                    // Remove labels that were unchecked
-                    currentLabels.removeAll(uncheckedLabelIds)
-
-                    // Add labels that were checked (and weren't there before)
-                    val updatedLabels = (currentLabels + checkedLabelIds).distinct()
-
-                    // Add the newly created label if there is one
-                    val finalLabels = if (newLabelId.isNotEmpty()) {
-                        (updatedLabels + newLabelId).distinct()
-                    } else {
-                        updatedLabels
-                    }
-
-                    // Update the note with the final set of labels
-                    noteLabelRepository.updateNoteLabels(note.id, finalLabels)
-                    noteLabelRepository.updateLabelsWithNoteReference(note.id, finalLabels)
-                }
-            }
+            // Apply changes to all selected notes
+            viewModel.updateSelectedNotesLabels(checkedLabelIds, uncheckedLabelIds, newLabelId)
         }
 
         dialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel") { _, _ ->
@@ -412,51 +326,56 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         val initialLabelStates = mutableMapOf<String, Boolean>()
 
         // Now observe the labels and update the dialog
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            labelDataBridge.labelsState.collect { labels ->
-                // Only update if we have the dialog showing
-                withContext(Dispatchers.Main) {
-                    if (dialog.isShowing) {
-                        // Clear the current views
-                        layout.removeAllViews()
-                        checkBoxes.clear()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                val labelDataBridge = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                    val labelDataBridge = LabelDataBridge(requireContext())
+                    labelDataBridge.labelsState.collect { labels ->
+                        // Only update if we have the dialog showing
+                        withContext(Dispatchers.Main) {
+                            if (dialog.isShowing) {
+                                // Clear the current views
+                                layout.removeAllViews()
+                                checkBoxes.clear()
 
-                        if (labels.isEmpty()) {
-                            val noLabelsText = EditText(context)
-                            noLabelsText.isEnabled = false
-                            noLabelsText.setText("No existing labels. Create one below.")
-                            layout.addView(noLabelsText)
-                        } else {
-                            // Initialize the label states map for all labels
-                            labels.forEach { label ->
-                                // A label is considered "on" if ANY selected note has it
-                                val anyNoteHasLabel = selectedNotes.any { it.labels.contains(label.id) }
-                                initialLabelStates[label.id] = anyNoteHasLabel
-                            }
+                                if (labels.isEmpty()) {
+                                    val noLabelsText = EditText(context)
+                                    noLabelsText.isEnabled = false
+                                    noLabelsText.setText("No existing labels. Create one below.")
+                                    layout.addView(noLabelsText)
+                                } else {
+                                    // Initialize the label states map for all labels
+                                    labels.forEach { label ->
+                                        // A label is considered "on" if ANY selected note has it
+                                        val anyNoteHasLabel = viewModel.selectedNotes.value.any { it.labels.contains(label.id) }
+                                        initialLabelStates[label.id] = anyNoteHasLabel
+                                    }
 
-                            // Create checkboxes for existing labels
-                            labels.forEach { label ->
-                                val checkBox = CheckBox(context)
-                                checkBox.text = label.name
+                                    // Create checkboxes for existing labels
+                                    labels.forEach { label ->
+                                        val checkBox = CheckBox(context)
+                                        checkBox.text = label.name
 
-                                // Set the initial checked state based on our map
-                                checkBox.isChecked = initialLabelStates[label.id] ?: false
+                                        // Set the initial checked state based on our map
+                                        checkBox.isChecked = initialLabelStates[label.id] ?: false
 
-                                checkBoxes[checkBox] = label.id
-                                layout.addView(checkBox)
+                                        checkBoxes[checkBox] = label.id
+                                        layout.addView(checkBox)
+                                    }
+                                }
+
+                                // Add some padding before the new label section
+                                val paddingView = View(context)
+                                paddingView.layoutParams = ViewGroup.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    24
+                                )
+                                layout.addView(paddingView)
+
+                                // Add the edit text for creating new labels
+                                layout.addView(editText)
                             }
                         }
-
-                        // Add some padding before the new label section
-                        val paddingView = View(context)
-                        paddingView.layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            24
-                        )
-                        layout.addView(paddingView)
-
-                        // Add the edit text for creating new labels
-                        layout.addView(editText)
                     }
                 }
             }
