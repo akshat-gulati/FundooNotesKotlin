@@ -14,53 +14,35 @@ import kotlinx.coroutines.launch
 
 class LoginSignupViewModel(context: Context) : ViewModel() {
 
-    private var firebaseAuthService: FirebaseAuthService = FirebaseAuthService(context)
-    private var cloudinaryImageManager:CloudinaryImageManager = CloudinaryImageManager(context)
-    private var permissionManager: PermissionManager = PermissionManager(context)
-    private var firestoreUserDataRepository:FirestoreUserDataRepository = FirestoreUserDataRepository(context)
+    // Dependencies
+    private val firebaseAuthService: FirebaseAuthService = FirebaseAuthService(context)
+    private val cloudinaryImageManager: CloudinaryImageManager = CloudinaryImageManager(context)
+    private val permissionManager: PermissionManager = PermissionManager(context)
+    private val firestoreUserDataRepository: FirestoreUserDataRepository = FirestoreUserDataRepository(context)
 
-
+    // LiveData for UI state
     private val _currentTab = MutableLiveData<Int>(0) // 0 for Login, 1 for Register
     val currentTab: LiveData<Int> = _currentTab
 
-    // Profile image data
     private val _profileImageUri = MutableLiveData<Uri?>(null)
     val profileImageUri: LiveData<Uri?> = _profileImageUri
 
     private val _profileImageUrl = MutableLiveData<String?>(null)
     val profileImageUrl: LiveData<String?> = _profileImageUrl
 
-    // Auth result state
     private val _authResult = MutableLiveData<AuthResult>()
     val authResult: LiveData<AuthResult> = _authResult
 
-    // Loading state
     private val _isLoading = MutableLiveData<Boolean>(false)
     val isLoading: LiveData<Boolean> = _isLoading
 
-    // Function to switch between login and register tabs
-    fun setCurrentTab(tabPosition: Int) {
-        _currentTab.value = tabPosition
+    // Sealed class for authentication results
+    sealed class AuthResult {
+        object Success : AuthResult()
+        data class Error(val message: String) : AuthResult()
     }
 
-    // Function to set the profile image Uri
-    fun setProfileImageUri(uri: Uri?) {
-        _profileImageUri.value = uri
-        uploadProfileImage(uri)
-    }
-
-    // Upload profile image to Cloudinary
-    private fun uploadProfileImage(uri: Uri?) {
-        uri?.let {
-            _isLoading.value = true
-            cloudinaryImageManager.uploadProfileImage(it) { imageUrl ->
-                _profileImageUrl.value = imageUrl
-                _isLoading.value = false
-            }
-        }
-    }
-
-    // Login function
+    // Authentication Methods
     fun login(email: String, password: String) {
         _isLoading.value = true
         viewModelScope.launch {
@@ -73,7 +55,6 @@ class LoginSignupViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // Register function
     fun register(email: String, password: String, confirmPassword: String, fullName: String) {
         _isLoading.value = true
         viewModelScope.launch {
@@ -83,7 +64,6 @@ class LoginSignupViewModel(context: Context) : ViewModel() {
 
             when (result) {
                 is FirebaseAuthService.AuthResult.Success -> {
-                    // Store user data in Firestore
                     firestoreUserDataRepository.addNewUser(fullName, email, _profileImageUrl.value)
                     _authResult.value = AuthResult.Success
                 }
@@ -95,7 +75,6 @@ class LoginSignupViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // Google sign-in function
     fun performGoogleSignIn() {
         _isLoading.value = true
         viewModelScope.launch {
@@ -108,19 +87,29 @@ class LoginSignupViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // Check if storage permission is granted
+    // Profile Image Management
+    fun setProfileImageUri(uri: Uri?) {
+        _profileImageUri.value = uri
+        uploadProfileImage(uri)
+    }
+
+    private fun uploadProfileImage(uri: Uri?) {
+        uri?.let {
+            _isLoading.value = true
+            cloudinaryImageManager.uploadProfileImage(it) { imageUrl ->
+                _profileImageUrl.value = imageUrl
+                _isLoading.value = false
+            }
+        }
+    }
+
+    // Permission Management
     fun hasStoragePermission(activity: LoginSignupActivity): Boolean {
         return permissionManager.checkStoragePermission(activity)
     }
 
-    // Navigation function
+    // Navigation
     fun navigateToMainActivity(activity: LoginSignupActivity) {
         firebaseAuthService.navigateToMainActivity(activity)
-    }
-
-    // Sealed class for authentication results
-    sealed class AuthResult {
-        object Success : AuthResult()
-        data class Error(val message: String) : AuthResult()
     }
 }

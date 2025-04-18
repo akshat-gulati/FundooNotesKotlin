@@ -15,16 +15,18 @@ import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.example.fundoonotes.R
-import com.google.android.material.tabs.TabLayout
-import com.google.android.material.textfield.TextInputLayout
-import com.bumptech.glide.Glide
-import com.google.android.material.textfield.TextInputEditText
-import kotlinx.coroutines.launch
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.lifecycle.Observer
+import com.bumptech.glide.Glide
+import com.example.fundoonotes.R
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 
 class LoginSignupActivity : AppCompatActivity() {
+
+    // ViewModel
+    private lateinit var viewModel: LoginSignupViewModel
 
     // UI components
     private lateinit var tabLayout: TabLayout
@@ -39,33 +41,28 @@ class LoginSignupActivity : AppCompatActivity() {
     private lateinit var cvProfilePicture: CardView
     private lateinit var ibProfilePicture: ImageView
 
-    // Email and Password EditTexts
+    // EditText fields
     private lateinit var etEmail: TextInputEditText
     private lateinit var etPassword: TextInputEditText
     private lateinit var etFullName: TextInputEditText
     private lateinit var etConfirmPassword: TextInputEditText
-
-
-    private lateinit var viewModel: LoginSignupViewModel
 
     // Activity result launchers
     private val galleryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
             result.data?.data?.let { uri ->
                 viewModel.setProfileImageUri(uri)
-
                 Glide.with(this)
                     .load(uri)
                     .circleCrop()
                     .placeholder(R.drawable.person)
                     .into(ibProfilePicture)
-
-                // Upload to Cloudinary
                 Toast.makeText(this, "Uploading profile picture...", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
+    // Activity lifecycle methods
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -75,6 +72,7 @@ class LoginSignupActivity : AppCompatActivity() {
 
         initializeViews()
         setupTabLayout()
+        setupClickListeners()
         observeViewModel()
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -82,90 +80,7 @@ class LoginSignupActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
-        btnAction.setOnClickListener {
-            // Determine action based on current tab
-            val currentTab = tabLayout.selectedTabPosition
-            if (currentTab == 0) {
-                // Login
-                loginUser()
-            } else {
-                // Register
-                registerUser()
-            }
-        }
-
-        ivGoogle.setOnClickListener {
-            viewModel.performGoogleSignIn()
-        }
-
-        cvProfilePicture.setOnClickListener{
-            showImageSelectionDialog()
-        }
     }
-
-    private fun observeViewModel() {
-        // Observe tab changes
-        viewModel.currentTab.observe(this, Observer { tabPosition ->
-            tabLayout.getTabAt(tabPosition)?.select()
-        })
-
-        // Observe auth results
-        viewModel.authResult.observe(this, Observer { result ->
-            when(result) {
-                is LoginSignupViewModel.AuthResult.Success -> {
-                    viewModel.navigateToMainActivity(this)
-                    finish()
-                }
-                is LoginSignupViewModel.AuthResult.Error -> {
-                    Toast.makeText(this, result.message, Toast.LENGTH_SHORT).show()
-                }
-            }
-        })
-
-        // Observe loading state
-        viewModel.isLoading.observe(this, Observer { isLoading ->
-            // You can implement a loading indicator here if needed
-            btnAction.isEnabled = !isLoading
-        })
-
-        // Observe profile image URI
-        viewModel.profileImageUri.observe(this, Observer { uri ->
-            uri?.let {
-                Glide.with(this)
-                    .load(it)
-                    .circleCrop()
-                    .placeholder(R.drawable.person)
-                    .into(ibProfilePicture)
-            }
-        })
-    }
-
-    private fun showImageSelectionDialog() {
-        val options = arrayOf("Choose from Gallery", "Cancel")
-
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Select Profile Picture")
-            .setItems(options) { dialog, which ->
-                when (which) {
-                    0 -> {
-                        if (viewModel.hasStoragePermission(this)) {
-                            openGallery()
-                        }
-                    }
-                    1 -> dialog.dismiss()
-                }
-            }
-            .show()
-    }
-
-
-    private fun openGallery() {
-        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-        galleryLauncher.launch(intent)
-    }
-
-
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -173,12 +88,12 @@ class LoginSignupActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
         if (viewModel.hasStoragePermission(this)) {
             openGallery()
         }
     }
 
+    // Initialization methods
     private fun initializeViews() {
         tabLayout = findViewById(R.id.tabLayout)
         tilFullName = findViewById(R.id.tilFullName)
@@ -191,8 +106,6 @@ class LoginSignupActivity : AppCompatActivity() {
         ivGoogle = findViewById(R.id.ivGoogle)
         cvProfilePicture = findViewById(R.id.cvProfilePicture)
         ibProfilePicture = findViewById(R.id.ibProfilePicture)
-
-        // Initialize EditTexts
         etEmail = findViewById(R.id.etEmail)
         etPassword = findViewById(R.id.etPassword)
         etFullName = findViewById(R.id.etFullName)
@@ -200,10 +113,7 @@ class LoginSignupActivity : AppCompatActivity() {
     }
 
     private fun setupTabLayout() {
-        // Set initial state to Login
         showLoginUI()
-
-        // Set up tab selection listener
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 when (tab?.position) {
@@ -211,46 +121,53 @@ class LoginSignupActivity : AppCompatActivity() {
                     1 -> showRegisterUI()
                 }
             }
-
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
     }
 
+    // UI state management
     private fun showLoginUI() {
-        // Show login-specific UI elements
         tilFullName.visibility = View.GONE
         tilConfirmPassword.visibility = View.GONE
-        cvProfilePicture.visibility = View.GONE  // Hide profile picture upload in login mode
-
-        // Show login-specific elements
+        cvProfilePicture.visibility = View.GONE
         clPasswordOptions.visibility = View.GONE
-
-        // Update action button
         btnAction.text = getString(R.string.login)
         tvLoginHeader.text = getString(R.string.login)
     }
 
     private fun showRegisterUI() {
-        // Show register-specific UI elements
         tilFullName.visibility = View.VISIBLE
         tilConfirmPassword.visibility = View.VISIBLE
-        cvProfilePicture.visibility = View.VISIBLE  // Show profile picture upload in register mode
-
-        // Hide login-specific elements
+        cvProfilePicture.visibility = View.VISIBLE
         clPasswordOptions.visibility = View.GONE
-
-        // Update action button
         btnAction.text = getString(R.string.register)
         tvLoginHeader.text = getString(R.string.register)
     }
 
+    // Click listeners setup
+    private fun setupClickListeners() {
+        btnAction.setOnClickListener {
+            when (tabLayout.selectedTabPosition) {
+                0 -> loginUser()
+                1 -> registerUser()
+            }
+        }
+
+        ivGoogle.setOnClickListener {
+            viewModel.performGoogleSignIn()
+        }
+
+        cvProfilePicture.setOnClickListener {
+            showImageSelectionDialog()
+        }
+    }
+
+    // Authentication methods
     private fun loginUser() {
         val email = etEmail.text.toString().trim()
         val password = etPassword.text.toString().trim()
-
         viewModel.login(email, password)
-
     }
 
     private fun registerUser() {
@@ -258,7 +175,57 @@ class LoginSignupActivity : AppCompatActivity() {
         val password = etPassword.text.toString().trim()
         val confirmPassword = etConfirmPassword.text.toString().trim()
         val fullName = etFullName.text.toString().trim()
-
         viewModel.register(email, password, confirmPassword, fullName)
+    }
+
+    // Image handling methods
+    private fun showImageSelectionDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Select Profile Picture")
+            .setItems(arrayOf("Choose from Gallery", "Cancel")) { dialog, which ->
+                when (which) {
+                    0 -> if (viewModel.hasStoragePermission(this)) openGallery()
+                    1 -> dialog.dismiss()
+                }
+            }
+            .show()
+    }
+
+    private fun openGallery() {
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        galleryLauncher.launch(intent)
+    }
+
+    // ViewModel observation
+    private fun observeViewModel() {
+        viewModel.currentTab.observe(this, Observer { tabPosition ->
+            tabLayout.getTabAt(tabPosition)?.select()
+        })
+
+        viewModel.authResult.observe(this, Observer { result ->
+            when(result) {
+                is LoginSignupViewModel.AuthResult.Success -> {
+                    viewModel.navigateToMainActivity(this)
+                    finish()
+                }
+                is LoginSignupViewModel.AuthResult.Error -> {
+                    Toast.makeText(this, result.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
+
+        viewModel.isLoading.observe(this, Observer { isLoading ->
+            btnAction.isEnabled = !isLoading
+        })
+
+        viewModel.profileImageUri.observe(this, Observer { uri ->
+            uri?.let {
+                Glide.with(this)
+                    .load(it)
+                    .circleCrop()
+                    .placeholder(R.drawable.person)
+                    .into(ibProfilePicture)
+            }
+        })
     }
 }
