@@ -32,7 +32,7 @@ class LabelsFragment : Fragment() {
     private lateinit var adapter: LabelAdapter
     private val labels = mutableListOf<Label>()
 
-    private lateinit var NoteLabelRepository: NoteLabelRepository
+    private lateinit var noteLabelRepository: NoteLabelRepository
 
     private var labelsCollectionJob: Job? = null
 
@@ -46,7 +46,7 @@ class LabelsFragment : Fragment() {
         etNewLabel = view.findViewById(R.id.etNewLabel)
         btnAddLabel = view.findViewById(R.id.btnAddLabel)
         labelDataBridge = LabelDataBridge(requireContext())
-        NoteLabelRepository = NoteLabelRepository(requireContext())
+        noteLabelRepository = NoteLabelRepository(requireContext())
 
         setupRecyclerView()
         setupAddLabelButton()
@@ -80,13 +80,11 @@ class LabelsFragment : Fragment() {
     private fun setupRecyclerView() {
         adapter = LabelAdapter(labels, object : LabelAdapter.OnLabelClickListener {
             override fun onLabelClick(label: Label) {
-//                // Navigate to notes with this label
-//                (activity as MainActivity).navigateToLabelNotes(label.id)
             }
 
             override fun onLabelDelete(label: Label, position: Int) {
                 // Remove the label from Firestore
-                NoteLabelRepository.deleteLabel(label.id)
+                noteLabelRepository.deleteLabel(label.id)
             }
 
             override fun onLabelEdit(
