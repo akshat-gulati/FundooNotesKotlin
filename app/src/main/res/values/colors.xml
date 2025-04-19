@@ -3,12 +3,10 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="sky_blue">#A8C7FA</color>
-    <color name="nav_drawer_selected">#E7EFFD</color>
-    <color name="nav_drawer_selected_text">#367FEA</color>
+    <color name="nav_drawer_selected">#FFE2D7</color>
+    <color name="nav_drawer_selected_text">#854725</color>
     <color name="nav_drawer_unselected_text">#3C4045</color>
     <color name="grey">#B8B7B8</color>
     <color name="selected_note_background">#E0E0E0</color>
-
-
 
 </resources>
