@@ -54,7 +54,6 @@ class NoteEditActivity : AppCompatActivity(){
     //    Added a class variable to store the reminder time temporarily
     private var reminderTime: Long? = null
     companion object {
-        private const val PERMISSION_REQUEST_CODE = 100
         private const val TAG = "NoteEditActivity"
     }
     //    private lateinit var firestoreNoteRepository: FirestoreNoteRepository
