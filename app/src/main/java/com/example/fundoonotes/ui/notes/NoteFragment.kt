@@ -81,13 +81,19 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
             return when (item.itemId) {
                 R.id.action_delete -> {
-                    viewModel.deleteSelectedNotes()
-                    mode.finish()
+                    lifecycleScope.launch {
+                        val job = viewModel.deleteSelectedNotes()
+                        job.join()
+                        mode.finish()
+                    }
                     true
                 }
                 R.id.action_archive -> {
-                    viewModel.archiveSelectedNotes()
-                    mode.finish()
+                    lifecycleScope.launch {
+                        val job = viewModel.archiveSelectedNotes()
+                        job.join()
+                        mode.finish()
+                    }
                     true
                 }
                 R.id.action_labels -> {

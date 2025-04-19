@@ -13,6 +13,7 @@ import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
 import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -121,16 +122,16 @@ class NoteViewModel(context: Context) : ViewModel() {
     }
 
     // Note operations
-    fun deleteSelectedNotes() {
-        viewModelScope.launch(Dispatchers.IO) {
+    fun deleteSelectedNotes(): Job {
+        return viewModelScope.launch(Dispatchers.IO) {
             selectedNotes.value.forEach { note ->
                 notesDataBridge.toggleNoteToTrash(note.id)
             }
         }
     }
 
-    fun archiveSelectedNotes() {
-        viewModelScope.launch(Dispatchers.IO) {
+    fun archiveSelectedNotes(): Job {
+        return viewModelScope.launch(Dispatchers.IO) {
             selectedNotes.value.forEach { note ->
                 notesDataBridge.toggleNoteToArchive(note.id)
             }
