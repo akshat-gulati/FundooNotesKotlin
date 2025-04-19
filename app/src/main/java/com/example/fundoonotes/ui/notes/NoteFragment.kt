@@ -1,5 +1,6 @@
 package com.example.fundoonotes.ui.notes
 
+import android.R.attr.mode
 import android.app.AlertDialog
 import android.app.Application
 import android.content.Context
@@ -88,8 +89,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
                     true
                 }
                 R.id.action_labels -> {
-                    showLabelDialog()
-                    mode.finish()
+                    showLabelDialog(mode)
                     true
                 }
                 R.id.action_select_all -> {
@@ -266,7 +266,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         viewModel.updateDisplayMode(newMode, labelId)
     }
 
-    fun showLabelDialog() {
+    fun showLabelDialog(mode: ActionMode) {
         if (context == null) return
 
         // Create the dialog builder
@@ -365,6 +365,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
                         // Apply changes to all selected notes
                         viewModel.updateSelectedNotesLabels(checkedLabelIds, uncheckedLabelIds, newLabelId)
                         dialog.dismiss()
+                        mode.finish()
                     }
                 }
             }
