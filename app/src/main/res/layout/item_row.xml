@@ -21,6 +21,7 @@
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:maxLines="2"
+            android:textColor="#312520"
             android:text="Title"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -30,6 +31,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:textColor="#99918F"
             android:ellipsize="end"
             android:maxLines="10"
             android:text="Description" />
@@ -55,6 +57,7 @@
                 android:id="@+id/tvTimeDate"
                 android:textSize="12sp"
                 android:layout_width="wrap_content"
+                android:textColor="#7B6A65"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:layout_marginLeft="5dp"
@@ -65,11 +68,13 @@
             android:layout_gravity="center_vertical"
             android:id="@+id/tvLabelName"
             android:textSize="12sp"
+            android:textColor="#867671"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:background="@drawable/rounded_background_alarm_label"
             android:paddingVertical="5dp"
+
             android:paddingHorizontal="10dp"
             android:text="Label Name" />
 
