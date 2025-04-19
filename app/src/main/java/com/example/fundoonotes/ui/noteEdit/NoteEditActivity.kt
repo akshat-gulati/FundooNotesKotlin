@@ -55,9 +55,6 @@ class NoteEditActivity : AppCompatActivity(){
         private const val PERMISSION_REQUEST_CODE = 100
         private const val TAG = "NoteEditActivity"
     }
-
-
-
     //    private lateinit var firestoreNoteRepository: FirestoreNoteRepository
     private lateinit var notesDataBridge: NotesDataBridge
     private lateinit var labelDataBridge: LabelDataBridge
@@ -78,12 +75,10 @@ class NoteEditActivity : AppCompatActivity(){
         }
 
         // Initialize repository with application context
-//        firestoreNoteRepository = FirestoreNoteRepository(applicationContext)
         notesDataBridge = NotesDataBridge(applicationContext)
         labelDataBridge = LabelDataBridge(applicationContext)
         noteLabelRepository = NoteLabelRepository(applicationContext)
         permissionManager = PermissionManager(this)
-
 
         initializeViews()
 
@@ -110,37 +105,7 @@ class NoteEditActivity : AppCompatActivity(){
         labelDataBridge.fetchLabels()
     }
 
-//    private fun checkNotificationPermission() {
-//        // Check POST_NOTIFICATIONS for Android 13+
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//            if (ContextCompat.checkSelfPermission(
-//                    this,
-//                    android.Manifest.permission.POST_NOTIFICATIONS
-//                ) != PackageManager.PERMISSION_GRANTED) {
-//                ActivityCompat.requestPermissions(
-//                    this,
-//                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
-//                    PERMISSION_REQUEST_CODE
-//                )
-//            } else {
-//                Log.d("NoteEditActivity", "Notification permission already granted")
-//            }
-//        }
-//
-//        // Check SCHEDULE_EXACT_ALARM for Android 12+
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-//            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
-//            if (!alarmManager.canScheduleExactAlarms()) {
-//                // Request permission
-//                val intent = Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-//                startActivity(intent)
-//            }
-//        }
-//    }
-
     // Handle permission results
-
-
     private fun initializeViews() {
         ivBack = findViewById(R.id.ivBack)
         etNoteTitle = findViewById(R.id.etNoteTitle)
@@ -262,8 +227,6 @@ class NoteEditActivity : AppCompatActivity(){
             }
         }
     }
-
-
     private fun loadLabels() {
         lifecycleScope.launch {
             try {
@@ -464,5 +427,3 @@ class NoteEditActivity : AppCompatActivity(){
     }
 
 }
-
-
