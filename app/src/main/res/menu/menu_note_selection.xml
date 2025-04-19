@@ -5,6 +5,7 @@
         android:id="@+id/action_permanenlt_delete"
         android:icon="@drawable/bin"
         android:title="Permanently Delete"
+        android:visible="false"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_delete"

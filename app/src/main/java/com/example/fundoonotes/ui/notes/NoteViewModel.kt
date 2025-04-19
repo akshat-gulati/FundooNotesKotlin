@@ -129,6 +129,14 @@ class NoteViewModel(context: Context) : ViewModel() {
             }
         }
     }
+    fun permanentlyDeleteSelectedNotes(): Job{
+        return viewModelScope.launch(Dispatchers.IO){
+            selectedNotes.value.forEach { note ->
+                noteLabelRepository.deleteNote(note.id)
+            }
+        }
+
+    }
 
     fun archiveSelectedNotes(): Job {
         return viewModelScope.launch(Dispatchers.IO) {

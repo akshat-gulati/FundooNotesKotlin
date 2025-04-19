@@ -50,6 +50,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
             // Update UI based on display mode
             if (viewModel.displayMode.value == DISPLAY_BIN) {
+                menu.findItem(R.id.action_permanenlt_delete).isVisible = true
                 menu.findItem(R.id.action_archive).isVisible = false
                 menu.findItem(R.id.action_labels).isVisible = false
 
@@ -68,6 +69,17 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
 
         override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
             return when (item.itemId) {
+
+                R.id.action_permanenlt_delete ->{
+                    lifecycleScope.launch {
+                        val job = viewModel.permanentlyDeleteSelectedNotes()
+                        job.join()
+                        mode.finish()
+                    }
+                    true
+                }
+
+
                 R.id.action_delete -> {
                     lifecycleScope.launch {
                         val job = viewModel.deleteSelectedNotes()
