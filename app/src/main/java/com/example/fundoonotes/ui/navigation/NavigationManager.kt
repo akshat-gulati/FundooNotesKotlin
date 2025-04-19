@@ -31,7 +31,6 @@ class NavigationManager(
 ) {
     // Fragment management
     private var noteFragment: NoteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_NOTES)
-    private var labelsFragment: LabelsFragment = LabelsFragment()
     private var currentFragment: Fragment? = null
 
     private val activity: MainActivity get() = navigationInterface.getContext() as MainActivity
@@ -249,13 +248,26 @@ class NavigationManager(
 
             // Check if NoteFragment is already loaded
             if (currentFragment !is NoteFragment) {
-                // Only create a new fragment if we don't already have a NoteFragment
+                // Create a new fragment instance
                 noteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_LABELS)
-                loadFragment(noteFragment)
-            }
 
-            // Update the display mode with the label ID
-            (currentFragment as NoteFragment).updateDisplayMode(NoteFragment.DISPLAY_LABELS, label.id)
+                // Store the label ID temporarily
+                val labelId = label.id
+
+                // Set up a commit callback to ensure the fragment is attached
+                fragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, noteFragment)
+                    .runOnCommit {
+                        // Now safely update the display mode after the fragment is attached
+                        noteFragment.updateDisplayMode(NoteFragment.DISPLAY_LABELS, labelId)
+                    }
+                    .commit()
+
+                currentFragment = noteFragment
+            } else {
+                // If we're already on a NoteFragment, just update its display mode
+                (currentFragment as NoteFragment).updateDisplayMode(NoteFragment.DISPLAY_LABELS, label.id)
+            }
         }
     }
 

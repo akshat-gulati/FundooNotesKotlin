@@ -41,12 +41,14 @@ import java.util.UUID
 
 
 class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.OnNoteClickListener {
+
+    private val viewModel: NoteViewModel by lazy {
+        NoteViewModel(requireContext())
+    }
+
     private lateinit var recyclerView: RecyclerView
     private lateinit var noteAdapter: NoteAdapter
     private lateinit var fabAddNote: FloatingActionButton
-
-    // ViewModel
-    private lateinit var viewModel: NoteViewModel
 
     // Multi-selection action mode
     private var actionMode: ActionMode? = null
@@ -128,8 +130,6 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        viewModel = NoteViewModel(requireContext())
 //        viewModel.fetchLabels()
 
         // Initialize ViewModel
@@ -154,6 +154,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
         noteAdapter = NoteAdapter(emptyList(), this)
         recyclerView.adapter = noteAdapter
         recyclerView.itemAnimator = DefaultItemAnimator()
+
 
         // Set up observers
         setupObservers()
