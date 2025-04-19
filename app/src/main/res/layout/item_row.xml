@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="15dp">
 
         <TextView
             android:id="@+id/tvTitle"
@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:ellipsize="end"
-            android:maxLines="8"
+            android:maxLines="10"
             android:text="Description" />
 
         <LinearLayout
@@ -46,13 +46,14 @@
 
             <ImageView
                 android:id="@+id/ivAlarm"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
                 android:layout_gravity="center_vertical"
                 android:src="@drawable/alarm" />
 
             <TextView
                 android:id="@+id/tvTimeDate"
+                android:textSize="12sp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -63,6 +64,7 @@
         <TextView
             android:layout_gravity="center_vertical"
             android:id="@+id/tvLabelName"
+            android:textSize="12sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
