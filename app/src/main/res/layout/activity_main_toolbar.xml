@@ -9,9 +9,9 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:background="@drawable/toolbar_rounded"
-        android:layout_height="50dp"
+        android:layout_height="46dp"
         android:layout_marginTop="10dp"
-        android:layout_marginHorizontal="7dp">
+        android:layout_marginHorizontal="12dp">
 
         <!-- Drawer Button (Left Side) -->
         <ImageButton
@@ -68,27 +68,26 @@
                 android:src="@drawable/magnifyingglass"
                 android:padding="5dp"
                 android:gravity="center_vertical"
-                android:layout_marginRight="7dp"
+                android:layout_marginRight="16dp"
                 app:tint="@color/black" />
 
             <ImageView
                 android:id="@+id/layout_toggle_icon"
-                android:layout_width="20dp"
+                android:layout_width="22dp"
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/screen_layout_toggle"
                 android:src="@drawable/rectangle1x2"
-                android:layout_marginRight="7dp"
+                android:layout_marginRight="16dp"
                 android:gravity="center_vertical"
                 app:tint="@color/black" />
             <ImageView
                 android:id="@+id/profile_icon"
-                android:layout_width="20dp"
+                android:layout_width="25dp"
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/profile"
                 android:src="@drawable/person"
-
-                android:layout_marginRight="7dp"
                 android:gravity="center_vertical"
+                android:layout_marginRight="1dp"
                 app:tint="@color/black" />
 
         </LinearLayout>
