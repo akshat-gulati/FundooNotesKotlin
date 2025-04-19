@@ -34,7 +34,6 @@ class LoginSignupActivity : AppCompatActivity() {
     private lateinit var tilConfirmPassword: TextInputLayout
     private lateinit var tilEmail: TextInputLayout
     private lateinit var tilPassword: TextInputLayout
-    private lateinit var clPasswordOptions: ConstraintLayout
     private lateinit var btnAction: Button
     private lateinit var tvLoginHeader: TextView
     private lateinit var ivGoogle: ImageView
@@ -100,7 +99,6 @@ class LoginSignupActivity : AppCompatActivity() {
         tilConfirmPassword = findViewById(R.id.tilConfirmPassword)
         tilEmail = findViewById(R.id.tilEmail)
         tilPassword = findViewById(R.id.tilPassword)
-        clPasswordOptions = findViewById(R.id.clPasswordOptions)
         btnAction = findViewById(R.id.btnAction)
         tvLoginHeader = findViewById(R.id.tvLoginHeader)
         ivGoogle = findViewById(R.id.ivGoogle)
@@ -131,7 +129,6 @@ class LoginSignupActivity : AppCompatActivity() {
         tilFullName.visibility = View.GONE
         tilConfirmPassword.visibility = View.GONE
         cvProfilePicture.visibility = View.GONE
-        clPasswordOptions.visibility = View.GONE
         btnAction.text = getString(R.string.login)
         tvLoginHeader.text = getString(R.string.login)
     }
@@ -140,7 +137,6 @@ class LoginSignupActivity : AppCompatActivity() {
         tilFullName.visibility = View.VISIBLE
         tilConfirmPassword.visibility = View.VISIBLE
         cvProfilePicture.visibility = View.VISIBLE
-        clPasswordOptions.visibility = View.GONE
         btnAction.text = getString(R.string.register)
         tvLoginHeader.text = getString(R.string.register)
     }

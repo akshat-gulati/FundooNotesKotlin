@@ -148,44 +148,6 @@
                 android:inputType="textPassword" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/clPasswordOptions"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="32dp"
-            android:layout_marginTop="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tilConfirmPassword">
-
-            <CheckBox
-                android:id="@+id/cbRememberPassword"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/tvRememberPassword"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/remember_password"
-                app:layout_constraintBottom_toBottomOf="@+id/cbRememberPassword"
-                app:layout_constraintStart_toEndOf="@+id/cbRememberPassword"
-                app:layout_constraintTop_toTopOf="@+id/cbRememberPassword" />
-
-            <TextView
-                android:id="@+id/tvForgotPassword"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/forgot_password"
-                android:textColor="@android:color/holo_blue_dark"
-                android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="@+id/cbRememberPassword"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@+id/cbRememberPassword" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
         <!-- Profile Picture Upload - for Registration Only -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cvProfilePicture"
@@ -196,7 +158,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tilConfirmPassword"
-            app:cardBackgroundColor="@color/sky_blue"
+            app:cardBackgroundColor="@color/borders"
             app:cardElevation="4dp"
             app:cardCornerRadius="8dp">
 
@@ -241,7 +203,7 @@
             app:cornerRadius="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            android:backgroundTint="@color/sky_blue"
+            android:backgroundTint="@color/fab_colour"
             app:layout_constraintTop_toBottomOf="@+id/cvProfilePicture" />
 
         <TextView
