@@ -18,5 +18,6 @@
     <color name="note_title">#312520</color>
     <color name="note_description">#99918F</color>
     <color name="label_alarm_text">#7B6A65</color>
+    <color name="transparent">#00000000</color>
 
 </resources>
