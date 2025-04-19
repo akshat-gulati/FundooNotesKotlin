@@ -27,6 +27,7 @@ import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
+import androidx.constraintlayout.widget.ConstraintSet.VISIBLE
 
 class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.OnNoteClickListener {
 
@@ -112,6 +113,7 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.
             actionMode = null
             noteAdapter.exitSelectionMode()
             viewModel.clearSelection()
+            fabAddNote.visibility = View.VISIBLE
 
             // Ensure toolbar is visible when action mode is destroyed
             (activity as MainActivity).setToolbarVisibility(true)
