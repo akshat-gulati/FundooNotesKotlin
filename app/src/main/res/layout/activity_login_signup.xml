@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:background="@color/white"
+    android:background="@color/general_background"
     android:layout_height="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -20,6 +20,7 @@
             android:text="@string/login"
             android:textSize="30sp"
             android:textStyle="bold"
+            android:textColor="@color/note_title"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -31,6 +32,7 @@
             android:layout_marginHorizontal="32dp"
             android:layout_marginTop="24dp"
             android:gravity="center"
+            android:textColor="@color/note_description"
             android:text="@string/terms_privacy_agreement"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -45,9 +47,9 @@
             android:layout_marginTop="24dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            android:background="@color/white"
-            app:tabSelectedTextColor="@color/sky_blue"
-            app:tabIndicatorColor="@color/sky_blue"
+            android:background="@color/general_background"
+            app:tabSelectedTextColor="@color/fab_colour"
+            app:tabIndicatorColor="@color/borders"
             app:layout_constraintTop_toBottomOf="@+id/tvTermsPolicy">
 
             <com.google.android.material.tabs.TabItem
