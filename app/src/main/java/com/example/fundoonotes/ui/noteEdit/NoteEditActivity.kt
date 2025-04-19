@@ -354,25 +354,6 @@ class NoteEditActivity : AppCompatActivity(){
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_note_edit, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            android.R.id.home -> {
-                onBackPressedDispatcher.onBackPressed()
-                true
-            }
-            R.id.action_save -> {
-                saveNote()
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
 
 
     private fun saveNote() {
