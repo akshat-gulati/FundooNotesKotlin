@@ -45,6 +45,8 @@ class NoteEditActivity : AppCompatActivity(){
     private lateinit var etNoteTitle: EditText
     private lateinit var etNoteDescription: EditText
     private lateinit var ivReminder: ImageView
+    private lateinit var ivArchive: ImageView
+
 
     private var noteLabels: ArrayList<String> = ArrayList()
     private lateinit var labelChipGroup: ChipGroup
@@ -62,6 +64,7 @@ class NoteEditActivity : AppCompatActivity(){
     private lateinit var permissionManager: PermissionManager
 
     private var noteId: String? = null
+    private var createNoteArchived = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,7 +94,6 @@ class NoteEditActivity : AppCompatActivity(){
         } else {
             noteId = UUID.randomUUID().toString()
 
-
             val addLabelChip = Chip(this)
             addLabelChip.text = "+ Add Label"
             addLabelChip.isCheckable = false
@@ -112,8 +114,26 @@ class NoteEditActivity : AppCompatActivity(){
         etNoteDescription = findViewById(R.id.etNoteDescription)
         ivReminder = findViewById(R.id.ivReminder)
         labelChipGroup = findViewById(R.id.label_chip_group)
+        ivArchive = findViewById(R.id.ivArchive)
 
-        // Don't set the click listener here, just call the function
+        ivArchive.setOnClickListener {
+            val note = notesDataBridge.getNoteById(noteId!!)
+            if (note != null){
+                try {
+                    notesDataBridge.toggleNoteToArchive(noteId!!)
+                    Toast.makeText(this, "Toggling note to archive", Toast.LENGTH_LONG).show()
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Error toggling note to archive ${e}", Toast.LENGTH_LONG).show()
+                }
+
+            }
+            else{
+                createNoteArchived = true
+                Toast.makeText(this, "Note will be archived once you save it", Toast.LENGTH_LONG).show()
+            }
+
+        }
+
         ivReminder.setOnClickListener {
             setupReminderPicker()
         }
@@ -391,6 +411,9 @@ class NoteEditActivity : AppCompatActivity(){
                     val newNote = Note(id = currentNoteId, title = title, description = description, reminderTime = time, labels = noteLabels)
                     Log.d("NoteEditActivity", "Scheduling reminder for new note at time: $time")
                     reminderScheduler.scheduleReminder(newNote, time)
+                }
+                if (createNoteArchived) {
+                    notesDataBridge.toggleNoteToArchive(currentNoteId)
                 }
             }
         } else {
