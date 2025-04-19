@@ -20,7 +20,7 @@
                 android:id="@+id/recyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#FFF9F8"
+                android:background="@color/general_background"
                 android:layout_marginTop="8dp"
                 android:layout_marginStart="8dp"
                 tools:listitem="@layout/item_row" />
@@ -37,7 +37,7 @@
         android:layout_margin="16dp"
         android:padding="12dp"
         android:src="@android:drawable/ic_input_add"
-        app:backgroundTint="#A16140"
+        app:backgroundTint="@color/fab_colour"
         app:tint="@android:color/white"
         app:maxImageSize="40dp"/>
 

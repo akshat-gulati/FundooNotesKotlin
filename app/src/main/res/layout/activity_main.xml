@@ -14,7 +14,7 @@
        android:orientation="vertical"
        android:layout_width="match_parent"
        android:layout_height="match_parent"
-       android:background="#FFF9F8"
+       android:background="@color/general_background"
        android:fitsSystemWindows="true"
        android:paddingTop="?attr/actionBarSize">
 
@@ -36,7 +36,7 @@
        app:menu="@menu/drawer_items"
        app:itemIconPadding="30dp"
        app:headerLayout="@layout/drawer_header"
-       android:background="#FFF9F8"
+       android:background="@color/general_background"
        app:itemTextColor="@drawable/nav_item_text_color"
        app:itemIconTint="@drawable/nav_item_text_color"
        app:itemBackground="@drawable/nav_item_background"
