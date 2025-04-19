@@ -32,6 +32,7 @@
     <string name="options">Options</string>
     <string name="noteEditTitle">Title</string>
     <string name="noteEditDescription">Description</string>
+    <string name="add_label">+ Add Label</string>
 
 
 </resources>
