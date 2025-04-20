@@ -1,12 +1,9 @@
 package com.example.fundoonotes.data.repository.dataBridge
 
 import android.content.Context
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
 import android.util.Log
 import android.widget.Toast
+import com.example.fundoonotes.core.NetworkManager
 import com.example.fundoonotes.data.model.Note
 import com.example.fundoonotes.data.repository.interfaces.NotesInterface
 import com.example.fundoonotes.data.repository.room.RoomNoteRepository
@@ -31,44 +28,33 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
     private val firestoreRepository: FirestoreNoteRepository = FirestoreNoteRepository(context)
     private val roomNoteRepository: RoomNoteRepository = RoomNoteRepository(context)
 
+        // Use the NetworkManager for network state monitoring
+        private val networkManager = NetworkManager(context)
+        val networkState: StateFlow<Boolean> = networkManager.networkState
+
     init {
         observeNotes()
     }
 
     private fun observeNotes() {
-        // Observe network state changes
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-
-        // Set up network callback
-        val networkCallback = object : ConnectivityManager.NetworkCallback() {
-            override fun onAvailable(network: Network) {
-                // When network becomes available, switch to Firestore data and sync
-                coroutineScope.launch {
+        // Use the NetworkManager's StateFlow instead of setting up our own network callback
+        coroutineScope.launch {
+            // Observe network state changes
+            networkState.collect { isOnline ->
+                if (isOnline) {
                     _notesState.value = firestoreRepository.notesState.value
-                    syncRoomToFirestore() // Sync any changes made while offline
-                }
-            }
-
-            override fun onLost(network: Network) {
-                // When network is lost, switch to Room data
-                coroutineScope.launch {
+                } else {
                     _notesState.value = roomNoteRepository.notesState.value
                 }
             }
         }
-
-        // Register network callback
-        val networkRequest = NetworkRequest.Builder()
-            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-            .build()
-        connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
 
         // Start collecting from both repositories
         coroutineScope.launch {
             // Always collect from Room for local changes
             launch {
                 roomNoteRepository.notesState.collect { roomNotes ->
-                    if (!isOnline(context)) {
+                    if (!networkManager.isOnline()) {
                         _notesState.value = roomNotes
                         Log.d(TAG, "New Room notes received: ${roomNotes.size}")
                     }
@@ -78,51 +64,17 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
             // Always collect from Firestore for remote changes
             launch {
                 firestoreRepository.notesState.collect { firestoreNotes ->
-                    if (isOnline(context)) {
+                    if (networkManager.isOnline()) {
                         _notesState.value = firestoreNotes
                         Log.d(TAG, "New Firestore notes received: ${firestoreNotes.size}")
-
-                        // Update Room with the latest Firestore data to keep local copy updated
-                        updateRoomFromFirestore(firestoreNotes)
                     }
                 }
             }
         }
     }
 
-    // Helper method to sync Room changes to Firestore when back online
-    private fun syncRoomToFirestore() {
-        // Implementation would compare timestamps or use a "dirty" flag
-        // to sync any changes made while offline
-        Log.d(TAG, "Syncing Room changes to Firestore")
-        // Implementation details would go here
-    }
-
-    // Helper method to update Room with latest Firestore data
-    private fun updateRoomFromFirestore(firestoreNotes: List<Note>) {
-        // For each Firestore note, update or insert into Room
-        for (note in firestoreNotes) {
-            // You might want to check timestamps to avoid overwriting newer local changes
-            val roomNote = roomNoteRepository.getNoteById(note.id)
-            if (roomNote == null || roomNote.timestamp < note.timestamp) {
-                // Update Room with this note
-                val fields = mapOf(
-                    "title" to note.title,
-                    "description" to note.description,
-                    "labels" to note.labels,
-                    "deleted" to note.deleted,
-                    "archived" to note.archived,
-                    "reminderTime" to note.reminderTime,
-                    "deletedTime" to note.deletedTime,
-                    "timestamp" to note.timestamp
-                )
-                roomNoteRepository.updateNoteFields(note.id, fields)
-            }
-        }
-    }
-
     override fun fetchNoteById(noteId: String, onSuccess: (Note) -> Unit) {
-        if (isOnline(context)) {
+        if (networkManager.isOnline()) {
             firestoreRepository.fetchNoteById(noteId, onSuccess)
         }
         else {
@@ -131,7 +83,7 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
     }
 
     override fun fetchNotes() {
-        if (isOnline(context)){
+        if (networkManager.isOnline()){
             firestoreRepository.fetchNotes()
         }
         else{
@@ -146,10 +98,8 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
     }
 
     override fun updateNote(noteId: String, title: String, description: String, reminderTime: Long?) {
-        // Always update Room
         roomNoteRepository.updateNote(noteId, title, description, reminderTime)
-        Toast.makeText(context, "Note updated locally", Toast.LENGTH_SHORT).show()
-            firestoreRepository.updateNote(noteId, title, description, reminderTime)
+        firestoreRepository.updateNote(noteId, title, description, reminderTime)
     }
 
     override fun deleteNote(noteId: String) {
@@ -163,11 +113,8 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
 
     // Method to update a note's labels
     fun updateNoteLabels(noteId: String, labels: List<String>) {
-        // First, get the current note to preserve its other properties
         fetchNoteById(noteId) { note ->
             val updatedFields = mapOf("labels" to labels)
-
-            // Update in Room
             roomNoteRepository.updateNoteFields(noteId, updatedFields)
             firestoreRepository.updateNoteFields(noteId, updatedFields)
         }
@@ -207,42 +154,13 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
         }
     }
 
-    fun syncRepositories() {
-        Log.d(TAG, "Repository sync not yet implemented")
-    }
-
     fun cleanup() {
-        if (isOnline(context)) {
+        if (networkManager.isOnline()) {
             firestoreRepository.cleanup()
         }
     }
 
-    // This code is taken from Stack Overflow, needs to be looked at once
-    fun isOnline(context: Context): Boolean {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val capabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-        capabilities?.let {
-            when {
-                it.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> {
-                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_CELLULAR")
-                    return true
-                }
-                it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> {
-                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_WIFI")
-                    return true
-                }
-                it.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> {
-                    Log.i("Internet", "NetworkCapabilities.TRANSPORT_ETHERNET")
-                    return true
-                }
-            }
-        }
-        return false
-    }
-
     fun initializeDatabase() {
-        // The Room database is created automatically when accessed
-        // Just fetch initial data
         fetchNotes()
     }
 }
