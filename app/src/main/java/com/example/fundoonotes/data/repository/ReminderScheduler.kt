@@ -9,13 +9,17 @@ import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresPermission
+import com.example.fundoonotes.core.PermissionManager
 import com.example.fundoonotes.data.model.Note
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 class ReminderScheduler(private val context: Context) {
+
+    private val permissionManager = PermissionManager(context)
 
     @RequiresPermission(Manifest.permission.SCHEDULE_EXACT_ALARM)
     fun scheduleReminder(note: Note, triggerTimeMillis: Long) {
@@ -29,8 +33,8 @@ class ReminderScheduler(private val context: Context) {
         }
 
         // Check for exact alarm permission on Android S and above
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
-            Log.e("ReminderScheduler", "Cannot schedule exact alarms - permission not granted")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !permissionManager.canScheduleExactAlarms()) {
+            Toast.makeText(context, "Exact alarm permission not granted", Toast.LENGTH_SHORT).show()
             requestExactAlarmPermission(context)
             return
         }

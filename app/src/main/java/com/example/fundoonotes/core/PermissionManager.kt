@@ -17,7 +17,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class PermissionManager(private val context: Context) {
 
-
+    // ==============================================
+    // Companion Object (Constants)
+    // ==============================================
     companion object {
         const val NOTIFICATION_PERMISSION_CODE = 100
         const val STORAGE_PERMISSION_CODE = 101
@@ -25,8 +27,9 @@ class PermissionManager(private val context: Context) {
         private val isAndroid13OrHigher = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
     }
 
-//    Check and request notification permissions (for Android 13+)
-
+    // ==============================================
+    // Permission Checking Methods
+    // ==============================================
     fun checkNotificationPermission(activity: Activity) {
         if (isAndroid13OrHigher) {
             if (ContextCompat.checkSelfPermission(
@@ -45,20 +48,16 @@ class PermissionManager(private val context: Context) {
         }
     }
 
-//     Check and request permission to schedule exact alarms (for Android 12+)
-
     fun checkScheduleExactAlarmPermission(activity: Activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            if (!alarmManager.canScheduleExactAlarms()) {
+            if (!canScheduleExactAlarms()) {
                 // Request permission via settings since this requires a special intent
                 val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
                 activity.startActivity(intent)
             }
         }
     }
-
-    // Check storage permissions based on Android version
 
     fun checkStoragePermission(activity: Activity): Boolean {
         return if (isAndroid13OrHigher) {
@@ -78,8 +77,29 @@ class PermissionManager(private val context: Context) {
         }
     }
 
+    fun checkReminderPermissions(activity: Activity) {
+        checkNotificationPermission(activity)
+        checkScheduleExactAlarmPermission(activity)
+    }
 
-     // @return true if permission already granted, false otherwise
+    // ==============================================
+    // Permission Status Checking Methods
+    // ==============================================
+    fun canScheduleExactAlarms(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            return alarmManager.canScheduleExactAlarms()
+        }
+        return true  // Always true for Android versions below S
+    }
+
+    fun isPermissionPermanentlyDenied(activity: Activity, permission: String): Boolean {
+        return !ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)
+    }
+
+    // ==============================================
+    // Permission Request Handling
+    // ==============================================
     private fun checkPermission(
         activity: Activity,
         permission: String,
@@ -114,72 +134,13 @@ class PermissionManager(private val context: Context) {
         }
     }
 
-    // Show a dialog explaining why the permission is needed
-    private fun explainPermissionRationale(
+    fun handlePermissionResult(
         activity: Activity,
-        permissionType: String,
-        permission: String,
-        requestCode: Int
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+        onPermissionGranted: (Int) -> Unit
     ) {
-        MaterialAlertDialogBuilder(activity)
-            .setTitle("$permissionType Permission Required")
-            .setMessage("This app needs $permissionType access for proper functionality.")
-            .setPositiveButton("Grant") { _, _ ->
-                ActivityCompat.requestPermissions(
-                    activity,
-                    arrayOf(permission),
-                    requestCode
-                )
-            }
-            .setNegativeButton("Cancel") { dialog, _ ->
-                dialog.dismiss()
-                Log.d(TAG, "$permissionType permission denied by user after explanation")
-            }
-            .show()
-    }
-
-
-     // Show a dialog to direct users to app settings when permission is permanently denied
-
-    fun showSettingsDialog(activity: Activity, permissionType: String) {
-        MaterialAlertDialogBuilder(activity)
-            .setTitle("$permissionType Permission Required")
-            .setMessage("$permissionType permission is needed but has been permanently denied. Please enable it in app settings.")
-            .setPositiveButton("Open Settings") { _, _ ->
-                // Open app settings
-                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                val uri = Uri.fromParts("package", activity.packageName, null)
-                intent.data = uri
-                activity.startActivity(intent)
-            }
-            .setNegativeButton("Cancel") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .show()
-    }
-
-    // Check if the permission is permanently denied
-    fun isPermissionPermanentlyDenied(activity: Activity, permission: String): Boolean {
-        return !ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)
-    }
-
-    //Request both notification and alarm permissions (for activities that need both)
-
-    fun checkReminderPermissions(activity: Activity) {
-        checkNotificationPermission(activity)
-        checkScheduleExactAlarmPermission(activity)
-    }
-    fun canScheduleExactAlarms(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            return alarmManager.canScheduleExactAlarms()
-        }
-        return true  // Always true for Android versions below S
-    }
-
-    // Handle permission results (call this from activity's onRequestPermissionsResult)
-
-    fun handlePermissionResult(activity: Activity, requestCode: Int, permissions: Array<out String>, grantResults: IntArray, onPermissionGranted: (Int) -> Unit) {
         if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "Permission granted: $requestCode")
             onPermissionGranted(requestCode)
@@ -207,5 +168,48 @@ class PermissionManager(private val context: Context) {
             }
             Log.d(TAG, "Permission denied: $requestCode")
         }
+    }
+
+    // ==============================================
+    // Dialog Helpers
+    // ==============================================
+    private fun explainPermissionRationale(
+        activity: Activity,
+        permissionType: String,
+        permission: String,
+        requestCode: Int
+    ) {
+        MaterialAlertDialogBuilder(activity)
+            .setTitle("$permissionType Permission Required")
+            .setMessage("This app needs $permissionType access for proper functionality.")
+            .setPositiveButton("Grant") { _, _ ->
+                ActivityCompat.requestPermissions(
+                    activity,
+                    arrayOf(permission),
+                    requestCode
+                )
+            }
+            .setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+                Log.d(TAG, "$permissionType permission denied by user after explanation")
+            }
+            .show()
+    }
+
+    fun showSettingsDialog(activity: Activity, permissionType: String) {
+        MaterialAlertDialogBuilder(activity)
+            .setTitle("$permissionType Permission Required")
+            .setMessage("$permissionType permission is needed but has been permanently denied. Please enable it in app settings.")
+            .setPositiveButton("Open Settings") { _, _ ->
+                // Open app settings
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                val uri = Uri.fromParts("package", activity.packageName, null)
+                intent.data = uri
+                activity.startActivity(intent)
+            }
+            .setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 }
