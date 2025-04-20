@@ -10,6 +10,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class NetworkManager(private val context: Context) {
+
+    // ==============================================
+    // Network State Management
+    // ==============================================
     private val _networkState = MutableStateFlow(isOnline())
     val networkState: StateFlow<Boolean> = _networkState.asStateFlow()
 
@@ -17,6 +21,9 @@ class NetworkManager(private val context: Context) {
         setupNetworkMonitoring()
     }
 
+    // ==============================================
+    // Network Monitoring Setup
+    // ==============================================
     private fun setupNetworkMonitoring() {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE)
                 as ConnectivityManager
@@ -37,7 +44,9 @@ class NetworkManager(private val context: Context) {
         connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
     }
 
-    // Keeping this for one-time checks if I need it
+    // ==============================================
+    // Network Status Check
+    // ==============================================
     fun isOnline(): Boolean {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE)
                 as ConnectivityManager

@@ -7,31 +7,41 @@ import com.example.fundoonotes.ui.loginSignup.LoginSignupActivity
 import com.google.firebase.auth.FirebaseAuth
 
 class AuthManager(private val context: Context?) {
+
+    // ==============================================
+    // Dependencies and Initialization
+    // ==============================================
     private val firebaseAuth = FirebaseAuth.getInstance()
     private val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
 
+    // ==============================================
+    // Authentication State Management
+    // ==============================================
     fun isUserLoggedIn(): Boolean {
         val userId = sharedPreferences?.getString("userId", null)
         val currentUser = firebaseAuth.currentUser
-
         return userId != null && currentUser != null && currentUser.uid == userId
-    }
-
-    fun logout() {
-        firebaseAuth.signOut()
-        sharedPreferences?.edit()?.remove("userId")?.apply()
-        redirectToLogin()
-    }
-
-    fun redirectToLogin() {
-        val intent = Intent(context, LoginSignupActivity::class.java)
-        context?.startActivity(intent)
-        (context as? MainActivity)?.finish()
-
     }
 
     fun getUserId(): String? {
         return firebaseAuth.currentUser?.uid
     }
 
+    // ==============================================
+    // Authentication Actions
+    // ==============================================
+    fun logout() {
+        firebaseAuth.signOut()
+        sharedPreferences?.edit()?.remove("userId")?.apply()
+        redirectToLogin()
+    }
+
+    // ==============================================
+    // Navigation Methods
+    // ==============================================
+    fun redirectToLogin() {
+        val intent = Intent(context, LoginSignupActivity::class.java)
+        context?.startActivity(intent)
+        (context as? MainActivity)?.finish()
+    }
 }
