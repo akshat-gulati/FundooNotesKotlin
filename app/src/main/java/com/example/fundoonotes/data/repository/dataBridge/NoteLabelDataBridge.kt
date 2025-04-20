@@ -5,6 +5,9 @@ import com.example.fundoonotes.data.model.Note
 
 class NoteLabelDataBridge(context: Context) {
 
+    // ==============================================
+    // Dependencies and Initialization
+    // ==============================================
     private val notesDataBridge = NotesDataBridge(context)
     private val labelDataBridge = LabelDataBridge(context)
 
@@ -12,6 +15,9 @@ class NoteLabelDataBridge(context: Context) {
         private const val TAG = "NoteLabelRepository"
     }
 
+    // ==============================================
+    // Core Note-Label Operations
+    // ==============================================
     fun addNewNoteWithLabels(
         noteId: String,
         title: String,
@@ -19,7 +25,7 @@ class NoteLabelDataBridge(context: Context) {
         reminderTime: Long?,
         labels: List<String>
     ): String {
-        val noteId = notesDataBridge.addNewNote(noteId,title, description, reminderTime)
+        val noteId = notesDataBridge.addNewNote(noteId, title, description, reminderTime)
 
         // Update the note with labels
         if (noteId.isNotEmpty() && labels.isNotEmpty()) {
@@ -37,49 +43,35 @@ class NoteLabelDataBridge(context: Context) {
         labels: List<String>
     ) {
         notesDataBridge.updateNote(noteId, title, description, reminderTime)
-
-        // Update the note's labels
         updateNoteLabels(noteId, labels)
     }
 
+    // ==============================================
+    // Label Management Methods
+    // ==============================================
     internal fun updateNoteLabels(noteId: String, labels: List<String>) {
-        // Get the current note
         notesDataBridge.fetchNoteById(noteId) { note ->
-            // Create an updated note with new labels
-            val updatedNote = note.copy(labels = labels)
-
-            // Update the note using the DataBridge
             notesDataBridge.updateNoteLabels(noteId, labels)
-
-            // Now update the bidirectional relationship
             updateLabelsWithNoteReference(noteId, labels)
         }
     }
 
     internal fun updateLabelsWithNoteReference(noteId: String, labelIds: List<String>) {
-        // First, fetch all labels to find which ones were previously associated with this note
         labelDataBridge.fetchLabels()
-
-        // We need to observe the labels state to get current labels
         val currentLabels = labelDataBridge.labelsState.value
 
-        // Find labels that contain this note ID
-        val labelsWithThisNote = currentLabels.filter { it.noteIds.contains(noteId) }
-
-        // Remove the note ID from labels that are no longer associated
-        labelsWithThisNote.forEach { label ->
-            if (!labelIds.contains(label.id)) {
-                val updatedNoteIds = label.noteIds.filter { it != noteId }
-                labelDataBridge.updateLabel(label.id, label.name, updatedNoteIds)
+        // Remove note from old labels
+        currentLabels.filter { it.noteIds.contains(noteId) }
+            .forEach { label ->
+                if (!labelIds.contains(label.id)) {
+                    val updatedNoteIds = label.noteIds.filter { it != noteId }
+                    labelDataBridge.updateLabel(label.id, label.name, updatedNoteIds)
+                }
             }
-        }
 
-        // Add the note ID to newly associated labels
+        // Add note to new labels
         labelIds.forEach { labelId ->
-            // Find if the label exists in our current labels
-            val label = currentLabels.find { it.id == labelId }
-            if (label != null) {
-                // If the note is not already in this label's noteIds, add it
+            currentLabels.find { it.id == labelId }?.let { label ->
                 if (!label.noteIds.contains(noteId)) {
                     val updatedNoteIds = label.noteIds + noteId
                     labelDataBridge.updateLabel(labelId, label.name, updatedNoteIds)
@@ -88,9 +80,11 @@ class NoteLabelDataBridge(context: Context) {
         }
     }
 
+    // ==============================================
+    // Query Methods
+    // ==============================================
     fun getNoteLabels(noteId: String): List<String> {
-        val note = notesDataBridge.getNoteById(noteId)
-        return note?.labels ?: emptyList()
+        return notesDataBridge.getNoteById(noteId)?.labels ?: emptyList()
     }
 
     fun getNotesWithLabel(labelId: String, onSuccess: (List<Note>) -> Unit) {
@@ -102,40 +96,32 @@ class NoteLabelDataBridge(context: Context) {
         }
     }
 
+    // ==============================================
+    // Deletion Methods
+    // ==============================================
     fun deleteLabel(labelId: String) {
-        val associatedNoteIds = mutableListOf<Note>()
         getNotesWithLabel(labelId) { notes ->
-            associatedNoteIds.addAll(notes)
-
-
-            if (associatedNoteIds.isEmpty()) {
+            if (notes.isEmpty()) {
                 labelDataBridge.deleteLabel(labelId)
             } else {
-                associatedNoteIds.forEach { note ->
-                    val noteId = note.id
-                    notesDataBridge.fetchNoteById(noteId) {
-                        val updatedLabels = note.labels.filter { it != labelId }
-                        notesDataBridge.updateNoteLabels(noteId, updatedLabels)
-
-
-                    }
+                notes.forEach { note ->
+                    val updatedLabels = note.labels.filter { it != labelId }
+                    notesDataBridge.updateNoteLabels(note.id, updatedLabels)
                 }
                 labelDataBridge.deleteLabel(labelId)
             }
         }
     }
 
-    fun deleteNote(noteId: String){
+    fun deleteNote(noteId: String) {
         notesDataBridge.deleteNote(noteId)
-        notesDataBridge.fetchNoteById(noteId){ note ->
-            val associatedLabelIds = note.labels
-            associatedLabelIds.forEach{ labelId ->
-                labelDataBridge.fetchLabelById(labelId){
-                    val updatedNoteIds = it.noteIds.filter { it != noteId }
-                    labelDataBridge.updateLabel(labelId, it.name, updatedNoteIds)
+        notesDataBridge.fetchNoteById(noteId) { note ->
+            note.labels.forEach { labelId ->
+                labelDataBridge.fetchLabelById(labelId) { label ->
+                    val updatedNoteIds = label.noteIds.filter { it != noteId }
+                    labelDataBridge.updateLabel(labelId, label.name, updatedNoteIds)
                 }
             }
         }
     }
-
 }

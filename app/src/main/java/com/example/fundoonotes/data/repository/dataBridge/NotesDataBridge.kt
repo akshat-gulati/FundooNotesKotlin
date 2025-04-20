@@ -18,28 +18,35 @@ import kotlinx.coroutines.launch
 @Suppress("SpellCheckingInspection")
 class NotesDataBridge(private val context: Context) : NotesInterface {
 
-    companion object{
+    // ==============================================
+    // Companion Object (Constants)
+    // ==============================================
+    companion object {
         private const val TAG = "NotesDataBridge"
     }
 
+    // ==============================================
+    // Properties and Initialization
+    // ==============================================
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
     private val _notesState = MutableStateFlow<List<Note>>(emptyList())
     val notesState: StateFlow<List<Note>> = _notesState.asStateFlow()
+
     private val firestoreRepository: FirestoreNoteRepository = FirestoreNoteRepository(context)
     private val roomNoteRepository: RoomNoteRepository = RoomNoteRepository(context)
-
-        // Use the NetworkManager for network state monitoring
-        private val networkManager = NetworkManager(context)
-        val networkState: StateFlow<Boolean> = networkManager.networkState
+    private val networkManager = NetworkManager(context)
+    val networkState: StateFlow<Boolean> = networkManager.networkState
 
     init {
         observeNotes()
     }
 
+    // ==============================================
+    // Data Observation
+    // ==============================================
     private fun observeNotes() {
-        // Use the NetworkManager's StateFlow instead of setting up our own network callback
+        // Observe network state changes
         coroutineScope.launch {
-            // Observe network state changes
             networkState.collect { isOnline ->
                 if (isOnline) {
                     _notesState.value = firestoreRepository.notesState.value
@@ -49,9 +56,8 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
             }
         }
 
-        // Start collecting from both repositories
+        // Collect from both repositories
         coroutineScope.launch {
-            // Always collect from Room for local changes
             launch {
                 roomNoteRepository.notesState.collect { roomNotes ->
                     if (!networkManager.isOnline()) {
@@ -61,7 +67,6 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
                 }
             }
 
-            // Always collect from Firestore for remote changes
             launch {
                 firestoreRepository.notesState.collect { firestoreNotes ->
                     if (networkManager.isOnline()) {
@@ -73,20 +78,21 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
         }
     }
 
+    // ==============================================
+    // Core CRUD Operations
+    // ==============================================
     override fun fetchNoteById(noteId: String, onSuccess: (Note) -> Unit) {
         if (networkManager.isOnline()) {
             firestoreRepository.fetchNoteById(noteId, onSuccess)
-        }
-        else {
+        } else {
             roomNoteRepository.fetchNoteById(noteId, onSuccess)
         }
     }
 
     override fun fetchNotes() {
-        if (networkManager.isOnline()){
+        if (networkManager.isOnline()) {
             firestoreRepository.fetchNotes()
-        }
-        else{
+        } else {
             roomNoteRepository.fetchNotes()
         }
     }
@@ -107,19 +113,9 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
         firestoreRepository.deleteNote(noteId)
     }
 
-    fun getNoteById(noteId: String): Note? {
-        return _notesState.value.find { it.id == noteId }
-    }
-
-    // Method to update a note's labels
-    fun updateNoteLabels(noteId: String, labels: List<String>) {
-        fetchNoteById(noteId) { note ->
-            val updatedFields = mapOf("labels" to labels)
-            roomNoteRepository.updateNoteFields(noteId, updatedFields)
-            firestoreRepository.updateNoteFields(noteId, updatedFields)
-        }
-    }
-
+    // ==============================================
+    // Note State Management
+    // ==============================================
     fun toggleNoteToTrash(noteId: String) {
         fetchNoteById(noteId) { note ->
             val updatedFields = if (note.deleted == true) {
@@ -152,6 +148,21 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
             roomNoteRepository.updateNoteFields(noteId, updatedFields)
             firestoreRepository.updateNoteFields(noteId, updatedFields)
         }
+    }
+
+    fun updateNoteLabels(noteId: String, labels: List<String>) {
+        fetchNoteById(noteId) { note ->
+            val updatedFields = mapOf("labels" to labels)
+            roomNoteRepository.updateNoteFields(noteId, updatedFields)
+            firestoreRepository.updateNoteFields(noteId, updatedFields)
+        }
+    }
+
+    // ==============================================
+    // Utility Methods
+    // ==============================================
+    fun getNoteById(noteId: String): Note? {
+        return _notesState.value.find { it.id == noteId }
     }
 
     fun cleanup() {

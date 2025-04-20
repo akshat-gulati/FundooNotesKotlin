@@ -1,13 +1,9 @@
 package com.example.fundoonotes.data.repository.dataBridge
 
-import com.example.fundoonotes.data.model.Label
 import android.content.Context
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
 import android.util.Log
 import com.example.fundoonotes.core.NetworkManager
+import com.example.fundoonotes.data.model.Label
 import com.example.fundoonotes.data.repository.interfaces.LabelInterface
 import com.example.fundoonotes.data.repository.firebase.FirestoreLabelRepository
 import com.example.fundoonotes.data.repository.room.RoomLabelRepository
@@ -17,42 +13,48 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.util.UUID
 
-class LabelDataBridge(private val context: Context): LabelInterface {
+class LabelDataBridge(private val context: Context) : LabelInterface {
 
-    companion object{
+    // ==============================================
+    // Companion Object (Constants)
+    // ==============================================
+    companion object {
         private const val TAG = "LabelsDataBridge"
     }
 
+    // ==============================================
+    // Properties and Initialization
+    // ==============================================
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
     private val _labelsState = MutableStateFlow<List<Label>>(emptyList())
     val labelsState: StateFlow<List<Label>> = _labelsState.asStateFlow()
-    val firestoreLabelRepository: FirestoreLabelRepository = FirestoreLabelRepository(context)
-    private val roomLabelRepository: RoomLabelRepository = RoomLabelRepository(context)
 
-    // Use the NetworkManager for network state monitoring
+    private val firestoreLabelRepository: FirestoreLabelRepository = FirestoreLabelRepository(context)
+    private val roomLabelRepository: RoomLabelRepository = RoomLabelRepository(context)
     private val networkManager = NetworkManager(context)
     val networkState: StateFlow<Boolean> = networkManager.networkState
 
     init {
-       observeLabels()
+        observeLabels()
     }
 
+    // ==============================================
+    // Data Observation
+    // ==============================================
     private fun observeLabels() {
-
-                coroutineScope.launch {
-                    networkState.collect { isOnline ->
-                        if (isOnline) {
-                            _labelsState.value = firestoreLabelRepository.labelsState.value
-                        } else {
-                            _labelsState.value = roomLabelRepository.labelsState.value
-                        }
-                    }
+        // Observe network state changes
+        coroutineScope.launch {
+            networkState.collect { isOnline ->
+                if (isOnline) {
+                    _labelsState.value = firestoreLabelRepository.labelsState.value
+                } else {
+                    _labelsState.value = roomLabelRepository.labelsState.value
                 }
+            }
+        }
 
-
-        // Start collecting from both repositories
+        // Collect from both repositories
         coroutineScope.launch {
             // Always collect from Room for local changes
             launch {
@@ -65,49 +67,41 @@ class LabelDataBridge(private val context: Context): LabelInterface {
 
             // Always collect from Firestore for remote changes
             launch {
-                firestoreLabelRepository.labelsState.collect { firestoreLabelRepository ->
+                firestoreLabelRepository.labelsState.collect { firestoreLabels ->
                     if (networkManager.isOnline()) {
-                        _labelsState.value = firestoreLabelRepository
+                        _labelsState.value = firestoreLabels
                     }
                 }
             }
         }
     }
 
-
-    override fun fetchLabelById(
-        labelId: String,
-        onSuccess: (Label) -> Unit
-    ) {
+    // ==============================================
+    // Core CRUD Operations
+    // ==============================================
+    override fun fetchLabelById(labelId: String, onSuccess: (Label) -> Unit) {
         if (networkManager.isOnline()) {
             firestoreLabelRepository.fetchLabelById(labelId, onSuccess)
-        }
-        else {
+        } else {
             roomLabelRepository.fetchLabelById(labelId, onSuccess)
         }
     }
 
     override fun fetchLabels() {
-        if (networkManager.isOnline()){
+        if (networkManager.isOnline()) {
             firestoreLabelRepository.fetchLabels()
-        }
-        else{
+        } else {
             roomLabelRepository.fetchLabels()
         }
     }
 
-    override fun addNewLabel(labelId: String,labelName: String): String {
+    override fun addNewLabel(labelId: String, labelName: String): String {
         roomLabelRepository.addNewLabel(labelId, labelName)
         firestoreLabelRepository.addNewLabel(labelId, labelName)
-
         return labelId
     }
 
-    override fun updateLabel(
-        labelId: String,
-        labelName: String,
-        noteIds: List<String>
-    ) {
+    override fun updateLabel(labelId: String, labelName: String, noteIds: List<String>) {
         roomLabelRepository.updateLabel(labelId, labelName, noteIds)
         firestoreLabelRepository.updateLabel(labelId, labelName, noteIds)
     }
@@ -116,5 +110,4 @@ class LabelDataBridge(private val context: Context): LabelInterface {
         firestoreLabelRepository.deleteLabel(labelId)
         roomLabelRepository.deleteLabel(labelId)
     }
-
 }
