@@ -18,7 +18,7 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.TransformationUtils.circleCrop
 import com.example.fundoonotes.R
-import com.example.fundoonotes.data.repository.AuthManager
+import com.example.fundoonotes.core.AuthManager
 import com.example.fundoonotes.data.repository.firebase.FirestoreUserDataRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Job

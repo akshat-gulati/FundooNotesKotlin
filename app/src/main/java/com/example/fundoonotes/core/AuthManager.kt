@@ -1,11 +1,10 @@
-package com.example.fundoonotes.data.repository
+package com.example.fundoonotes.core
 
 import android.content.Context
 import android.content.Intent
 import com.example.fundoonotes.MainActivity
 import com.example.fundoonotes.ui.loginSignup.LoginSignupActivity
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 
 class AuthManager(private val context: Context?) {
     private val firebaseAuth = FirebaseAuth.getInstance()

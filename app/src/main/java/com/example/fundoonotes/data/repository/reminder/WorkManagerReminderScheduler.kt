@@ -1,4 +1,4 @@
-package com.example.fundoonotes.data.repository
+package com.example.fundoonotes.data.repository.reminder
 
 import android.content.Context
 import android.util.Log

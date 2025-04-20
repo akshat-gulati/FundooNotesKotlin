@@ -1,17 +1,12 @@
 package com.example.fundoonotes.ui.notes
 
-import android.app.Application
 import android.content.Context
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.recyclerview.widget.RecyclerView
 import com.example.fundoonotes.data.model.Note
-import com.example.fundoonotes.data.repository.NoteLabelRepository
+import com.example.fundoonotes.data.repository.dataBridge.NoteLabelDataBridge
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
 import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +20,7 @@ class NoteViewModel(context: Context) : ViewModel() {
     // Data repositories
     private val notesDataBridge = NotesDataBridge(context)
     internal val labelDataBridge = LabelDataBridge(context)
-    private val noteLabelRepository = NoteLabelRepository(context)
+    private val noteLabelDataBridge = NoteLabelDataBridge(context)
 
     // UI State
     private val _displayMode = MutableStateFlow(NoteFragment.DISPLAY_NOTES)
@@ -132,7 +127,7 @@ class NoteViewModel(context: Context) : ViewModel() {
     fun permanentlyDeleteSelectedNotes(): Job{
         return viewModelScope.launch(Dispatchers.IO){
             selectedNotes.value.forEach { note ->
-                noteLabelRepository.deleteNote(note.id)
+                noteLabelDataBridge.deleteNote(note.id)
             }
         }
 
@@ -176,8 +171,8 @@ class NoteViewModel(context: Context) : ViewModel() {
                 }
 
                 // Update the note with the final set of labels
-                noteLabelRepository.updateNoteLabels(note.id, finalLabels)
-                noteLabelRepository.updateLabelsWithNoteReference(note.id, finalLabels)
+                noteLabelDataBridge.updateNoteLabels(note.id, finalLabels)
+                noteLabelDataBridge.updateLabelsWithNoteReference(note.id, finalLabels)
             }
         }
     }

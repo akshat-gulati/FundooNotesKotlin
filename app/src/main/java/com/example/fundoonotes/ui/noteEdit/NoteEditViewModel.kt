@@ -6,8 +6,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fundoonotes.data.model.Label
 import com.example.fundoonotes.data.model.Note
-import com.example.fundoonotes.data.repository.NoteLabelRepository
-import com.example.fundoonotes.data.repository.WorkManagerReminderScheduler
+import com.example.fundoonotes.data.repository.dataBridge.NoteLabelDataBridge
+import com.example.fundoonotes.data.repository.reminder.WorkManagerReminderScheduler
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
 import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +24,7 @@ class NoteEditViewModel(application: Application) : AndroidViewModel(application
     // ==============================================
     private val notesDataBridge: NotesDataBridge
     private val labelDataBridge: LabelDataBridge
-    private val noteLabelRepository: NoteLabelRepository
+    private val noteLabelDataBridge: NoteLabelDataBridge
     private val reminderScheduler: WorkManagerReminderScheduler
 
 
@@ -63,7 +63,7 @@ class NoteEditViewModel(application: Application) : AndroidViewModel(application
     init {
         notesDataBridge = NotesDataBridge(application.applicationContext)
         labelDataBridge = LabelDataBridge(application.applicationContext)
-        noteLabelRepository = NoteLabelRepository(application.applicationContext)
+        noteLabelDataBridge = NoteLabelDataBridge(application.applicationContext)
         reminderScheduler = WorkManagerReminderScheduler(application.applicationContext)
 
         // Fetch labels initially
@@ -197,7 +197,7 @@ class NoteEditViewModel(application: Application) : AndroidViewModel(application
             if (existingNote != null) {
                 // Update existing note
                 Log.d(TAG, "Updating existing note: $id")
-                noteLabelRepository.updateNoteWithLabels(
+                noteLabelDataBridge.updateNoteWithLabels(
                     id,
                     title,
                     description,
@@ -213,7 +213,7 @@ class NoteEditViewModel(application: Application) : AndroidViewModel(application
             } else {
                 // Add new note
                 Log.d(TAG, "Adding new note with ID: $id")
-                noteLabelRepository.addNewNoteWithLabels(
+                noteLabelDataBridge.addNewNoteWithLabels(
                     id,
                     title,
                     description,

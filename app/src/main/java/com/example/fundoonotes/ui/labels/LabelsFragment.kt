@@ -11,14 +11,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.fundoonotes.MainActivity
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import android.view.View
 import com.example.fundoonotes.data.model.Label
 import com.example.fundoonotes.R
-import com.example.fundoonotes.data.repository.NoteLabelRepository
+import com.example.fundoonotes.data.repository.dataBridge.NoteLabelDataBridge
 import java.util.UUID
 import kotlin.String
 
@@ -32,7 +31,7 @@ class LabelsFragment : Fragment() {
     private lateinit var adapter: LabelAdapter
     private val labels = mutableListOf<Label>()
 
-    private lateinit var noteLabelRepository: NoteLabelRepository
+    private lateinit var noteLabelDataBridge: NoteLabelDataBridge
 
     private var labelsCollectionJob: Job? = null
 
@@ -46,7 +45,7 @@ class LabelsFragment : Fragment() {
         etNewLabel = view.findViewById(R.id.etNewLabel)
         btnAddLabel = view.findViewById(R.id.btnAddLabel)
         labelDataBridge = LabelDataBridge(requireContext())
-        noteLabelRepository = NoteLabelRepository(requireContext())
+        noteLabelDataBridge = NoteLabelDataBridge(requireContext())
 
         setupRecyclerView()
         setupAddLabelButton()
@@ -84,7 +83,7 @@ class LabelsFragment : Fragment() {
 
             override fun onLabelDelete(label: Label, position: Int) {
                 // Remove the label from Firestore
-                noteLabelRepository.deleteLabel(label.id)
+                noteLabelDataBridge.deleteLabel(label.id)
             }
 
             override fun onLabelEdit(

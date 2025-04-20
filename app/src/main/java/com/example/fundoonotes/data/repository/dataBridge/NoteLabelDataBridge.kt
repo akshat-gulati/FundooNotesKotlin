@@ -1,13 +1,9 @@
-package com.example.fundoonotes.data.repository
+package com.example.fundoonotes.data.repository.dataBridge
 
 import android.content.Context
-import android.util.Log
 import com.example.fundoonotes.data.model.Note
-import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
-import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
-import java.time.Clock.system
 
-class NoteLabelRepository(context: Context) {
+class NoteLabelDataBridge(context: Context) {
 
     private val notesDataBridge = NotesDataBridge(context)
     private val labelDataBridge = LabelDataBridge(context)

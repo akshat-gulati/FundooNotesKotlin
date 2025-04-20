@@ -1,4 +1,4 @@
-package com.example.fundoonotes.data.repository
+package com.example.fundoonotes.data.repository.reminder
 
 import android.app.NotificationChannel
 import android.app.NotificationManager

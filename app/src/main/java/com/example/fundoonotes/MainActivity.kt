@@ -32,7 +32,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.work.WorkManager
 import com.example.fundoonotes.core.PermissionManager
 import com.google.android.material.navigation.NavigationView
-import com.example.fundoonotes.data.repository.AuthManager
+import com.example.fundoonotes.core.AuthManager
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
 import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
 import com.example.fundoonotes.ui.NavigationInterface
