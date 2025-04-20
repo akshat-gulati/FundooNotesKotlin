@@ -29,6 +29,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.work.WorkManager
 import com.example.fundoonotes.core.PermissionManager
 import com.google.android.material.navigation.NavigationView
 import com.example.fundoonotes.data.repository.AuthManager
@@ -75,6 +76,22 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
 
         val notesDataBridge = NotesDataBridge(applicationContext)
         notesDataBridge.initializeDatabase()
+
+        initializeWorkManager()
+    }
+    private fun initializeWorkManager() {
+        // Initialize WorkManager if it hasn't been initialized yet
+        try {
+            WorkManager.getInstance(applicationContext)
+        } catch (e: IllegalStateException) {
+            // WorkManager not initialized yet, so initialize it
+            val config = androidx.work.Configuration.Builder()
+                .setMinimumLoggingLevel(Log.INFO)
+                .build()
+
+            WorkManager.initialize(applicationContext, config)
+            Log.d("MainActivity", "WorkManager initialized")
+        }
     }
 
     private fun setupUI(savedInstanceState: Bundle?) {

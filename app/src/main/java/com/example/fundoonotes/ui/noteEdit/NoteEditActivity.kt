@@ -145,6 +145,19 @@ class NoteEditActivity : AppCompatActivity() {
                         }
                     }
                 }
+                launch {
+                    viewModel.reminderTime.collect { time ->
+                        time?.let {
+                            // Update UI to show reminder is set
+                            ivReminder.setImageResource(R.drawable.alarm) // Use your own icon
+                            // Optionally show the date/time somewhere
+                        } ?: run {
+                            // No reminder set
+                            ivReminder.setImageResource(R.drawable.alarm)
+                        ivReminder.setColorFilter(R.color.black)// Default icon
+                        }
+                    }
+                }
             }
         }
     }

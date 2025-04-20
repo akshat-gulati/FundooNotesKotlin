@@ -2,32 +2,38 @@ package com.example.fundoonotes.data.repository
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.work.CoroutineWorker
+import androidx.work.WorkerParameters
 import com.example.fundoonotes.R
-import kotlin.math.log
 
-class ReminderReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context?, intent: Intent?) {
+class ReminderWorker(
+    context: Context,
+    params: WorkerParameters
+) : CoroutineWorker(context, params) {
 
-        Log.d("ReminderReceiver", "onReceive called")
-        if (context == null || intent == null) {
-            Log.e("ReminderReceiver", "Received null context or intent")
-            return
-        }
+    companion object {
+        private const val TAG = "ReminderWorker"
+    }
 
-        val noteId = intent.getStringExtra("noteId") ?: "unknown"
-        val noteTitle = intent.getStringExtra("noteTitle") ?: "Reminder"
-        val noteContent = intent.getStringExtra("noteContent") ?: "You have a note reminder"
+    override suspend fun doWork(): Result {
+        val noteId = inputData.getString("noteId") ?: "unknown"
+        val noteTitle = inputData.getString("noteTitle") ?: "Reminder"
+        val noteContent = inputData.getString("noteContent") ?: "You have a note reminder"
 
-        Log.d("ReminderReceiver", "Notification triggered for note: $noteTitle (ID: $noteId)")
+        Log.d(TAG, "Showing notification for note: $noteTitle (ID: $noteId)")
 
-        val notificationManager =
-            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        showNotification(noteId, noteTitle, noteContent)
+
+        return Result.success()
+    }
+
+    private fun showNotification(noteId: String, noteTitle: String, noteContent: String) {
+        val notificationManager = applicationContext
+            .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         val channelId = "reminder_channel"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -41,10 +47,9 @@ class ReminderReceiver : BroadcastReceiver() {
                 enableLights(true)
             }
             notificationManager.createNotificationChannel(channel)
-            Log.d("ReminderReceiver", "Created notification channel: $channelId")
         }
 
-        val notification = NotificationCompat.Builder(context, channelId)
+        val notification = NotificationCompat.Builder(applicationContext, channelId)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(noteTitle)
             .setContentText(noteContent)
@@ -56,6 +61,6 @@ class ReminderReceiver : BroadcastReceiver() {
         // Use a consistent notification ID for the same note
         val notificationId = noteId.hashCode()
         notificationManager.notify(notificationId, notification)
-        Log.d("ReminderReceiver", "Notification shown with ID: $notificationId")
+        Log.d(TAG, "Notification shown with ID: $notificationId")
     }
 }

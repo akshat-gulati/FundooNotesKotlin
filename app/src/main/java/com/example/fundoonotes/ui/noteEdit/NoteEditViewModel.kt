@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.fundoonotes.data.model.Label
 import com.example.fundoonotes.data.model.Note
 import com.example.fundoonotes.data.repository.NoteLabelRepository
-import com.example.fundoonotes.data.repository.ReminderScheduler
+import com.example.fundoonotes.data.repository.WorkManagerReminderScheduler
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
 import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +25,8 @@ class NoteEditViewModel(application: Application) : AndroidViewModel(application
     private val notesDataBridge: NotesDataBridge
     private val labelDataBridge: LabelDataBridge
     private val noteLabelRepository: NoteLabelRepository
-    private val reminderScheduler: ReminderScheduler
+    private val reminderScheduler: WorkManagerReminderScheduler
+
 
     // ==============================================
     // StateFlow Declarations
@@ -63,7 +64,7 @@ class NoteEditViewModel(application: Application) : AndroidViewModel(application
         notesDataBridge = NotesDataBridge(application.applicationContext)
         labelDataBridge = LabelDataBridge(application.applicationContext)
         noteLabelRepository = NoteLabelRepository(application.applicationContext)
-        reminderScheduler = ReminderScheduler(application.applicationContext)
+        reminderScheduler = WorkManagerReminderScheduler(application.applicationContext)
 
         // Fetch labels initially
         viewModelScope.launch {
@@ -94,10 +95,12 @@ class NoteEditViewModel(application: Application) : AndroidViewModel(application
         if (note != null) {
             _currentNote.value = note
             _noteLabels.value = note.labels
+            _reminderTime.value = note.reminderTime
         } else {
             notesDataBridge.fetchNoteById(noteId) { fetchedNote ->
                 _currentNote.value = fetchedNote
                 _noteLabels.value = fetchedNote.labels
+                _reminderTime.value = fetchedNote.reminderTime
             }
         }
     }
