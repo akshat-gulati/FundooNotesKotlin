@@ -12,23 +12,28 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.fundoonotes.R
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class LoginSignupActivity : AppCompatActivity() {
 
+    // ==============================================
     // ViewModel
+    // ==============================================
     private lateinit var viewModel: LoginSignupViewModel
 
-    // UI components
+    // ==============================================
+    // UI Components Declaration
+    // ==============================================
     private lateinit var tabLayout: TabLayout
     private lateinit var tilFullName: TextInputLayout
     private lateinit var tilConfirmPassword: TextInputLayout
@@ -40,13 +45,14 @@ class LoginSignupActivity : AppCompatActivity() {
     private lateinit var cvProfilePicture: CardView
     private lateinit var ibProfilePicture: ImageView
 
-    // EditText fields
     private lateinit var etEmail: TextInputEditText
     private lateinit var etPassword: TextInputEditText
     private lateinit var etFullName: TextInputEditText
     private lateinit var etConfirmPassword: TextInputEditText
 
-    // Activity result launchers
+    // ==============================================
+    // Activity Result Launchers
+    // ==============================================
     private val galleryLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == RESULT_OK) {
             result.data?.data?.let { uri ->
@@ -61,7 +67,9 @@ class LoginSignupActivity : AppCompatActivity() {
         }
     }
 
-    // Activity lifecycle methods
+    // ==============================================
+    // Activity Lifecycle Methods
+    // ==============================================
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -92,7 +100,9 @@ class LoginSignupActivity : AppCompatActivity() {
         }
     }
 
-    // Initialization methods
+    // ==============================================
+    // Initialization Methods
+    // ==============================================
     private fun initializeViews() {
         tabLayout = findViewById(R.id.tabLayout)
         tilFullName = findViewById(R.id.tilFullName)
@@ -124,7 +134,9 @@ class LoginSignupActivity : AppCompatActivity() {
         })
     }
 
-    // UI state management
+    // ==============================================
+    // UI State Management
+    // ==============================================
     private fun showLoginUI() {
         tilFullName.visibility = View.GONE
         tilConfirmPassword.visibility = View.GONE
@@ -141,7 +153,9 @@ class LoginSignupActivity : AppCompatActivity() {
         tvLoginHeader.text = getString(R.string.register)
     }
 
-    // Click listeners setup
+    // ==============================================
+    // Click Listeners Setup
+    // ==============================================
     private fun setupClickListeners() {
         btnAction.setOnClickListener {
             when (tabLayout.selectedTabPosition) {
@@ -159,7 +173,9 @@ class LoginSignupActivity : AppCompatActivity() {
         }
     }
 
-    // Authentication methods
+    // ==============================================
+    // Authentication Methods
+    // ==============================================
     private fun loginUser() {
         val email = etEmail.text.toString().trim()
         val password = etPassword.text.toString().trim()
@@ -174,7 +190,9 @@ class LoginSignupActivity : AppCompatActivity() {
         viewModel.register(email, password, confirmPassword, fullName)
     }
 
-    // Image handling methods
+    // ==============================================
+    // Image Handling Methods
+    // ==============================================
     private fun showImageSelectionDialog() {
         MaterialAlertDialogBuilder(this)
             .setTitle("Select Profile Picture")
@@ -192,36 +210,44 @@ class LoginSignupActivity : AppCompatActivity() {
         galleryLauncher.launch(intent)
     }
 
-    // ViewModel observation
+    // ==============================================
+    // ViewModel Observation
+    // ==============================================
     private fun observeViewModel() {
-        viewModel.currentTab.observe(this, Observer { tabPosition ->
-            tabLayout.getTabAt(tabPosition)?.select()
-        })
 
-        viewModel.authResult.observe(this, Observer { result ->
-            when(result) {
-                is LoginSignupViewModel.AuthResult.Success -> {
-                    viewModel.navigateToMainActivity(this)
+        lifecycleScope.launch {
+            viewModel.authSuccess.collectLatest { success ->
+                if (success == true) {
+                    viewModel.navigateToMainActivity(this@LoginSignupActivity)
                     finish()
                 }
-                is LoginSignupViewModel.AuthResult.Error -> {
-                    Toast.makeText(this, result.message, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.authError.collectLatest { error ->
+                error?.let {
+                    Toast.makeText(this@LoginSignupActivity, it, Toast.LENGTH_SHORT).show()
                 }
             }
-        })
+        }
 
-        viewModel.isLoading.observe(this, Observer { isLoading ->
-            btnAction.isEnabled = !isLoading
-        })
-
-        viewModel.profileImageUri.observe(this, Observer { uri ->
-            uri?.let {
-                Glide.with(this)
-                    .load(it)
-                    .circleCrop()
-                    .placeholder(R.drawable.person)
-                    .into(ibProfilePicture)
+        lifecycleScope.launch {
+            viewModel.isLoading.collectLatest { isLoading ->
+                btnAction.isEnabled = !isLoading
             }
-        })
+        }
+
+        lifecycleScope.launch {
+            viewModel.profileImageUri.collectLatest { uri ->
+                uri?.let {
+                    Glide.with(this@LoginSignupActivity)
+                        .load(it)
+                        .circleCrop()
+                        .placeholder(R.drawable.person)
+                        .into(ibProfilePicture)
+                }
+            }
+        }
     }
 }

@@ -2,54 +2,63 @@ package com.example.fundoonotes.ui.loginSignup
 
 import android.content.Context
 import android.net.Uri
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fundoonotes.core.PermissionManager
 import com.example.fundoonotes.data.repository.CloudinaryImageManager
 import com.example.fundoonotes.data.repository.firebase.FirebaseAuthService
 import com.example.fundoonotes.data.repository.firebase.FirestoreUserDataRepository
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class LoginSignupViewModel(context: Context) : ViewModel() {
 
+    // ==============================================
     // Dependencies
+    // ==============================================
     private val firebaseAuthService: FirebaseAuthService = FirebaseAuthService(context)
     private val cloudinaryImageManager: CloudinaryImageManager = CloudinaryImageManager(context)
     private val permissionManager: PermissionManager = PermissionManager(context)
     private val firestoreUserDataRepository: FirestoreUserDataRepository = FirestoreUserDataRepository(context)
 
-    // LiveData for UI state
-    private val _currentTab = MutableLiveData<Int>(0) // 0 for Login, 1 for Register
-    val currentTab: LiveData<Int> = _currentTab
+    // ==============================================
+    // StateFlow Declarations
+    // ==============================================
+    private val _currentTab = MutableStateFlow<Int>(0)
+    val currentTab: StateFlow<Int> = _currentTab.asStateFlow()
 
-    private val _profileImageUri = MutableLiveData<Uri?>(null)
-    val profileImageUri: LiveData<Uri?> = _profileImageUri
+    private val _profileImageUri = MutableStateFlow<Uri?>(null)
+    val profileImageUri: StateFlow<Uri?> = _profileImageUri.asStateFlow()
 
-    private val _profileImageUrl = MutableLiveData<String?>(null)
-    val profileImageUrl: LiveData<String?> = _profileImageUrl
+    private val _profileImageUrl = MutableStateFlow<String?>(null)
+    val profileImageUrl: StateFlow<String?> = _profileImageUrl.asStateFlow()
 
-    private val _authResult = MutableLiveData<AuthResult>()
-    val authResult: LiveData<AuthResult> = _authResult
+    private val _authSuccess = MutableStateFlow<Boolean?>(null)
+    val authSuccess: StateFlow<Boolean?> = _authSuccess.asStateFlow()
 
-    private val _isLoading = MutableLiveData<Boolean>(false)
-    val isLoading: LiveData<Boolean> = _isLoading
+    private val _authError = MutableStateFlow<String?>(null)
+    val authError: StateFlow<String?> = _authError.asStateFlow()
 
-    // Sealed class for authentication results
-    sealed class AuthResult {
-        object Success : AuthResult()
-        data class Error(val message: String) : AuthResult()
-    }
+    private val _isLoading = MutableStateFlow<Boolean>(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    // ==============================================
     // Authentication Methods
+    // ==============================================
     fun login(email: String, password: String) {
         _isLoading.value = true
+        clearAuthState()
+
         viewModelScope.launch {
-            val result = firebaseAuthService.loginWithEmailPassword(email, password)
-            _authResult.value = when (result) {
-                is FirebaseAuthService.AuthResult.Success -> AuthResult.Success
-                is FirebaseAuthService.AuthResult.Error -> AuthResult.Error(result.message)
+            when (val result = firebaseAuthService.loginWithEmailPassword(email, password)) {
+                is FirebaseAuthService.AuthResult.Success -> {
+                    _authSuccess.value = true
+                }
+                is FirebaseAuthService.AuthResult.Error -> {
+                    _authError.value = result.message
+                }
             }
             _isLoading.value = false
         }
@@ -57,18 +66,18 @@ class LoginSignupViewModel(context: Context) : ViewModel() {
 
     fun register(email: String, password: String, confirmPassword: String, fullName: String) {
         _isLoading.value = true
-        viewModelScope.launch {
-            val result = firebaseAuthService.registerWithEmailPassword(
-                email, password, confirmPassword, fullName
-            )
+        clearAuthState()
 
-            when (result) {
+        viewModelScope.launch {
+            when (val result = firebaseAuthService.registerWithEmailPassword(
+                email, password, confirmPassword, fullName
+            )) {
                 is FirebaseAuthService.AuthResult.Success -> {
-                    firestoreUserDataRepository.addNewUser(fullName, email, _profileImageUrl.value)
-                    _authResult.value = AuthResult.Success
+                    firestoreUserDataRepository.addNewUser(fullName, email, profileImageUrl.value)
+                    _authSuccess.value = true
                 }
                 is FirebaseAuthService.AuthResult.Error -> {
-                    _authResult.value = AuthResult.Error(result.message)
+                    _authError.value = result.message
                 }
             }
             _isLoading.value = false
@@ -77,17 +86,24 @@ class LoginSignupViewModel(context: Context) : ViewModel() {
 
     fun performGoogleSignIn() {
         _isLoading.value = true
+        clearAuthState()
+
         viewModelScope.launch {
-            val result = firebaseAuthService.performGoogleSignIn()
-            _authResult.value = when (result) {
-                is FirebaseAuthService.AuthResult.Success -> AuthResult.Success
-                is FirebaseAuthService.AuthResult.Error -> AuthResult.Error(result.message)
+            when (val result = firebaseAuthService.performGoogleSignIn()) {
+                is FirebaseAuthService.AuthResult.Success -> {
+                    _authSuccess.value = true
+                }
+                is FirebaseAuthService.AuthResult.Error -> {
+                    _authError.value = result.message
+                }
             }
             _isLoading.value = false
         }
     }
 
+    // ==============================================
     // Profile Image Management
+    // ==============================================
     fun setProfileImageUri(uri: Uri?) {
         _profileImageUri.value = uri
         uploadProfileImage(uri)
@@ -103,13 +119,25 @@ class LoginSignupViewModel(context: Context) : ViewModel() {
         }
     }
 
+    // ==============================================
     // Permission Management
+    // ==============================================
     fun hasStoragePermission(activity: LoginSignupActivity): Boolean {
         return permissionManager.checkStoragePermission(activity)
     }
 
+    // ==============================================
     // Navigation
+    // ==============================================
     fun navigateToMainActivity(activity: LoginSignupActivity) {
         firebaseAuthService.navigateToMainActivity(activity)
+    }
+
+    // ==============================================
+    // Helper Methods
+    // ==============================================
+    private fun clearAuthState() {
+        _authSuccess.value = null
+        _authError.value = null
     }
 }
