@@ -115,6 +115,20 @@ class NoteEditViewModel(application: Application) : AndroidViewModel(application
         }
         _reminderTime.value = time
     }
+    fun cancelReminder() {
+        // If this is an existing note with a reminder
+        currentNoteId?.let { id ->
+            val existingNote = notesDataBridge.getNoteById(id)
+
+            if (existingNote != null && existingNote.reminderTime != null) {
+                // Cancel the scheduled reminder
+                reminderScheduler.cancelReminder(id)
+            }
+        }
+
+        // Clear the reminder time
+        _reminderTime.value = null
+    }
 
     // ==============================================
     // Archive Methods

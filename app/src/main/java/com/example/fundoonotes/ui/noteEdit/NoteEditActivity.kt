@@ -24,6 +24,7 @@ import com.example.fundoonotes.core.PermissionManager
 import com.example.fundoonotes.data.model.Label
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 
 class NoteEditActivity : AppCompatActivity() {
@@ -227,7 +228,35 @@ class NoteEditActivity : AppCompatActivity() {
             }
         }
 
-        showDateTimePicker()
+        // Check if a reminder is already set
+        val currentReminderTime = viewModel.reminderTime.value
+        if (currentReminderTime != null) {
+            // Show confirmation dialog to cancel the existing reminder
+            showCancelReminderDialog(currentReminderTime)
+        } else {
+            // No reminder set, proceed with setting a new one
+            showDateTimePicker()
+        }
+    }
+
+    private fun showCancelReminderDialog(reminderTime: Long) {
+        val formattedDateTime = SimpleDateFormat("MMM dd, yyyy HH:mm").format(reminderTime)
+
+        val materialDialog = MaterialAlertDialogBuilder(this)
+            .setTitle("Cancel Reminder")
+            .setMessage("Do you want to cancel the reminder set for $formattedDateTime?")
+            .setPositiveButton("Yes") { _, _ ->
+                // Cancel the reminder
+                viewModel.cancelReminder()
+                Log.d(TAG, "Reminder cancelled")
+                Toast.makeText(this, "Reminder cancelled", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("No") { _, _ ->
+                showDateTimePicker()
+            }
+            .create()
+
+        materialDialog.show()
     }
 
     private fun showDateTimePicker() {
@@ -246,7 +275,11 @@ class NoteEditActivity : AppCompatActivity() {
 
                 // Show toast with formatted time
                 val formattedDateTime = SimpleDateFormat("MMM dd, yyyy HH:mm").format(currentDate.timeInMillis)
-                Toast.makeText(this, "Reminder set for: $formattedDateTime", Toast.LENGTH_SHORT).show()
+
+                if (formattedDateTime > SimpleDateFormat("MMM dd, yyyy HH:mm").format(System.currentTimeMillis())){
+                    Toast.makeText(this, "Reminder set for: $formattedDateTime", Toast.LENGTH_SHORT).show()
+                }
+
             }
 
             TimePickerDialog(
