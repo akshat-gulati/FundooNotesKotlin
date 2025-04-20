@@ -13,30 +13,30 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class FirestoreNoteRepository(private val context: Context): NotesInterface {
+
+    // ==============================================
+    // Dependencies and Initialization
+    // ==============================================
     private val db = Firebase.firestore
     private val auth = FirebaseAuth.getInstance()
     private val _notesState = MutableStateFlow<List<Note>>(emptyList())
     val notesState: StateFlow<List<Note>> = _notesState.asStateFlow()
-
-    // For real-time updates
     private var notesListener: ListenerRegistration? = null
-
     private val sharedPreferences = context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
 
     init {
         setupRealtimeUpdates()
     }
 
+    // ==============================================
+    // Note Fetching Operations
+    // ==============================================
     override fun fetchNoteById(noteId: String, onSuccess: (Note) -> Unit) {
         db.collection("notes").document(noteId)
             .get()
             .addOnSuccessListener { document ->
-                if (document != null && document.exists()) {
-                    val note = document.toObject(Note::class.java)?.copy(id = document.id)
-                    note?.let { onSuccess(it) }
-                } else {
-                    Log.d("NoteRepository", "No such document with ID: $noteId")
-                }
+                document.toObject(Note::class.java)?.copy(id = document.id)?.let(onSuccess)
+                    ?: Log.d("NoteRepository", "No such document with ID: $noteId")
             }
             .addOnFailureListener { e ->
                 Log.w("NoteRepository", "Error getting note", e)
@@ -44,42 +44,35 @@ class FirestoreNoteRepository(private val context: Context): NotesInterface {
     }
 
     override fun fetchNotes() {
-        // This method is now mainly used for initial data loading or manual refresh
-        // Real-time updates will happen through the listener
         setupRealtimeUpdates()
     }
 
     private fun setupRealtimeUpdates() {
-        // Remove any existing listener
         notesListener?.remove()
-
-        val userId = getUserId() ?: return
-
-        // Set up real-time listener for notes collection
-        notesListener = db.collection("notes")
-            .whereEqualTo("userId", userId)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    Log.w("NoteRepository", "Listen failed.", error)
-                    return@addSnapshotListener
-                }
-
-                if (snapshot != null) {
-                    val notes = snapshot.documents.map { document ->
-                        document.toObject(Note::class.java)?.copy(id = document.id) ?: Note()
+        getUserId()?.let { userId ->
+            notesListener = db.collection("notes")
+                .whereEqualTo("userId", userId)
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null) {
+                        Log.w("NoteRepository", "Listen failed.", error)
+                        return@addSnapshotListener
                     }
-                    _notesState.value = notes
-                    Log.d("NoteRepository", "Real-time update received: ${notes.size} notes")
+                    snapshot?.documents?.let { documents ->
+                        _notesState.value = documents.map { doc ->
+                            doc.toObject(Note::class.java)?.copy(id = doc.id) ?: Note()
+                        }
+                        Log.d("NoteRepository", "Real-time update received: ${documents.size} notes")
+                    }
                 }
-            }
+        }
     }
 
+    // ==============================================
+    // Note CRUD Operations
+    // ==============================================
     override fun addNewNote(noteId: String, title: String, description: String, reminderTime: Long?): String {
-        val userId = getUserId()
-        Log.d("NoteRepository", "User ID: $userId")
-
-        if (userId == null) {
-            Log.e("NoteRepository", "No user ID found. Cannot add note.")
+        val userId = getUserId() ?: run {
+            Log.e("NoteRepository", "No user ID found")
             return ""
         }
 
@@ -92,12 +85,9 @@ class FirestoreNoteRepository(private val context: Context): NotesInterface {
             reminderTime = reminderTime
         )
 
-        Log.d("NoteRepository", "Attempting to add note: $note")
-
         noteRef.set(note)
             .addOnSuccessListener {
                 Log.d("NoteRepository", "Note added successfully: ${note.id}")
-                // No need to manually fetch notes here, the listener will handle it
             }
             .addOnFailureListener { e ->
                 Log.e("NoteRepository", "Error adding note", e)
@@ -107,30 +97,25 @@ class FirestoreNoteRepository(private val context: Context): NotesInterface {
     }
 
     override fun updateNote(noteId: String, title: String, description: String, reminderTime: Long?) {
-        val updatedNote = mapOf(
-            "title" to title,
-            "description" to description,
-            "reminderTime" to reminderTime
-        )
-
         db.collection("notes").document(noteId)
-            .update(updatedNote)
+            .update(mapOf(
+                "title" to title,
+                "description" to description,
+                "reminderTime" to reminderTime
+            ))
             .addOnSuccessListener {
                 Log.d("NoteRepository", "Note updated successfully: $noteId")
-                // No need to manually fetch notes here, the listener will handle it
             }
             .addOnFailureListener { e ->
                 Log.w("NoteRepository", "Error updating note", e)
             }
     }
 
-    // New method to update specific fields of a note
     fun updateNoteFields(noteId: String, fields: Map<String, Any?>) {
         db.collection("notes").document(noteId)
             .update(fields)
             .addOnSuccessListener {
                 Log.d("NoteRepository", "Note fields updated successfully: $noteId")
-                // Real-time listener will handle updating the state
             }
             .addOnFailureListener { e ->
                 Log.w("NoteRepository", "Error updating note fields", e)
@@ -142,24 +127,25 @@ class FirestoreNoteRepository(private val context: Context): NotesInterface {
             .delete()
             .addOnSuccessListener {
                 Log.d("NoteRepository", "Note deleted successfully: $noteId")
-                // No need to manually fetch notes here, the listener will handle it
             }
             .addOnFailureListener { e ->
                 Log.w("NoteRepository", "Error deleting note", e)
             }
     }
 
+    // ==============================================
+    // Utility Methods
+    // ==============================================
     fun getNoteById(noteId: String): Note? {
         return _notesState.value.find { it.id == noteId }
     }
 
     private fun getUserId(): String? {
-        val userId = sharedPreferences.getString("userId", null)
-        Log.d("NoteRepository", "Retrieved User ID: $userId")
-        return userId
+        return sharedPreferences.getString("userId", null).also {
+            Log.d("NoteRepository", "Retrieved User ID: $it")
+        }
     }
 
-    // Clean up method to be called when the repository is no longer needed
     fun cleanup() {
         notesListener?.remove()
     }

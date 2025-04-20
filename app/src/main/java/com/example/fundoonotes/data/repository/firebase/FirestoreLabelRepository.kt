@@ -12,25 +12,26 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class FirestoreLabelRepository(private val context: Context): LabelInterface {
+
+    // ==============================================
+    // Dependencies and Initialization
+    // ==============================================
     private val db = Firebase.firestore
     private val _labelsState = MutableStateFlow<List<Label>>(emptyList())
     val labelsState: StateFlow<List<Label>> = _labelsState.asStateFlow()
-
     private var labelsListener: ListenerRegistration? = null
-
     private val sharedPreferences = context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
-    val userId = sharedPreferences.getString("userId", null)
+    private val userId = sharedPreferences.getString("userId", null)
 
+    // ==============================================
+    // Label Fetching Operations
+    // ==============================================
     override fun fetchLabelById(labelId: String, onSuccess: (Label) -> Unit) {
         db.collection("labels").document(labelId)
             .get()
             .addOnSuccessListener { document ->
-                if (document != null && document.exists()) {
-                    val label = document.toObject(Label::class.java)?.copy(id = document.id)
-                    label?.let { onSuccess(it) }
-                } else {
-                    Log.d("LabelRepository", "No such document with ID: $labelId")
-                }
+                document.toObject(Label::class.java)?.copy(id = document.id)?.let(onSuccess)
+                    ?: Log.d("LabelRepository", "No such document with ID: $labelId")
             }
             .addOnFailureListener { e ->
                 Log.w("LabelRepository", "Error getting label", e)
@@ -38,9 +39,8 @@ class FirestoreLabelRepository(private val context: Context): LabelInterface {
     }
 
     override fun fetchLabels() {
-        // Check if userId is null before proceeding
         if (userId == null) {
-            Log.e("LabelRepository", "No user ID found. Cannot fetch labels.")
+            Log.e("LabelRepository", "No user ID found")
             return
         }
 
@@ -52,19 +52,21 @@ class FirestoreLabelRepository(private val context: Context): LabelInterface {
                     Log.w("LabelRepository", "Listen failed.", error)
                     return@addSnapshotListener
                 }
-                if (snapshot != null) {
-                    val labels = snapshot.documents.map { document ->
-                        document.toObject(Label::class.java)?.copy(id = document.id) ?: Label()
+                snapshot?.documents?.let { documents ->
+                    _labelsState.value = documents.map { doc ->
+                        doc.toObject(Label::class.java)?.copy(id = doc.id) ?: Label()
                     }
-                    _labelsState.value = labels
-                    Log.d("LabelRepository", "Real-time update received: ${labels.size} labels")
+                    Log.d("LabelRepository", "Real-time update received: ${documents.size} labels")
                 }
             }
     }
 
-    override fun addNewLabel(labelId:String, labelName: String): String {
+    // ==============================================
+    // Label CRUD Operations
+    // ==============================================
+    override fun addNewLabel(labelId: String, labelName: String): String {
         if (userId == null) {
-            Log.e("LabelRepository", "No user ID found. Cannot add label.")
+            Log.e("LabelRepository", "No user ID found")
             return ""
         }
 
@@ -87,30 +89,13 @@ class FirestoreLabelRepository(private val context: Context): LabelInterface {
     }
 
     override fun updateLabel(labelId: String, labelName: String, noteIds: List<String>) {
-        val updateLabel = mapOf(
-            "name" to labelName,
-            "noteIds" to noteIds
-        )
         db.collection("labels").document(labelId)
-            .update(updateLabel)
+            .update(mapOf("name" to labelName, "noteIds" to noteIds))
             .addOnSuccessListener {
                 Log.d("LabelRepository", "Label updated successfully: $labelId")
             }
             .addOnFailureListener { e ->
                 Log.w("LabelRepository", "Error updating label", e)
-            }
-    }
-
-    fun fetchLabelsByIds(labelIds: List<String>, onSuccess: (List<Label>) -> Unit) {
-        db.collection("labels")
-            .whereIn("id", labelIds)
-            .get()
-            .addOnSuccessListener { snapshot ->
-                val labels = snapshot.documents.mapNotNull { it.toObject(Label::class.java) }
-                onSuccess(labels)
-            }
-            .addOnFailureListener { e ->
-                Log.w("LabelRepository", "Error getting labels", e)
             }
     }
 
@@ -122,6 +107,21 @@ class FirestoreLabelRepository(private val context: Context): LabelInterface {
             }
             .addOnFailureListener { e ->
                 Log.w("LabelRepository", "Error deleting label", e)
+            }
+    }
+
+    // ==============================================
+    // Utility Methods
+    // ==============================================
+    fun fetchLabelsByIds(labelIds: List<String>, onSuccess: (List<Label>) -> Unit) {
+        db.collection("labels")
+            .whereIn("id", labelIds)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                onSuccess(snapshot.documents.mapNotNull { it.toObject(Label::class.java) })
+            }
+            .addOnFailureListener { e ->
+                Log.w("LabelRepository", "Error getting labels", e)
             }
     }
 }

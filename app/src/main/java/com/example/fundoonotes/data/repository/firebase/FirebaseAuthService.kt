@@ -1,5 +1,6 @@
 package com.example.fundoonotes.data.repository.firebase
 
+
 import android.content.Context
 import android.content.Intent
 import android.util.Log
@@ -22,10 +23,18 @@ import androidx.core.content.edit
 import com.example.fundoonotes.data.repository.interfaces.AuthInterface
 
 class FirebaseAuthService(private val context: Context): AuthInterface {
+
+
+    // ==============================================
+    // Dependencies and Initialization
+    // ==============================================
     private val auth: FirebaseAuth = Firebase.auth
     private val credentialManager: CredentialManager = CredentialManager.create(context)
 
-    // Sealed class to represent authentication results
+
+    // ==============================================
+    // Authentication Result Types
+    // ==============================================
     sealed class AuthResult {
         data class Success(val user: FirebaseUser) : AuthResult()
         data class Error(val message: String) : AuthResult()
@@ -35,6 +44,9 @@ class FirebaseAuthService(private val context: Context): AuthInterface {
         private const val TAG = "FirebaseAuthService"
     }
 
+    // ==============================================
+    // Email/Password Authentication
+    // ==============================================
     override suspend fun loginWithEmailPassword(email: String, password: String): AuthResult {
         return try {
             // Input validation
@@ -80,6 +92,10 @@ class FirebaseAuthService(private val context: Context): AuthInterface {
             AuthResult.Error(e.localizedMessage ?: "Registration failed")
         }
     }
+
+    // ==============================================
+    // Google Sign-In Authentication
+    // ==============================================
 
     override suspend fun performGoogleSignIn(): AuthResult {
         return try {
@@ -142,11 +158,18 @@ class FirebaseAuthService(private val context: Context): AuthInterface {
         }
     }
 
+    // ==============================================
+    // User Session Management
+    // ==============================================
+
     override fun saveLoginState(user: FirebaseUser) {
         val sharedPreferences = context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
         sharedPreferences.edit() { putString("userId", user.uid) }
     }
 
+    // ==============================================
+    // Navigation
+    // ==============================================
     override fun navigateToMainActivity(currentContext: Context) {
         val intent = Intent(currentContext, MainActivity::class.java)
         currentContext.startActivity(intent)

@@ -11,42 +11,46 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class FirestoreUserDataRepository(private val context: Context) {
+
+    // ==============================================
+    // Dependencies and Initialization
+    // ==============================================
     private val db = Firebase.firestore
     private val auth = FirebaseAuth.getInstance()
     private val _userDataState = MutableStateFlow<User?>(null)
     val userState: StateFlow<User?> = _userDataState.asStateFlow()
-
     private val sharedPreferences = context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
 
     init {
         fetchUserData()
     }
 
+    // ==============================================
+    // User Data Operations
+    // ==============================================
     fun fetchUserData() {
-        val userId = getUserId() ?: return
-        db.collection("users").document(userId)
-            .get()
-            .addOnSuccessListener { document ->
-                val user = document.toObject(User::class.java)
-                _userDataState.value = user
-            }
-            .addOnFailureListener { e ->
-                Log.w("UserRepository", "Error fetching user data", e)
-            }
+        getUserId()?.let { userId ->
+            db.collection("users").document(userId)
+                .get()
+                .addOnSuccessListener { document ->
+                    _userDataState.value = document.toObject(User::class.java)
+                }
+                .addOnFailureListener { e ->
+                    Log.w("UserRepository", "Error fetching user data", e)
+                }
+        }
     }
 
     fun addNewUser(name: String, email: String, profileImageUrl: String? = null): String {
         val userId = auth.currentUser?.uid ?: return ""
 
-        val user = User(
-            id = userId,
-            name = name,
-            email = email,
-            profileImageUrl = profileImageUrl
-        )
-
         db.collection("users").document(userId)
-            .set(user)
+            .set(User(
+                id = userId,
+                name = name,
+                email = email,
+                profileImageUrl = profileImageUrl
+            ))
             .addOnSuccessListener {
                 Log.d("UserRepository", "User added successfully: $userId")
                 fetchUserData()
@@ -62,30 +66,28 @@ class FirestoreUserDataRepository(private val context: Context) {
         val updatedUser = mutableMapOf<String, Any>(
             "name" to name,
             "email" to email
-        )
-
-        // Only add profileImageUrl if it's not null
-        profileImageUrl?.let {
-            updatedUser["profileImageUrl"] = it
+        ).apply {
+            profileImageUrl?.let { put("profileImageUrl", it) }
         }
 
         db.collection("users").document(userId)
             .update(updatedUser)
-            .addOnSuccessListener {
-                fetchUserData()
-            }
+            .addOnSuccessListener { fetchUserData() }
             .addOnFailureListener { e ->
                 Log.w("UserRepository", "Error updating user", e)
             }
     }
 
+    // ==============================================
+    // Utility Methods
+    // ==============================================
     fun getUserById(userId: String): User? {
         return if (_userDataState.value?.id == userId) _userDataState.value else null
     }
 
     private fun getUserId(): String? {
-        val userId = sharedPreferences.getString("userId", null)
-        Log.d("UserRepository", "Retrieved User ID: $userId")
-        return userId
+        return sharedPreferences.getString("userId", null).also {
+            Log.d("UserRepository", "Retrieved User ID: $it")
+        }
     }
 }
