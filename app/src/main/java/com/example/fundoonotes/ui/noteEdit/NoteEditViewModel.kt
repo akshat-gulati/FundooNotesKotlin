@@ -2,6 +2,7 @@ package com.example.fundoonotes.ui.noteEdit
 
 import android.app.Application
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.fundoonotes.data.model.Label
@@ -140,7 +141,14 @@ class NoteEditViewModel(application: Application) : AndroidViewModel(application
                 viewModelScope.launch {
                     try {
                         notesDataBridge.toggleNoteToArchive(id)
-                        _success.value = true
+                        if (note.archived){
+
+                            Toast.makeText(getApplication(), "This Note have been Unarchived", Toast.LENGTH_LONG).show()
+                        }
+                        else{
+                            Toast.makeText(getApplication(), "This Note have been Archived", Toast.LENGTH_LONG).show()
+                        }
+
                     } catch (e: Exception) {
                         _errorMessage.value = "Error toggling note to archive: ${e.message}"
                     }
