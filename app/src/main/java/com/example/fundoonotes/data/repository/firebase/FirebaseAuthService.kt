@@ -30,8 +30,6 @@ class FirebaseAuthService(private val context: Context): AuthInterface {
     // ==============================================
     private val auth: FirebaseAuth = Firebase.auth
     private val credentialManager: CredentialManager = CredentialManager.create(context)
-
-
     // ==============================================
     // Authentication Result Types
     // ==============================================
