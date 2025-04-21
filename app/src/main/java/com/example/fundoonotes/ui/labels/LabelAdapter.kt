@@ -15,18 +15,27 @@ class LabelAdapter(
     private val listener: OnLabelClickListener
 ) : RecyclerView.Adapter<LabelAdapter.LabelViewHolder>() {
 
+    // ==============================================
+    // Interface Definition
+    // ==============================================
     interface OnLabelClickListener {
         fun onLabelClick(label: Label)
         fun onLabelDelete(label: Label, position: Int)
         fun onLabelEdit(label: Label, newName: String)
     }
 
+    // ==============================================
+    // ViewHolder Class
+    // ==============================================
     class LabelViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val labelText: TextInputEditText = view.findViewById(R.id.tvLabelName)
         val deleteButton: ImageButton = view.findViewById(R.id.tvDeleteLabel)
         val editButton: ImageView = view.findViewById(R.id.ibEditLabel)
     }
 
+    // ==============================================
+    // RecyclerView.Adapter Overrides
+    // ==============================================
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LabelViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_label, parent, false)
@@ -35,40 +44,66 @@ class LabelAdapter(
 
     override fun onBindViewHolder(holder: LabelViewHolder, position: Int) {
         val label = labels[position]
-        holder.labelText.setText(label.name)
+        setupViewHolder(holder, label, position)
+    }
 
-        // Disable editing by default
+    override fun getItemCount(): Int = labels.size
+
+    // ==============================================
+    // ViewHolder Setup
+    // ==============================================
+    private fun setupViewHolder(holder: LabelViewHolder, label: Label, position: Int) {
+        // Initialize view state
+        holder.labelText.setText(label.name)
         holder.labelText.isEnabled = false
 
+        // Set up click listeners
+        setupClickListeners(holder, label, position)
+    }
+
+    // ==============================================
+    // Event Handlers
+    // ==============================================
+    private fun setupClickListeners(holder: LabelViewHolder, label: Label, position: Int) {
+        // Item click listener
         holder.itemView.setOnClickListener {
             listener.onLabelClick(label)
         }
 
+        // Delete button listener
         holder.deleteButton.setOnClickListener {
             listener.onLabelDelete(label, position)
         }
 
-        val toggleEditMode: () -> Unit = {
-            // Toggle edit mode
+        // Edit mode toggle function
+        val toggleEditMode = createEditModeToggle(holder, label)
+
+        // Edit button listener
+        holder.editButton.setOnClickListener { toggleEditMode() }
+
+        // Label text click listener
+        holder.labelText.setOnClickListener { toggleEditMode() }
+    }
+
+    // ==============================================
+    // Edit Mode Management
+    // ==============================================
+    private fun createEditModeToggle(holder: LabelViewHolder, label: Label): () -> Unit {
+        return {
             val isCurrentlyEditing = holder.labelText.isEnabled
 
             if (isCurrentlyEditing) {
-                // Save changes
+                // Save changes and exit edit mode
                 val newName = holder.labelText.text.toString().trim()
                 listener.onLabelEdit(label, newName)
                 holder.labelText.isEnabled = false
                 holder.editButton.setImageResource(R.drawable.edit)
             } else {
-                // Enable editing
+                // Enter edit mode
                 holder.labelText.isEnabled = true
                 holder.labelText.requestFocus()
                 holder.editButton.setImageResource(R.drawable.check)
             }
         }
-
-        holder.editButton.setOnClickListener { toggleEditMode() }
-        holder.labelText.setOnClickListener { toggleEditMode() }
     }
-
-    override fun getItemCount() = labels.size
 }
