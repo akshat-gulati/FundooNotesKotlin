@@ -108,4 +108,15 @@ class RoomLabelRepository(context: Context): LabelInterface {
             }
         }
     }
+
+    fun clearAllData() {
+        coroutineScope.launch {
+            try {
+                labelDao.clearAllLabels()
+                Log.d(TAG, "All labels cleared from Room database")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error clearing labels data: ${e.message}")
+            }
+        }
+    }
 }

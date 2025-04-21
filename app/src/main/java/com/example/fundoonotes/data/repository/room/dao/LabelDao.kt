@@ -33,4 +33,7 @@ interface LabelDao {
 
     @Query("SELECT id FROM labels ORDER BY id DESC LIMIT 1")
     suspend fun getLastInsertedId(): String?
+
+    @Query("DELETE FROM labels")
+    suspend fun clearAllLabels()
 }
