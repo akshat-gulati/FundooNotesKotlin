@@ -19,6 +19,8 @@ class NoteAdapter(
     private val onNoteClickListener: OnNoteClickListener
 ) : RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
 
+    private val labelCache = mutableMapOf<String, List<String>>()
+
     // Multi-selection support
     private val selectedItems = mutableSetOf<String>()
     private var isInSelectionMode = false
@@ -51,13 +53,9 @@ class NoteAdapter(
 
         // Highlight selected items
         if (selectedItems.contains(note.id)) {
-            holder.itemView.setBackgroundResource(
-                R.drawable.selected_card_border
-            )
+            holder.itemView.setBackgroundResource(R.drawable.selected_card_border)
         } else {
-                holder.itemView.setBackgroundResource(
-                    R.drawable.card_border
-                )
+            holder.itemView.setBackgroundResource(R.drawable.card_border)
         }
 
         if (note.reminderTime != null) {
@@ -68,18 +66,42 @@ class NoteAdapter(
             holder.llReminder.visibility = View.GONE
         }
 
+        // Handle labels with improved caching
         if (note.labels.isNotEmpty()) {
-            val firestoreLabelRepository = FirestoreLabelRepository(holder.itemView.context)
-            firestoreLabelRepository.fetchLabelsByIds(note.labels) { labels ->
-                val labelNames = labels.map { it.name }
+            // Create a unique key for this note's labels
+            val noteLabelsKey = note.id
+
+            // Check if we need to fetch new labels by comparing with cache
+            val cachedLabels = labelCache[noteLabelsKey]
+
+            if (cachedLabels != null) {
+                // Use cached labels
                 holder.tvLabelName.visibility = View.VISIBLE
-                holder.tvLabelName.text = labelNames.joinToString(", ")
+                holder.tvLabelName.text = cachedLabels.joinToString(", ")
+            } else {
+                // Only fetch if not in cache
+                val firestoreLabelRepository = FirestoreLabelRepository(holder.itemView.context)
+                firestoreLabelRepository.fetchLabelsByIds(note.labels) { labels ->
+                    val labelNames = labels.map { it.name }
+
+                    // Update cache
+                    labelCache[noteLabelsKey] = labelNames
+
+                    // Check if this ViewHolder is still showing the same note
+                    if (holder.bindingAdapterPosition != RecyclerView.NO_POSITION &&
+                        holder.bindingAdapterPosition < notes.size &&
+                        notes[holder.bindingAdapterPosition].id == note.id) {
+
+                        holder.tvLabelName.visibility = View.VISIBLE
+                        holder.tvLabelName.text = labelNames.joinToString(", ")
+                    }
+                }
             }
         } else {
             holder.tvLabelName.visibility = View.GONE
         }
 
-        // Handle click events based on selection mode
+        // Handle click events - keep your existing code
         holder.itemView.setOnClickListener {
             if (isInSelectionMode) {
                 toggleSelection(note)
