@@ -11,6 +11,7 @@ import com.example.fundoonotes.data.repository.dataBridge.NoteLabelDataBridge
 import com.example.fundoonotes.data.repository.reminder.WorkManagerReminderScheduler
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
 import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
+import com.example.fundoonotes.ui.notes.NoteViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -263,6 +264,7 @@ class NoteEditViewModel(application: Application) : AndroidViewModel(application
 
             _success.value = true
         }
+
     }
 
     // ==============================================

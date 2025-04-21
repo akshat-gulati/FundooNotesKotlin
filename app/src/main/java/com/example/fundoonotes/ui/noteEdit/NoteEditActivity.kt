@@ -11,6 +11,7 @@ import android.util.Log
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -73,6 +74,19 @@ class NoteEditActivity : AppCompatActivity() {
         // Load note data
         val noteId = intent.getStringExtra("NOTE_ID")
         viewModel.loadNote(noteId)
+
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                viewModel.saveNote(
+                    etNoteTitle.text.toString().trim(),
+                    etNoteDescription.text.toString().trim()
+                )
+                isEnabled = false
+                onBackPressedDispatcher.onBackPressed()
+            }
+        })
+
     }
 
     // ==============================================
