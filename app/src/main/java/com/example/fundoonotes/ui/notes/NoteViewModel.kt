@@ -17,12 +17,16 @@ import java.util.UUID
 
 class NoteViewModel(context: Context) : ViewModel() {
 
-    // Data repositories
+    // ==============================================
+    // Data Repositories
+    // ==============================================
     private val notesDataBridge = NotesDataBridge(context)
     internal val labelDataBridge = LabelDataBridge(context)
     private val noteLabelDataBridge = NoteLabelDataBridge(context)
 
-    // UI State
+    // ==============================================
+    // UI State Flows
+    // ==============================================
     private val _displayMode = MutableStateFlow(NoteFragment.DISPLAY_NOTES)
     val displayMode: StateFlow<Int> = _displayMode
 
@@ -35,22 +39,26 @@ class NoteViewModel(context: Context) : ViewModel() {
     private val _isGridLayout = MutableStateFlow(true)
     val isGridLayout: StateFlow<Boolean> = _isGridLayout
 
-    // Filtered notes list
     private val _filteredNotes = MutableStateFlow<List<Note>>(emptyList())
     val filteredNotes: StateFlow<List<Note>> = _filteredNotes
 
-    // Multi-selection state
     private val _selectedNotes = MutableStateFlow<Set<Note>>(emptySet())
     val selectedNotes: StateFlow<Set<Note>> = _selectedNotes
 
+    // ==============================================
+    // Initialization
+    // ==============================================
     init {
-        // Set up combined flow to update filtered notes whenever any filter changes
+        setupNoteFiltering()
+    }
+
+    private fun setupNoteFiltering() {
         viewModelScope.launch {
             combine(
                 notesDataBridge.notesState,
-                _displayMode,
-                _currentLabelId,
-                _searchQuery
+                displayMode,
+                currentLabelId,
+                searchQuery
             ) { notes, mode, labelId, query ->
                 filterNotes(notes, mode, labelId, query)
             }.collect { filtered ->
@@ -59,7 +67,9 @@ class NoteViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // Filter notes based on current criteria
+    // ==============================================
+    // Note Filtering Logic
+    // ==============================================
     private fun filterNotes(
         notes: List<Note>,
         displayMode: Int,
@@ -92,7 +102,9 @@ class NoteViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // Public methods to update filter criteria
+    // ==============================================
+    // UI State Updates
+    // ==============================================
     fun updateDisplayMode(newMode: Int, labelId: String? = null) {
         _displayMode.value = newMode
         _currentLabelId.value = labelId
@@ -107,7 +119,9 @@ class NoteViewModel(context: Context) : ViewModel() {
         _isGridLayout.value = isGrid
     }
 
-    // Selection methods
+    // ==============================================
+    // Note Selection Management
+    // ==============================================
     fun setSelectedNotes(notes: Set<Note>) {
         _selectedNotes.value = notes
     }
@@ -116,7 +130,9 @@ class NoteViewModel(context: Context) : ViewModel() {
         _selectedNotes.value = emptySet()
     }
 
-    // Note operations
+    // ==============================================
+    // Note Operations
+    // ==============================================
     fun deleteSelectedNotes(): Job {
         return viewModelScope.launch(Dispatchers.IO) {
             selectedNotes.value.forEach { note ->
@@ -124,13 +140,13 @@ class NoteViewModel(context: Context) : ViewModel() {
             }
         }
     }
-    fun permanentlyDeleteSelectedNotes(): Job{
-        return viewModelScope.launch(Dispatchers.IO){
+
+    fun permanentlyDeleteSelectedNotes(): Job {
+        return viewModelScope.launch(Dispatchers.IO) {
             selectedNotes.value.forEach { note ->
                 noteLabelDataBridge.deleteNote(note.id)
             }
         }
-
     }
 
     fun archiveSelectedNotes(): Job {
@@ -141,7 +157,9 @@ class NoteViewModel(context: Context) : ViewModel() {
         }
     }
 
-    // Label operations
+    // ==============================================
+    // Label Operations
+    // ==============================================
     fun fetchLabels() {
         labelDataBridge.fetchLabels()
     }
@@ -151,7 +169,11 @@ class NoteViewModel(context: Context) : ViewModel() {
         return labelDataBridge.addNewLabel(labelId, labelName)
     }
 
-    fun updateSelectedNotesLabels(checkedLabelIds: List<String>, uncheckedLabelIds: List<String>, newLabelId: String = "") {
+    fun updateSelectedNotesLabels(
+        checkedLabelIds: List<String>,
+        uncheckedLabelIds: List<String>,
+        newLabelId: String = ""
+    ) {
         viewModelScope.launch(Dispatchers.IO) {
             for (note in selectedNotes.value) {
                 // Start with the current labels of the note
