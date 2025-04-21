@@ -17,6 +17,7 @@ import com.example.fundoonotes.ui.NavigationInterface
 import com.example.fundoonotes.ui.labels.LabelsFragment
 import com.example.fundoonotes.ui.notes.NoteFragment
 import com.google.android.material.navigation.NavigationView
+import com.example.fundoonotes.ui.LayoutToggleListener
 
 class NavigationManager(
     private val navigationInterface: NavigationInterface,
@@ -125,7 +126,7 @@ class NavigationManager(
             if (isGridLayout) R.drawable.rectangle2x2 else R.drawable.rectangle1x2
         )
         val currentFragment = fragmentManager.findFragmentById(R.id.fragment_container)
-        if (currentFragment is MainActivity.LayoutToggleListener) {
+        if (currentFragment is LayoutToggleListener) {
             currentFragment.onLayoutToggle(isGridLayout)
         }
     }

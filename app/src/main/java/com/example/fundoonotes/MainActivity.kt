@@ -40,6 +40,7 @@ import com.example.fundoonotes.ui.accountActionDialog.AccountActionDialog
 import com.example.fundoonotes.ui.navigation.NavigationComponent
 import com.example.fundoonotes.ui.navigation.NavigationManager
 import kotlinx.coroutines.launch
+import com.example.fundoonotes.ui.LayoutToggleListener
 
 class MainActivity : AppCompatActivity(), NavigationInterface {
 
@@ -259,11 +260,6 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
     override fun onResume() {
         super.onResume()
         navigationManager.restoreState()
-    }
-
-    // Interface for fragment communication
-    interface LayoutToggleListener {
-        fun onLayoutToggle(isGridLayout: Boolean)
     }
 
     // A communication channel between NoteFragment and MainActivity to control the toolbar visibility.

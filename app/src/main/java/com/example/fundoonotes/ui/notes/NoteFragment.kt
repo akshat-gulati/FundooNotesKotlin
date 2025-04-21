@@ -28,8 +28,9 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import androidx.constraintlayout.widget.ConstraintSet.VISIBLE
+import com.example.fundoonotes.ui.LayoutToggleListener
 
-class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, NoteAdapter.OnNoteClickListener {
+class NoteFragment : Fragment(), LayoutToggleListener, NoteAdapter.OnNoteClickListener {
 
     private val viewModel: NoteViewModel by lazy {
         NoteViewModel(requireContext())
