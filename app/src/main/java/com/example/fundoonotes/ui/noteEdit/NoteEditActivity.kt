@@ -86,7 +86,6 @@ class NoteEditActivity : AppCompatActivity() {
                 onBackPressedDispatcher.onBackPressed()
             }
         })
-
     }
 
     // ==============================================
@@ -171,6 +170,15 @@ class NoteEditActivity : AppCompatActivity() {
                             ivReminder.setImageResource(R.drawable.alarm)
                         ivReminder.setColorFilter(R.color.black)// Default icon
                         }
+                    }
+                }
+            }
+        }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.finishActivity.collect { shouldFinish ->
+                    if (shouldFinish) {
+                        finish()
                     }
                 }
             }

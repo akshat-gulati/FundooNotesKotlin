@@ -29,7 +29,6 @@ class NoteEditViewModel(application: Application) : AndroidViewModel(application
     private val noteLabelDataBridge: NoteLabelDataBridge
     private val reminderScheduler: WorkManagerReminderScheduler
 
-
     // ==============================================
     // StateFlow Declarations
     // ==============================================
@@ -58,6 +57,10 @@ class NoteEditViewModel(application: Application) : AndroidViewModel(application
     val availableLabels: StateFlow<List<Label>> = _availableLabels.asStateFlow()
 
     private var currentNoteId: String? = null
+
+    private var _finishActivity: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    val finishActivity: StateFlow<Boolean> = _finishActivity.asStateFlow()
+
 
     // ==============================================
     // Initialization
@@ -210,7 +213,7 @@ class NoteEditViewModel(application: Application) : AndroidViewModel(application
     // ==============================================
     fun saveNote(title: String, description: String) {
         if (title.isBlank() && description.isBlank()) {
-            Log.d(TAG, "No content to save")
+            _success.value = true
             return
         }
 
