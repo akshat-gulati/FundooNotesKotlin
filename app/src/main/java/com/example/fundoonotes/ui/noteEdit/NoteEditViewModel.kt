@@ -58,8 +58,6 @@ class NoteEditViewModel(application: Application) : AndroidViewModel(application
 
     private var currentNoteId: String? = null
 
-    private var _finishActivity: MutableStateFlow<Boolean> = MutableStateFlow(false)
-    val finishActivity: StateFlow<Boolean> = _finishActivity.asStateFlow()
 
 
     // ==============================================

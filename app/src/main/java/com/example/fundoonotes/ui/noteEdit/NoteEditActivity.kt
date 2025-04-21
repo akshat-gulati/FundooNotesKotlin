@@ -174,15 +174,6 @@ class NoteEditActivity : AppCompatActivity() {
                 }
             }
         }
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED){
-                viewModel.finishActivity.collect { shouldFinish ->
-                    if (shouldFinish) {
-                        finish()
-                    }
-                }
-            }
-        }
     }
 
     // ==============================================
