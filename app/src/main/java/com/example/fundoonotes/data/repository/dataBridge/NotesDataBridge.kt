@@ -174,4 +174,14 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
     fun initializeDatabase() {
         fetchNotes()
     }
+    fun cleanRoomDB(){
+        try {
+            roomNoteRepository.clearAllData()
+            Toast.makeText(context, "Deleted room db", Toast.LENGTH_SHORT).show()
+        }
+        catch (e: Exception){
+            Toast.makeText(context, "Unable to Delete $e", Toast.LENGTH_SHORT).show()
+        }
+
+    }
 }

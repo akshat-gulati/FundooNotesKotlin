@@ -3,15 +3,21 @@ package com.example.fundoonotes.core
 import android.content.Context
 import android.content.Intent
 import com.example.fundoonotes.MainActivity
+import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
+import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
+import com.example.fundoonotes.data.repository.room.RoomNoteRepository
 import com.example.fundoonotes.ui.loginSignup.LoginSignupActivity
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 
-class AuthManager(private val context: Context?) {
+class AuthManager(private val context: Context) {
 
     // ==============================================
     // Dependencies and Initialization
     // ==============================================
     private val firebaseAuth = FirebaseAuth.getInstance()
+    private val notesDataBridge = NotesDataBridge(context)
+    private val labelDataBridge = LabelDataBridge(context)
     private val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
 
     // ==============================================
@@ -31,6 +37,8 @@ class AuthManager(private val context: Context?) {
     // Authentication Actions
     // ==============================================
     fun logout() {
+        notesDataBridge.cleanRoomDB()
+        labelDataBridge.cleanRoomDB()
         firebaseAuth.signOut()
         sharedPreferences?.edit()?.remove("userId")?.apply()
         redirectToLogin()

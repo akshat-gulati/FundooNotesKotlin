@@ -2,6 +2,7 @@ package com.example.fundoonotes.data.repository.dataBridge
 
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import com.example.fundoonotes.core.NetworkManager
 import com.example.fundoonotes.data.model.Label
 import com.example.fundoonotes.data.repository.interfaces.LabelInterface
@@ -109,5 +110,15 @@ class LabelDataBridge(private val context: Context) : LabelInterface {
     override fun deleteLabel(labelId: String) {
         firestoreLabelRepository.deleteLabel(labelId)
         roomLabelRepository.deleteLabel(labelId)
+    }
+
+    fun cleanRoomDB(){
+        try {
+        roomLabelRepository.clearAllData()
+            Toast.makeText(context, "Deleted room db", Toast.LENGTH_SHORT).show()
+        }
+        catch (e: Exception){
+            Toast.makeText(context, "Unable to Delete $e", Toast.LENGTH_SHORT).show()
+        }
     }
 }
