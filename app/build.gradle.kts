@@ -152,4 +152,6 @@ dependencies {
 
     implementation("androidx.work:work-runtime-ktx:2.8.1")
 
+    implementation ("com.google.android.flexbox:flexbox:3.0.0")
+
 }

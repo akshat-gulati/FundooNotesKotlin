@@ -28,6 +28,8 @@ class NoteAdapter(
         val llReminder: LinearLayout = itemView.findViewById(R.id.llReminder)
         val tvTimeDate: TextView = itemView.findViewById(R.id.tvTimeDate)
         val tvLabelName: TextView = itemView.findViewById(R.id.tvLabelName)
+        val tvLabelName2: TextView = itemView.findViewById(R.id.tvLabelName2)
+        val tvLabelName3: TextView = itemView.findViewById(R.id.tvLabelName3)
     }
 
     // ==============================================
@@ -82,20 +84,57 @@ class NoteAdapter(
     }
 
     private fun bindLabelData(holder: NoteViewHolder, note: Note) {
+        // Reset visibility of all label views
+        holder.tvLabelName.visibility = View.GONE
+        holder.tvLabelName2.visibility = View.GONE
+        holder.tvLabelName3.visibility = View.GONE
+
         if (note.labels.isNotEmpty()) {
             val noteLabelsKey = note.id
             val cachedLabels = labelCache[noteLabelsKey]
 
             if (cachedLabels != null) {
-                holder.tvLabelName.visibility = View.VISIBLE
-                holder.tvLabelName.text = cachedLabels.joinToString(", ")
+                displayLabels(holder, cachedLabels)
             } else {
                 fetchAndCacheLabels(holder, note)
             }
-        } else {
-            holder.tvLabelName.visibility = View.GONE
         }
     }
+    private fun displayLabels(holder: NoteViewHolder, labelNames: List<String>) {
+        when {
+            labelNames.isEmpty() -> {
+                // No labels to display
+                holder.tvLabelName.visibility = View.GONE
+                holder.tvLabelName2.visibility = View.GONE
+                holder.tvLabelName3.visibility = View.GONE
+            }
+            labelNames.size == 1 -> {
+                // Only one label
+                holder.tvLabelName.visibility = View.VISIBLE
+                holder.tvLabelName.text = labelNames[0]
+                holder.tvLabelName2.visibility = View.GONE
+                holder.tvLabelName3.visibility = View.GONE
+            }
+            labelNames.size == 2 -> {
+                // Exactly two labels
+                holder.tvLabelName.visibility = View.VISIBLE
+                holder.tvLabelName.text = labelNames[0]
+                holder.tvLabelName2.visibility = View.VISIBLE
+                holder.tvLabelName2.text = labelNames[1]
+                holder.tvLabelName3.visibility = View.GONE
+            }
+            else -> {
+                // More than two labels
+                holder.tvLabelName.visibility = View.VISIBLE
+                holder.tvLabelName.text = labelNames[0]
+                holder.tvLabelName2.visibility = View.VISIBLE
+                holder.tvLabelName2.text = labelNames[1]
+                holder.tvLabelName3.visibility = View.VISIBLE
+                holder.tvLabelName3.text = "+${labelNames.size - 2}" // Show remaining count
+            }
+        }
+    }
+
 
     private fun fetchAndCacheLabels(holder: NoteViewHolder, note: Note) {
         val firestoreLabelRepository = FirestoreLabelRepository(holder.itemView.context)
@@ -107,8 +146,7 @@ class NoteAdapter(
                 holder.bindingAdapterPosition < notes.size &&
                 notes[holder.bindingAdapterPosition].id == note.id) {
 
-                holder.tvLabelName.visibility = View.VISIBLE
-                holder.tvLabelName.text = labelNames.joinToString(", ")
+                displayLabels(holder, labelNames)
             }
         }
     }

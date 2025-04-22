@@ -36,47 +36,93 @@
             android:maxLines="10"
             android:text="Description" />
 
+
+
         <LinearLayout
-            android:id="@+id/llReminder"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/rounded_background_alarm_label"
-            android:orientation="horizontal"
-            android:layout_marginTop="5dp"
-            android:paddingVertical="5dp"
-            android:paddingHorizontal="10dp">
+            android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/ivAlarm"
-                android:layout_width="15dp"
-                android:layout_height="15dp"
-                android:layout_gravity="center_vertical"
-                android:src="@drawable/alarm" />
-
-            <TextView
-                android:id="@+id/tvTimeDate"
-                android:textSize="12sp"
-                android:layout_width="wrap_content"
-                android:textColor="@color/label_alarm_text"
+            <com.google.android.flexbox.FlexboxLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginLeft="5dp"
-                android:text="Time and Date" />
+                app:flexWrap="wrap"
+                app:alignItems="flex_start"
+                app:flexDirection="row">
+
+                <LinearLayout
+                    android:id="@+id/llReminder"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="3dp"
+                    android:background="@drawable/rounded_background_alarm_label"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="5dp">
+
+                    <ImageView
+                        android:id="@+id/ivAlarm"
+                        android:layout_width="15dp"
+                        android:layout_height="15dp"
+                        android:layout_gravity="center_vertical"
+                        android:src="@drawable/alarm" />
+
+                    <TextView
+                        android:id="@+id/tvTimeDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="5dp"
+                        android:text="Time and Date"
+                        android:textColor="@color/label_alarm_text"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvLabelName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="3dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="3dp"
+                    android:background="@drawable/rounded_background_alarm_label"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="5dp"
+                    android:text="Label Name"
+                    android:textColor="@color/label_alarm_text"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tvLabelName2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="3dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="3dp"
+                    android:background="@drawable/rounded_background_alarm_label"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="5dp"
+                    android:text="Label Name With Longer Text That Will Wrap"
+                    android:textColor="@color/label_alarm_text"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tvLabelName3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="3dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="3dp"
+                    android:background="@drawable/rounded_background_alarm_label"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="5dp"
+                    android:text="+1"
+                    android:textColor="@color/label_alarm_text"
+                    android:textSize="12sp" />
+
+            </com.google.android.flexbox.FlexboxLayout>
         </LinearLayout>
-
-        <TextView
-            android:layout_gravity="center_vertical"
-            android:id="@+id/tvLabelName"
-            android:textSize="12sp"
-            android:textColor="@color/label_alarm_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/rounded_background_alarm_label"
-            android:paddingVertical="5dp"
-
-            android:paddingHorizontal="10dp"
-            android:text="Label Name" />
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>
