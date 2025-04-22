@@ -53,7 +53,6 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
             val initialDisplayMode = DisplayMode.valueOf(initialDisplayModeName)
             viewModel.updateDisplayMode(initialDisplayMode)
         }
-        onSelectionModeEnded()
     }
 
     override fun onCreateView(
@@ -136,7 +135,6 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
                     }
                 }
 
-                // Add this new observer for animations
                 launch {
                     viewModel.animateNotes.collect { shouldAnimate ->
                         if (shouldAnimate) {
@@ -235,7 +233,7 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
             actionMode = null
             noteAdapter.exitSelectionMode()
             viewModel.clearSelection()
-            fabAddNote.visibility = View.VISIBLE
+            updateFabVisibility(viewModel.displayMode.value)
             (activity as MainActivity).setToolbarVisibility(true)
         }
     }
