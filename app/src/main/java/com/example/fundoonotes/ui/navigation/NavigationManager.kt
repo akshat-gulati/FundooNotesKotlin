@@ -13,6 +13,7 @@ import com.example.fundoonotes.MainActivity
 import com.example.fundoonotes.R
 import com.example.fundoonotes.data.model.Label
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
+import com.example.fundoonotes.ui.LayoutToggleListener
 import com.example.fundoonotes.ui.NavigationInterface
 import com.example.fundoonotes.ui.labels.LabelsFragment
 import com.example.fundoonotes.ui.notes.NoteFragment
@@ -125,7 +126,7 @@ class NavigationManager(
             if (isGridLayout) R.drawable.rectangle2x2 else R.drawable.rectangle1x2
         )
         val currentFragment = fragmentManager.findFragmentById(R.id.fragment_container)
-        if (currentFragment is MainActivity.LayoutToggleListener) {
+        if (currentFragment is LayoutToggleListener) {
             currentFragment.onLayoutToggle(isGridLayout)
         }
     }

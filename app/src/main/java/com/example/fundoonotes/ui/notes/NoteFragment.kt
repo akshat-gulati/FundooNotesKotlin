@@ -16,9 +16,10 @@ import com.example.fundoonotes.ui.noteEdit.NoteEditActivity
 import kotlinx.coroutines.launch
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.fundoonotes.data.model.Note
+import com.example.fundoonotes.ui.LayoutToggleListener
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, OnNoteClickListener {
+class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
 
     // ==============================================
     // Constants
