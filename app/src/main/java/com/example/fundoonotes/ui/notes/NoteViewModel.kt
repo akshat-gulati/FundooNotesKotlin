@@ -45,6 +45,10 @@ class NoteViewModel(context: Context) : ViewModel() {
     private val _selectedNotes = MutableStateFlow<Set<Note>>(emptySet())
     val selectedNotes: StateFlow<Set<Note>> = _selectedNotes
 
+    // Animation trigger flow
+    private val _animateNotes = MutableStateFlow(false)
+    val animateNotes: StateFlow<Boolean> = _animateNotes
+
     // ==============================================
     // Initialization
     // ==============================================
@@ -108,6 +112,7 @@ class NoteViewModel(context: Context) : ViewModel() {
         _displayMode.value = newMode
         _currentLabelId.value = labelId
         _searchQuery.value = "" // Reset search when changing modes
+        triggerLayoutAnimation() // Trigger animation when mode changes
     }
 
     fun setSearchQuery(query: String) {
@@ -116,6 +121,16 @@ class NoteViewModel(context: Context) : ViewModel() {
 
     fun toggleLayoutMode(isGrid: Boolean) {
         _isGridLayout.value = isGrid
+    }
+
+    // Trigger layout animation
+    fun triggerLayoutAnimation() {
+        _animateNotes.value = true
+        // Reset after emission
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(100)
+            _animateNotes.value = false
+        }
     }
 
     // ==============================================

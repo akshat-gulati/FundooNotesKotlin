@@ -134,6 +134,15 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
                         updateActionModeTitle(selectedNotes.size)
                     }
                 }
+
+                // Add this new observer for animations
+                launch {
+                    viewModel.animateNotes.collect { shouldAnimate ->
+                        if (shouldAnimate) {
+                            recyclerView.scheduleLayoutAnimation()
+                        }
+                    }
+                }
             }
         }
     }
