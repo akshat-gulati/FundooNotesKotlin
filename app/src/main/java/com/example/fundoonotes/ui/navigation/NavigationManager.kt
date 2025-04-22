@@ -184,7 +184,7 @@ class NavigationManager(
     private fun navigateToLabels() {
         clearToolbarBackground() // Clear the background
         val fragment = LabelsFragment()
-        titleText.text = activity.getString(R.string.create_labels)
+        titleText.text = activity.getString(R.string.createLabels)
         updateHeaderVisibility(
             layoutToggle = false,
             profile = false,

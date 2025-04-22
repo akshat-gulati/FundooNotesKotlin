@@ -183,7 +183,7 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
     private fun initializeViews() {
         titleText = findViewById(R.id.tvHeaderTitle)
         layoutToggleIcon = findViewById(R.id.layout_toggle_icon)
-        searchIcon = findViewById(R.id.search_icon)
+        searchIcon = findViewById(R.id.searchIcon)
         profileIcon = findViewById(R.id.profile_icon)
         etSearch = findViewById(R.id.etSearch)
         drawerButton = findViewById(R.id.drawer_button)

@@ -53,6 +53,7 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
             val initialDisplayMode = DisplayMode.valueOf(initialDisplayModeName)
             viewModel.updateDisplayMode(initialDisplayMode)
         }
+        onSelectionModeEnded()
     }
 
     override fun onCreateView(
@@ -159,7 +160,7 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
     }
 
     private fun updateFabVisibility(displayMode: DisplayMode) {
-        fabAddNote.visibility = if (displayMode == DisplayMode.BIN) View.GONE else View.VISIBLE
+        fabAddNote.visibility = if (displayMode == DisplayMode.BIN || displayMode == DisplayMode.ARCHIVE || displayMode == DisplayMode.REMINDERS) View.GONE else View.VISIBLE
     }
 
 
@@ -179,7 +180,7 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
         override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
             when (viewModel.displayMode.value) {
                 DisplayMode.BIN -> {
-                    menu.findItem(R.id.action_permanenlt_delete).isVisible = true
+                    menu.findItem(R.id.actionPermanentlyDelete).isVisible = true
                     menu.findItem(R.id.action_archive).isVisible = false
                     menu.findItem(R.id.action_labels).isVisible = false
                     menu.findItem(R.id.action_delete).setIcon(R.drawable.restore)
@@ -194,7 +195,7 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
 
         override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
             return when (item.itemId) {
-                R.id.action_permanenlt_delete -> {
+                R.id.actionPermanentlyDelete -> {
                     lifecycleScope.launch {
                         val job = viewModel.permanentlyDeleteSelectedNotes()
                         job.join()

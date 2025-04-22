@@ -22,7 +22,7 @@
         <item
             android:orderInCategory="400"
             android:id="@+id/navLabels"
-            android:title="@string/create_labels"
+            android:title="@string/createLabels"
             android:icon="@drawable/brush"/>
     </group>
 

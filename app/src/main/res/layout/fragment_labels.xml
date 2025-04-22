@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="@color/general_background"
+    android:background="@color/generalBackground"
     tools:context=".ui.labels.LabelsFragment">
 
     <LinearLayout
@@ -19,7 +19,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Create new label"
+            android:hint="@string/createNewLabel"
             android:inputType="text"
             android:maxLines="1" />
         <Button
@@ -27,13 +27,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:backgroundTint="@color/fab_colour"
-            android:text="Add" />
+            android:backgroundTint="@color/fabColour"
+            android:text="@string/add" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewLabels"
-        android:background="@color/general_background"
+        android:background="@color/generalBackground"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

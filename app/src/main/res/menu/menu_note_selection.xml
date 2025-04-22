@@ -2,32 +2,32 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_permanenlt_delete"
+        android:id="@+id/actionPermanentlyDelete"
         android:icon="@drawable/bin"
-        android:title="Permanently Delete"
+        android:title="@string/permanentlyDelete"
         android:visible="false"
         app:showAsAction="always" />
     <item
         android:id="@+id/action_delete"
         android:icon="@drawable/bin"
-        android:title="Delete"
+        android:title="@string/delete"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/action_archive"
         android:icon="@drawable/archive"
-        android:title="Archive"
+        android:title="@string/archive"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/action_labels"
         android:icon="@drawable/tag"
-        android:title="Add Label"
+        android:title="@string/add_label"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/action_select_all"
         android:icon="@drawable/select_all"
-        android:title="Select All"
+        android:title="@string/selectAll"
         app:showAsAction="always" />
 </menu>

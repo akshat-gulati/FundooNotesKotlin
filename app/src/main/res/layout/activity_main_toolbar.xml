@@ -18,10 +18,10 @@
             android:id="@+id/drawer_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/drawer_button"
+            android:contentDescription="@string/drawerButton"
             android:src="@drawable/menu"
             android:background="@android:color/transparent"
-            android:padding="5dp"
+            android:padding="10dp"
             android:layout_gravity="start" />
 
         <!-- Title (Centered) -->
@@ -53,7 +53,7 @@
         <!-- Right Side Icons -->
         <LinearLayout
             android:gravity="center_vertical"
-            android:id="@+id/right_icons_container"
+            android:id="@+id/rightIconsContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end"
@@ -61,15 +61,15 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:id="@+id/search_icon"
+                android:id="@+id/searchIcon"
                 android:layout_width="30dp"
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/search"
                 android:src="@drawable/magnifyingglass"
                 android:padding="5dp"
                 android:gravity="center_vertical"
-                android:layout_marginRight="16dp"
-                app:tint="@color/icons_colour" />
+                android:layout_marginEnd="16dp"
+                app:tint="@color/iconsColour" />
 
             <ImageView
                 android:id="@+id/layout_toggle_icon"
@@ -77,9 +77,9 @@
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/screen_layout_toggle"
                 android:src="@drawable/rectangle1x2"
-                android:layout_marginRight="16dp"
+                android:layout_marginEnd="16dp"
                 android:gravity="center_vertical"
-                app:tint="@color/icons_colour" />
+                app:tint="@color/iconsColour" />
             <ImageView
                 android:id="@+id/profile_icon"
                 android:layout_width="25dp"
@@ -87,8 +87,8 @@
                 android:contentDescription="@string/profile"
                 android:src="@drawable/person"
                 android:gravity="center_vertical"
-                android:layout_marginRight="1dp"
-                app:tint="@color/icons_colour" />
+                android:layout_marginEnd="1dp"
+                app:tint="@color/iconsColour" />
 
         </LinearLayout>
 

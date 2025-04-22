@@ -20,7 +20,7 @@
                 android:id="@+id/recyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/general_background"
+                android:background="@color/generalBackground"
                 android:layout_marginTop="8dp"
                 android:layout_marginStart="8dp"
                 tools:listitem="@layout/item_row" />
@@ -35,9 +35,10 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:layout_margin="16dp"
+        android:contentDescription="@string/add"
         android:padding="12dp"
         android:src="@android:drawable/ic_input_add"
-        app:backgroundTint="@color/fab_colour"
+        app:backgroundTint="@color/fabColour"
         app:tint="@android:color/white"
         app:maxImageSize="40dp"/>
 

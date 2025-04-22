@@ -14,7 +14,7 @@ android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
     android:layout_height="wrap_content"
     android:layout_gravity="start"
     android:background="@color/transparent"
-    android:contentDescription="@string/drawer_button"
+    android:contentDescription="@string/drawerButton"
     android:padding="8dp"
     android:src="@drawable/back" />
 

@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:background="@color/general_background"
+    android:background="@color/generalBackground"
     android:layout_height="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -20,7 +20,7 @@
             android:text="@string/login"
             android:textSize="30sp"
             android:textStyle="bold"
-            android:textColor="@color/note_title"
+            android:textColor="@color/noteTitle"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -32,8 +32,8 @@
             android:layout_marginHorizontal="32dp"
             android:layout_marginTop="24dp"
             android:gravity="center"
-            android:textColor="@color/note_description"
-            android:text="@string/terms_privacy_agreement"
+            android:textColor="@color/noteDescription"
+            android:text="@string/termsPrivacyAgreement"
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -47,8 +47,8 @@
             android:layout_marginTop="24dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            android:background="@color/general_background"
-            app:tabSelectedTextColor="@color/fab_colour"
+            android:background="@color/generalBackground"
+            app:tabSelectedTextColor="@color/fabColour"
             app:tabIndicatorColor="@color/borders"
             app:layout_constraintTop_toBottomOf="@+id/tvTermsPolicy">
 
@@ -70,7 +70,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="32dp"
             android:layout_marginTop="32dp"
-            android:hint="@string/email_address"
+            android:hint="@string/emailAddress"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tabLayout"
@@ -133,7 +133,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="32dp"
             android:layout_marginTop="16dp"
-            android:hint="@string/confirm_password"
+            android:hint="@string/confirmPassword"
             android:visibility="gone"
             app:endIconMode="password_toggle"
             app:layout_constraintEnd_toEndOf="parent"
@@ -178,12 +178,12 @@
                     android:layout_gravity="center_vertical"
                     android:src="@drawable/person"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Profile picture"/>
+                    android:contentDescription="@string/profilePicture"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Upload profile picture now"
+                    android:text="@string/uploadProfilePicture"
                     android:textAlignment="center"
                     android:layout_marginStart="8dp"/>
             </LinearLayout>
@@ -203,7 +203,7 @@
             app:cornerRadius="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            android:backgroundTint="@color/fab_colour"
+            android:backgroundTint="@color/fabColour"
             app:layout_constraintTop_toBottomOf="@+id/cvProfilePicture" />
 
         <TextView
@@ -233,7 +233,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginHorizontal="8dp"
-                android:contentDescription="@string/facebook_login"
+                android:contentDescription="@string/facebookLogin"
                 android:src="@drawable/fb" />
 
             <ImageView
@@ -241,7 +241,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginHorizontal="8dp"
-                android:contentDescription="@string/google_login"
+                android:contentDescription="@string/googleLogin"
                 android:src="@drawable/google" />
         </LinearLayout>
 

@@ -2,21 +2,21 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="sky_blue">#A8C7FA</color>
-    <color name="general_background">#FFF9F8</color>
+<!--    <color name="sky_blue">#A8C7FA</color>-->
+    <color name="generalBackground">#FFF9F8</color>
     <color name="item_background">#F9EFED</color>
 <!--    <color name="selected_note_background">#E0E0E0</color>-->
     <color name="nav_drawer_selected">#FFE2D7</color>
     <color name="borders">#E3D2CB</color>
-    <color name="fab_colour">#A16140</color>
-    <color name="nav_drawer_selected_text">#854725</color>
-    <color name="icons_colour">#66554F</color>
-    <color name="nav_drawer_unselected_text">#3C4045</color>
+    <color name="fabColour">#A16140</color>
+    <color name="navDrawerSelectedText">#854725</color>
+    <color name="iconsColour">#66554F</color>
+    <color name="navDrawerUnselectedText">#3C4045</color>
     <color name="grey">#B8B7B8</color>
-    <color name="label_alarm_bg">#F4E5E0</color>
+    <color name="labelAlarmBg">#F4E5E0</color>
 
-    <color name="note_title">#312520</color>
-    <color name="note_description">#99918F</color>
+    <color name="noteTitle">#312520</color>
+    <color name="noteDescription">#99918F</color>
     <color name="labelAlarmText">#7B6A65</color>
     <color name="transparent">#00000000</color>
 

@@ -17,7 +17,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Fundoo Notes"
+            android:text="@string/app_name"
             android:layout_gravity="center_horizontal|center_vertical"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -29,6 +29,7 @@
             android:id="@+id/ivProfile"
             android:layout_width="100dp"
             android:layout_height="100dp"
+            android:contentDescription="@string/profilePicture"
             android:src="@drawable/person"
             android:layout_gravity="center"
             android:layout_marginTop="20dp"
@@ -38,7 +39,7 @@
             android:id="@+id/tvName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Your Name"
+            android:text="@string/full_name"
             android:textSize="25sp"
             android:layout_gravity="center"
             android:layout_marginTop="20dp"
@@ -48,7 +49,7 @@
             android:id="@+id/tvEmail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Your Email"
+            android:text="@string/emailAddress"
             android:textSize="20sp"
             android:layout_gravity="center"
             android:layout_marginTop="5dp"
@@ -67,7 +68,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal|center_vertical"
-                android:text="Manage Your Fundoo Account"
+                android:text="@string/manageYourFundooAccount"
                 android:layout_marginHorizontal="22dp"
                 android:textSize="17sp"
                 />
@@ -84,6 +85,7 @@
             <ImageView
                 android:layout_width="30dp"
                 android:layout_height="30dp"
+                android:contentDescription="@string/Logout"
                 android:src="@drawable/logout"
                 android:layout_margin="5dp" />
         </androidx.cardview.widget.CardView>
