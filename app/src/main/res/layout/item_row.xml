@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
-    android:layout_marginRight="8dp"
+    android:layout_marginEnd="8dp"
     app:cardCornerRadius="8dp"
     android:background="@drawable/card_border"
     app:cardElevation="4dp">
@@ -22,7 +22,7 @@
             android:ellipsize="end"
             android:maxLines="2"
             android:textColor="@color/note_title"
-            android:text="Title"
+            android:text="@string/noteTitle"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -34,14 +34,7 @@
             android:textColor="#99918F"
             android:ellipsize="end"
             android:maxLines="10"
-            android:text="Description" />
-
-
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:text="@string/noteDescription" />
 
             <com.google.android.flexbox.FlexboxLayout
                 android:layout_width="match_parent"
@@ -66,6 +59,7 @@
                         android:layout_width="15dp"
                         android:layout_height="15dp"
                         android:layout_gravity="center_vertical"
+                        android:contentDescription="@string/alarm"
                         android:src="@drawable/alarm" />
 
                     <TextView
@@ -74,8 +68,8 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_marginStart="5dp"
-                        android:text="Time and Date"
-                        android:textColor="@color/label_alarm_text"
+                        android:text="@string/dummyText"
+                        android:textColor="@color/labelAlarmText"
                         android:textSize="12sp" />
                 </LinearLayout>
 
@@ -89,8 +83,8 @@
                     android:background="@drawable/rounded_background_alarm_label"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="5dp"
-                    android:text="Label Name"
-                    android:textColor="@color/label_alarm_text"
+                    android:text="@string/dummyText"
+                    android:textColor="@color/labelAlarmText"
                     android:textSize="12sp" />
 
                 <TextView
@@ -103,8 +97,8 @@
                     android:background="@drawable/rounded_background_alarm_label"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="5dp"
-                    android:text="Label Name With Longer Text That Will Wrap"
-                    android:textColor="@color/label_alarm_text"
+                    android:text="@string/dummyText"
+                    android:textColor="@color/labelAlarmText"
                     android:textSize="12sp" />
 
                 <TextView
@@ -117,12 +111,10 @@
                     android:background="@drawable/rounded_background_alarm_label"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="5dp"
-                    android:text="+1"
-                    android:textColor="@color/label_alarm_text"
+                    android:text="@string/dummyText"
+                    android:textColor="@color/labelAlarmText"
                     android:textSize="12sp" />
 
             </com.google.android.flexbox.FlexboxLayout>
         </LinearLayout>
-
-    </LinearLayout>
 </androidx.cardview.widget.CardView>

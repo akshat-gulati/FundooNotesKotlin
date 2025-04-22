@@ -33,6 +33,10 @@
     <string name="noteEditTitle">Title</string>
     <string name="noteEditDescription">Description</string>
     <string name="add_label">+ Add Label</string>
+    <string name="dummyText">Dummy Text</string>
+    <string name="noteDescription">Description</string>
+    <string name="noteTitle">Title</string>
+    <string name="alarm">Alarm</string>
 
 
 </resources>
