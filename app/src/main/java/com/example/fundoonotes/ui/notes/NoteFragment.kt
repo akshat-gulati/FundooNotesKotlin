@@ -1,13 +1,10 @@
 package com.example.fundoonotes.ui.notes
 
-import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.*
-import android.widget.CheckBox
-import android.widget.EditText
-import android.widget.LinearLayout
-import android.widget.ScrollView
+import android.view.animation.AnimationUtils
+import android.view.animation.LayoutAnimationController
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.fragment.app.Fragment
@@ -67,11 +64,19 @@ class NoteFragment : Fragment(), MainActivity.LayoutToggleListener, OnNoteClickL
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
         val view = inflater.inflate(R.layout.fragment_note, container, false)
         initializeViews(view)
         setupRecyclerView()
         setupFab()
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val animationSlideUp = AnimationUtils.loadAnimation(context, R.anim.slide_up)
+        val controller = LayoutAnimationController(animationSlideUp)
+        recyclerView.layoutAnimation = controller
     }
 
     override fun onDestroyView() {
