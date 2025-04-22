@@ -1,67 +1,136 @@
 package com.example.fundoonotes.ui.notes
 
-import android.app.AlertDialog
 import android.content.Context
-import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
-import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.ScrollView
 import androidx.appcompat.view.ActionMode
+import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.launch
-import com.example.fundoonotes.data.model.Note
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 
+import kotlinx.coroutines.launch
 
 class LabelDialogManager(
     private val context: Context,
     private val lifecycleOwner: LifecycleOwner,
     private val viewModel: NoteViewModel
 ) {
+    private val materialCheckBoxes = mutableMapOf<com.google.android.material.checkbox.MaterialCheckBox, String>()
+
     fun showLabelDialog(mode: ActionMode) {
-        val dialogBuilder = AlertDialog.Builder(context)
-        dialogBuilder.setTitle("Manage Labels")
+        // Create Material dialog builder
+        val dialogBuilder = MaterialAlertDialogBuilder(context)
+            .setTitle("Manage Labels")
 
-        val scrollView = ScrollView(context)
-        val layout = LinearLayout(context)
-        layout.orientation = LinearLayout.VERTICAL
-        layout.setPadding(24, 16, 24, 0)
+        // Create dialog content programmatically
+        val scrollView = NestedScrollView(context)
+        val contentLayout = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(24, 16, 24, 16)
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
 
-        val loadingText = EditText(context)
-        loadingText.isEnabled = false
-        loadingText.setText("Loading labels...")
-        layout.addView(loadingText)
+        // Create container for labels
+        val labelsContainer = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+        }
 
-        scrollView.addView(layout)
+        // Loading text
+        val loadingText = TextInputEditText(context).apply {
+            isEnabled = false
+            setText("Loading labels...")
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomMargin = 16
+            }
+        }
+
+        // New label input
+        val newLabelInputLayout = TextInputLayout(context).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topMargin = 24
+            }
+            boxBackgroundMode = TextInputLayout.BOX_BACKGROUND_OUTLINE
+            hint = "Create a New Label"
+        }
+
+        val newLabelEditText = TextInputEditText(context).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        // Assemble view hierarchy
+        newLabelInputLayout.addView(newLabelEditText)
+        labelsContainer.addView(loadingText)
+        contentLayout.addView(labelsContainer)
+        contentLayout.addView(newLabelInputLayout)
+        scrollView.addView(contentLayout)
         dialogBuilder.setView(scrollView)
 
-        val editText = EditText(context)
-        editText.hint = "Create a New Label"
-
-        dialogBuilder.setPositiveButton("OK") { _, _ -> }
-        dialogBuilder.setNegativeButton("Cancel") { _, _ -> }
+        // Set up dialog buttons
+        dialogBuilder.setPositiveButton("Save", null) // We'll override this below
+        dialogBuilder.setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
 
         val dialog = dialogBuilder.create()
         dialog.show()
 
+        // We need to override the positive button to prevent automatic dismissal
+        dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val checkedLabelIds = materialCheckBoxes.filter { it.key.isChecked }.map { it.value }
+            val uncheckedLabelIds = materialCheckBoxes.filter { !it.key.isChecked }.map { it.value }
+            val newLabelName = newLabelEditText.text.toString().trim()
+            var newLabelId = ""
+
+            if (newLabelName.isNotEmpty()) {
+                newLabelId = viewModel.addNewLabel(newLabelName)
+            }
+
+            viewModel.updateSelectedNotesLabels(checkedLabelIds, uncheckedLabelIds, newLabelId)
+            dialog.dismiss()
+            mode.finish()
+        }
+
         val checkBoxes = mutableMapOf<CheckBox, String>()
         val initialLabelStates = mutableMapOf<String, Boolean>()
 
+        // Fetch labels and populate the dialog
         viewModel.fetchLabels()
 
         lifecycleOwner.lifecycleScope.launch {
             viewModel.labelDataBridge.labelsState.collect { labels ->
                 if (dialog.isShowing) {
-                    layout.removeAllViews()
+                    // Clear existing labels view
+                    labelsContainer.removeAllViews()
                     checkBoxes.clear()
 
                     if (labels.isEmpty()) {
-                        val noLabelsText = EditText(context)
-                        noLabelsText.isEnabled = false
-                        noLabelsText.setText("No existing labels. Create one below.")
-                        layout.addView(noLabelsText)
+                        val noLabelsText = TextInputEditText(context).apply {
+                            isEnabled = false
+                            setText("No existing labels. Create one below.")
+                            layoutParams = LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.MATCH_PARENT,
+                                LinearLayout.LayoutParams.WRAP_CONTENT
+                            )
+                        }
+                        labelsContainer.addView(noLabelsText)
                     } else {
                         labels.forEach { label ->
                             val anyNoteHasLabel = viewModel.selectedNotes.value.any {
@@ -69,35 +138,19 @@ class LabelDialogManager(
                             }
                             initialLabelStates[label.id] = anyNoteHasLabel
 
-                            val checkBox = CheckBox(context)
-                            checkBox.text = label.name
-                            checkBox.isChecked = anyNoteHasLabel
-                            checkBoxes[checkBox] = label.id
-                            layout.addView(checkBox)
+                            val checkBox = com.google.android.material.checkbox.MaterialCheckBox(context).apply {
+                                text = label.name
+                                isChecked = anyNoteHasLabel
+                                layoutParams = LinearLayout.LayoutParams(
+                                    LinearLayout.LayoutParams.MATCH_PARENT,
+                                    LinearLayout.LayoutParams.WRAP_CONTENT
+                                ).apply {
+                                    setMargins(0, 8, 0, 8)
+                                }
+                            }
+                            materialCheckBoxes[checkBox] = label.id
+                            labelsContainer.addView(checkBox)
                         }
-                    }
-
-                    val paddingView = View(context)
-                    paddingView.layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        24
-                    )
-                    layout.addView(paddingView)
-                    layout.addView(editText)
-
-                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                        val checkedLabelIds = checkBoxes.filter { it.key.isChecked }.map { it.value }
-                        val uncheckedLabelIds = checkBoxes.filter { !it.key.isChecked }.map { it.value }
-                        val newLabelName = editText.text.toString().trim()
-                        var newLabelId = ""
-
-                        if (newLabelName.isNotEmpty()) {
-                            newLabelId = viewModel.addNewLabel(newLabelName)
-                        }
-
-                        viewModel.updateSelectedNotesLabels(checkedLabelIds, uncheckedLabelIds, newLabelId)
-                        dialog.dismiss()
-                        mode.finish()
                     }
                 }
             }
