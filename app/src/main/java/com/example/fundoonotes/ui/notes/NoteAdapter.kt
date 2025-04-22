@@ -1,5 +1,6 @@
 package com.example.fundoonotes.ui.notes
 
+import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -74,11 +75,19 @@ class NoteAdapter(
     }
 
     private fun bindReminderData(holder: NoteViewHolder, note: Note) {
+
         if (note.reminderTime != null) {
             holder.llReminder.visibility = View.VISIBLE
-            holder.tvTimeDate.text = SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault())
-                .format(Date(note.reminderTime))
-        } else {
+            val reminderTime = Date(note.reminderTime)
+            holder.tvTimeDate.text = SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault()).format(reminderTime)
+
+            if (reminderTime.before(Date())) {
+                holder.tvTimeDate.paintFlags = holder.tvTimeDate.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                } else {
+                holder.tvTimeDate.paintFlags = holder.tvTimeDate.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                }
+        }
+        else {
             holder.llReminder.visibility = View.GONE
         }
     }
