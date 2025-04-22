@@ -80,16 +80,7 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
 
         val notesDataBridge = NotesDataBridge(applicationContext)
         notesDataBridge.initializeDatabase()
-
         initializeWorkManager()
-
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                Toast.makeText(this@MainActivity, "Back pressed", Toast.LENGTH_SHORT).show()
-                isEnabled = false
-                onBackPressedDispatcher.onBackPressed()
-            }
-        })
 
     }
 
@@ -268,19 +259,6 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
 
     override fun closeDrawer() {
         drawerLayout.closeDrawer(GravityCompat.START)
-    }
-
-
-    @Deprecated("This method has been deprecated in favor of using the\n      {@link OnBackPressedDispatcher} via {@link #getOnBackPressedDispatcher()}.\n      The OnBackPressedDispatcher controls how back button events are dispatched\n      to one or more {@link OnBackPressedCallback} objects.")
-    override fun onBackPressed() {
-        if (navigationManager.isInSearchMode()) {
-            // Exit search mode if back is pressed while searching
-            navigationManager.toggleSearchMode(false)
-            dismissKeyboardShortcutsHelper()
-            Toast.makeText(this@MainActivity, "Back Pressed", Toast.LENGTH_SHORT).show()
-        } else {
-            super.onBackPressedDispatcher
-        }
     }
 
     // ==============================================
