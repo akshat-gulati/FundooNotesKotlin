@@ -25,16 +25,10 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
     // Constants
     // ==============================================
     companion object {
-        const val DISPLAY_NOTES = 0
-        const val DISPLAY_REMINDERS = 1
-        const val DISPLAY_ARCHIVE = 2
-        const val DISPLAY_BIN = 3
-        const val DISPLAY_LABELS = 4
-
         @JvmStatic
-        fun newInstance(displayMode: Int) = NoteFragment().apply {
+        fun newInstance(displayMode: DisplayMode) = NoteFragment().apply {
             arguments = Bundle().apply {
-                putInt("initial_display_mode", displayMode)
+                putString("initial_display_mode", displayMode.name)
             }
         }
     }
@@ -55,7 +49,8 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            val initialDisplayMode = it.getInt("initial_display_mode", DISPLAY_NOTES)
+            val initialDisplayModeName = it.getString("initial_display_mode", DisplayMode.NOTES.name)
+            val initialDisplayMode = DisplayMode.valueOf(initialDisplayModeName)
             viewModel.updateDisplayMode(initialDisplayMode)
         }
     }
@@ -154,9 +149,10 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
         )
     }
 
-    private fun updateFabVisibility(displayMode: Int) {
-        fabAddNote.visibility = if (displayMode == DISPLAY_BIN) View.GONE else View.VISIBLE
+    private fun updateFabVisibility(displayMode: DisplayMode) {
+        fabAddNote.visibility = if (displayMode == DisplayMode.BIN) View.GONE else View.VISIBLE
     }
+
 
     private fun updateActionModeTitle(selectedCount: Int) {
         actionMode?.title = "$selectedCount selected"
@@ -173,15 +169,16 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
 
         override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
             when (viewModel.displayMode.value) {
-                DISPLAY_BIN -> {
+                DisplayMode.BIN -> {
                     menu.findItem(R.id.action_permanenlt_delete).isVisible = true
                     menu.findItem(R.id.action_archive).isVisible = false
                     menu.findItem(R.id.action_labels).isVisible = false
                     menu.findItem(R.id.action_delete).setIcon(R.drawable.restore)
                 }
-                DISPLAY_ARCHIVE -> {
+                DisplayMode.ARCHIVE -> {
                     menu.findItem(R.id.action_archive).setIcon(R.drawable.unarchive)
                 }
+                else -> {}
             }
             return true
         }
@@ -265,15 +262,11 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
         viewModel.setSearchQuery(query)
     }
 
-    fun updateDisplayMode(newMode: Int, labelId: String? = null) {
+    fun updateDisplayMode(newMode: DisplayMode, labelId: String? = null) {
         viewModel.updateDisplayMode(newMode, labelId)
     }
 
     override fun onLayoutToggle(isGridLayout: Boolean) {
         viewModel.toggleLayoutMode(isGridLayout)
     }
-
-    // ==============================================
-    // Label Dialog Methods
-    // ==============================================
 }
