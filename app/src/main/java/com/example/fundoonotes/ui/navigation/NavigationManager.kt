@@ -368,12 +368,4 @@ class NavigationManager(
     fun isInSearchMode(): Boolean {
         return isInSearchMode
     }
-
-    fun getCurrentNavItemId(): Int {
-        return currentNavItemId
-    }
-
-    fun setCurrentNavItemId(id: Int) {
-        currentNavItemId = id
-    }
 }
