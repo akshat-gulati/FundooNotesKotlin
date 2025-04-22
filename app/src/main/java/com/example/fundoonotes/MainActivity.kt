@@ -41,7 +41,9 @@ import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity(), NavigationInterface {
 
-    // UI components
+    // ==============================================
+    // UI Component Declarations
+    // ==============================================
     private lateinit var navView: NavigationView
     private lateinit var titleText: TextView
     private lateinit var searchIcon: ImageView
@@ -53,14 +55,18 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
     private lateinit var drawerButton: ImageButton
     private lateinit var drawerLayout: DrawerLayout
 
-    // Navigation manager
+    // ==============================================
+    // Navigation and Permission Declarations
+    // ==============================================
     private lateinit var navigationManager: NavigationManager
     private lateinit var navigationComponent: NavigationComponent
     private lateinit var permissionManager: PermissionManager
-
-    // Data bridges
     private lateinit var labelDataBridge: LabelDataBridge
 
+
+    // ==============================================
+    // Activity Lifecycle Methods
+    // ==============================================
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         authManager = AuthManager(this)
@@ -86,21 +92,37 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
         })
 
     }
-    private fun initializeWorkManager() {
-        // Initialize WorkManager if it hasn't been initialized yet
-        try {
-            WorkManager.getInstance(applicationContext)
-        } catch (e: IllegalStateException) {
-            // WorkManager not initialized yet, so initialize it
-            val config = androidx.work.Configuration.Builder()
-                .setMinimumLoggingLevel(Log.INFO)
-                .build()
 
-            WorkManager.initialize(applicationContext, config)
-            Log.d("MainActivity", "WorkManager initialized")
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        permissionManager.handlePermissionResult(
+            this,
+            requestCode,
+            permissions,
+            grantResults
+        ) { code ->
+            // You can add specific handling if needed
+            Log.d(javaClass.simpleName.toString(), "Permission granted: $code")
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        navigationComponent.onSaveInstanceState(outState)
+    }
+    override fun onResume() {
+        super.onResume()
+        navigationManager.restoreState()
+    }
+
+    // ==============================================
+    // Initialization Methods
+    // ==============================================
     private fun setupUI(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
@@ -140,38 +162,25 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    private fun initializeWorkManager() {
+        // Initialize WorkManager if it hasn't been initialized yet
+        try {
+            WorkManager.getInstance(applicationContext)
+        } catch (e: IllegalStateException) {
+            // WorkManager not initialized yet, so initialize it
+            val config = androidx.work.Configuration.Builder()
+                .setMinimumLoggingLevel(Log.INFO)
+                .build()
 
-        permissionManager.handlePermissionResult(
-            this,
-            requestCode,
-            permissions,
-            grantResults
-        ) { code ->
-            // You can add specific handling if needed
-            Log.d(javaClass.simpleName.toString(), "Permission granted: $code")
+            WorkManager.initialize(applicationContext, config)
+            Log.d("MainActivity", "WorkManager initialized")
         }
     }
 
-    private fun observeLabels() {
-        // Observe labels and update navigation dynamically
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                labelDataBridge.labelsState.collect { labels ->
-                    navigationComponent.getNavigationManager().updateLabelMenu(labels)
-                }
-            }
-        }
 
-        // Fetch labels initially
-        labelDataBridge.fetchLabels()
-    }
-
+    // ==============================================
+    // UI Setup Methods
+    // ==============================================
     private fun setupWindowInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.nav_view)) { view, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -208,6 +217,11 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
         })
     }
 
+
+    // ==============================================
+    // Navigation Methods
+    // ==============================================
+
     private fun setupDrawer() {
         drawerButton.setOnClickListener {
             if (navigationManager.isInSearchMode()) {
@@ -220,14 +234,6 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
         }
     }
 
-    override fun openDrawer() {
-        drawerLayout.openDrawer(GravityCompat.START)
-    }
-
-    override fun closeDrawer() {
-        drawerLayout.closeDrawer(GravityCompat.START)
-    }
-
     private fun setupNavigation() {
         navView = findViewById(R.id.nav_view)
         navView.setNavigationItemSelectedListener { item: MenuItem ->
@@ -236,6 +242,34 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
             result
         }
     }
+
+    private fun observeLabels() {
+        // Observe labels and update navigation dynamically
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                labelDataBridge.labelsState.collect { labels ->
+                    navigationComponent.getNavigationManager().updateLabelMenu(labels)
+                }
+            }
+        }
+
+        // Fetch labels initially
+        labelDataBridge.fetchLabels()
+    }
+
+    // ==============================================
+    // NavigationInterface Implementation
+    // ==============================================
+
+
+    override fun openDrawer() {
+        drawerLayout.openDrawer(GravityCompat.START)
+    }
+
+    override fun closeDrawer() {
+        drawerLayout.closeDrawer(GravityCompat.START)
+    }
+
 
     @Deprecated("This method has been deprecated in favor of using the\n      {@link OnBackPressedDispatcher} via {@link #getOnBackPressedDispatcher()}.\n      The OnBackPressedDispatcher controls how back button events are dispatched\n      to one or more {@link OnBackPressedCallback} objects.")
     override fun onBackPressed() {
@@ -249,6 +283,9 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
         }
     }
 
+    // ==============================================
+    // Utility Methods
+    // ==============================================
     //Hide keyboard (Need to be checked - copied from stack overflow 😬)
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
         if (currentFocus != null) {
@@ -258,23 +295,10 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
         return super.dispatchTouchEvent(ev)
     }
 
-    // Lifecycle methods
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        navigationComponent.onSaveInstanceState(outState)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        navigationManager.restoreState()
-    }
-
     // A communication channel between NoteFragment and MainActivity to control the toolbar visibility.
     override fun setToolbarVisibility(isVisible: Boolean) {
         toolbar.visibility = if (isVisible) View.VISIBLE else View.GONE
     }
-
     override fun getContext(): Context = this
-
     override fun getSupportFragmentManager(): FragmentManager = super.getSupportFragmentManager()
 }
