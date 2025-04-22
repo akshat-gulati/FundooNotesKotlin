@@ -81,9 +81,6 @@ class FirestoreUserDataRepository(private val context: Context) {
     // ==============================================
     // Utility Methods
     // ==============================================
-    fun getUserById(userId: String): User? {
-        return if (_userDataState.value?.id == userId) _userDataState.value else null
-    }
 
     private fun getUserId(): String? {
         return sharedPreferences.getString("userId", null).also {

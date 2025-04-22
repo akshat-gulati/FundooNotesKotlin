@@ -136,17 +136,10 @@ class FirestoreNoteRepository(private val context: Context): NotesInterface {
     // ==============================================
     // Utility Methods
     // ==============================================
-    fun getNoteById(noteId: String): Note? {
-        return _notesState.value.find { it.id == noteId }
-    }
 
     private fun getUserId(): String? {
         return sharedPreferences.getString("userId", null).also {
             Log.d("NoteRepository", "Retrieved User ID: $it")
         }
-    }
-
-    fun cleanup() {
-        notesListener?.remove()
     }
 }

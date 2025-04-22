@@ -19,19 +19,9 @@ class NoteAdapter(
     private val onNoteClickListener: OnNoteClickListener
 ) : RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
 
-    private val labelCache = mutableMapOf<String, List<String>>()
-
-    // Multi-selection support
-    private val selectedItems = mutableSetOf<String>()
-    private var isInSelectionMode = false
-
-    interface OnNoteClickListener {
-        fun onNoteClick(note: Note)
-        fun onSelectionModeStarted()
-        fun onSelectionModeEnded()
-        fun onSelectionChanged(selectedNotes: Set<Note>)
-    }
-
+    // ==============================================
+    // ViewHolder Class
+    // ==============================================
     class NoteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
         val tvDescription: TextView = itemView.findViewById(R.id.tvDescription)
@@ -40,6 +30,16 @@ class NoteAdapter(
         val tvLabelName: TextView = itemView.findViewById(R.id.tvLabelName)
     }
 
+    // ==============================================
+    // Properties
+    // ==============================================
+    private val labelCache = mutableMapOf<String, List<String>>()
+    private val selectedItems = mutableSetOf<String>()
+    private var isInSelectionMode = false
+
+    // ==============================================
+    // Adapter Overrides
+    // ==============================================
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_row, parent, false)
         return NoteViewHolder(view)
@@ -47,61 +47,76 @@ class NoteAdapter(
 
     override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {
         val note = notes[position]
+        bindNoteData(holder, note)
+        setupClickListeners(holder, note)
+    }
 
+    override fun getItemCount(): Int = notes.size
+
+    // ==============================================
+    // Data Binding Methods
+    // ==============================================
+    private fun bindNoteData(holder: NoteViewHolder, note: Note) {
         holder.tvTitle.text = note.title
         holder.tvDescription.text = note.description
+        updateSelectionUI(holder, note)
+        bindReminderData(holder, note)
+        bindLabelData(holder, note)
+    }
 
-        // Highlight selected items
-        if (selectedItems.contains(note.id)) {
-            holder.itemView.setBackgroundResource(R.drawable.selected_card_border)
-        } else {
-            holder.itemView.setBackgroundResource(R.drawable.card_border)
-        }
+    private fun updateSelectionUI(holder: NoteViewHolder, note: Note) {
+        holder.itemView.setBackgroundResource(
+            if (selectedItems.contains(note.id)) R.drawable.selected_card_border
+            else R.drawable.card_border
+        )
+    }
 
+    private fun bindReminderData(holder: NoteViewHolder, note: Note) {
         if (note.reminderTime != null) {
             holder.llReminder.visibility = View.VISIBLE
-            val dateFormat = SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault())
-            holder.tvTimeDate.text = dateFormat.format(Date(note.reminderTime))
+            holder.tvTimeDate.text = SimpleDateFormat("MMM dd, hh:mm a", Locale.getDefault())
+                .format(Date(note.reminderTime))
         } else {
             holder.llReminder.visibility = View.GONE
         }
+    }
 
-        // Handle labels with improved caching
+    private fun bindLabelData(holder: NoteViewHolder, note: Note) {
         if (note.labels.isNotEmpty()) {
-            // Create a unique key for this note's labels
             val noteLabelsKey = note.id
-
-            // Check if we need to fetch new labels by comparing with cache
             val cachedLabels = labelCache[noteLabelsKey]
 
             if (cachedLabels != null) {
-                // Use cached labels
                 holder.tvLabelName.visibility = View.VISIBLE
                 holder.tvLabelName.text = cachedLabels.joinToString(", ")
             } else {
-                // Only fetch if not in cache
-                val firestoreLabelRepository = FirestoreLabelRepository(holder.itemView.context)
-                firestoreLabelRepository.fetchLabelsByIds(note.labels) { labels ->
-                    val labelNames = labels.map { it.name }
-
-                    // Update cache
-                    labelCache[noteLabelsKey] = labelNames
-
-                    // Check if this ViewHolder is still showing the same note
-                    if (holder.bindingAdapterPosition != RecyclerView.NO_POSITION &&
-                        holder.bindingAdapterPosition < notes.size &&
-                        notes[holder.bindingAdapterPosition].id == note.id) {
-
-                        holder.tvLabelName.visibility = View.VISIBLE
-                        holder.tvLabelName.text = labelNames.joinToString(", ")
-                    }
-                }
+                fetchAndCacheLabels(holder, note)
             }
         } else {
             holder.tvLabelName.visibility = View.GONE
         }
+    }
 
-        // Handle click events - keep your existing code
+    private fun fetchAndCacheLabels(holder: NoteViewHolder, note: Note) {
+        val firestoreLabelRepository = FirestoreLabelRepository(holder.itemView.context)
+        firestoreLabelRepository.fetchLabelsByIds(note.labels) { labels ->
+            val labelNames = labels.map { it.name }
+            labelCache[note.id] = labelNames
+
+            if (holder.bindingAdapterPosition != RecyclerView.NO_POSITION &&
+                holder.bindingAdapterPosition < notes.size &&
+                notes[holder.bindingAdapterPosition].id == note.id) {
+
+                holder.tvLabelName.visibility = View.VISIBLE
+                holder.tvLabelName.text = labelNames.joinToString(", ")
+            }
+        }
+    }
+
+    // ==============================================
+    // Click Listeners
+    // ==============================================
+    private fun setupClickListeners(holder: NoteViewHolder, note: Note) {
         holder.itemView.setOnClickListener {
             if (isInSelectionMode) {
                 toggleSelection(note)
@@ -121,13 +136,10 @@ class NoteAdapter(
             true
         }
     }
-    override fun getItemCount(): Int = notes.size
 
-    fun updateNotes(newNotes: List<Note>) {
-        notes = newNotes
-        notifyDataSetChanged()
-    }
-    // Methods for multi-selection mode
+    // ==============================================
+    // Selection Management
+    // ==============================================
     private fun toggleSelection(note: Note) {
         if (selectedItems.contains(note.id)) {
             selectedItems.remove(note.id)
@@ -138,11 +150,11 @@ class NoteAdapter(
         if (selectedItems.isEmpty() && isInSelectionMode) {
             exitSelectionMode()
         } else {
-            // Notify listener about selection changes
             onNoteClickListener.onSelectionChanged(getSelectedNotes())
             notifyDataSetChanged()
         }
     }
+
     fun exitSelectionMode() {
         if (isInSelectionMode) {
             isInSelectionMode = false
@@ -151,9 +163,19 @@ class NoteAdapter(
             notifyDataSetChanged()
         }
     }
+
+    // ==============================================
+    // Public Methods
+    // ==============================================
+    fun updateNotes(newNotes: List<Note>) {
+        notes = newNotes
+        notifyDataSetChanged()
+    }
+
     fun getSelectedNotes(): Set<Note> {
         return notes.filter { note -> selectedItems.contains(note.id) }.toSet()
     }
+
     fun selectAll() {
         selectedItems.clear()
         selectedItems.addAll(notes.map { it.id })

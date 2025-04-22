@@ -16,6 +16,8 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.Toolbar
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -79,6 +81,15 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
         notesDataBridge.initializeDatabase()
 
         initializeWorkManager()
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                Toast.makeText(this@MainActivity, "Back pressed", Toast.LENGTH_SHORT).show()
+                isEnabled = false
+                onBackPressedDispatcher.onBackPressed()
+            }
+        })
+
     }
     private fun initializeWorkManager() {
         // Initialize WorkManager if it hasn't been initialized yet

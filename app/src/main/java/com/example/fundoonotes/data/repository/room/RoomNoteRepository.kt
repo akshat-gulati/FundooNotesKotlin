@@ -151,10 +151,6 @@ class RoomNoteRepository(context: Context) : NotesInterface {
         }
     }
 
-    fun getNoteById(noteId: String): Note? {
-        return _notesState.value.find { it.id == noteId }
-    }
-
     fun clearAllData() {
         coroutineScope.launch {
             try {

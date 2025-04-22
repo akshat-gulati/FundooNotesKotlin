@@ -23,29 +23,35 @@ import com.example.fundoonotes.data.repository.firebase.FirestoreUserDataReposit
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlin.math.log
 
 class AccountActionDialog : DialogFragment() {
 
+    // ==============================================
     // UI Components
+    // ==============================================
     private lateinit var ivProfile: ImageView
     private lateinit var tvName: TextView
     private lateinit var tvEmail: TextView
     private lateinit var cvManage: CardView
     private lateinit var cvLogout: CardView
 
-    // Repositories
+    // ==============================================
+    // Data Repositories & Services
+    // ==============================================
     private lateinit var authManager: AuthManager
     private lateinit var userRepository: FirestoreUserDataRepository
-    private val firebaseAuth = FirebaseAuth.getInstance()
 
-    // Coroutine job
+    // ==============================================
+    // Coroutine Management
+    // ==============================================
     private var userStateCollector: Job? = null
 
+    // ==============================================
+    // Lifecycle Methods
+    // ==============================================
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        authManager = AuthManager(context)
-        userRepository = FirestoreUserDataRepository(context)
+        initializeServices(context)
     }
 
     override fun onCreateView(
@@ -53,26 +59,31 @@ class AccountActionDialog : DialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_account_action_dialog, container, false)
-        initializeViews(view)
-        return view
+        return inflater.inflate(R.layout.fragment_account_action_dialog, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupUserInfo()
-        setupClickListeners()
-        collectUserData()
+        initializeViews(view)
+        setupUIComponents()
     }
 
     override fun onStart() {
         super.onStart()
-        setupDialogWindow()
+        configureDialogWindow()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        userStateCollector?.cancel()
+        cleanupResources()
+    }
+
+    // ==============================================
+    // Initialization Methods
+    // ==============================================
+    private fun initializeServices(context: Context) {
+        authManager = AuthManager(context)
+        userRepository = FirestoreUserDataRepository(context)
     }
 
     private fun initializeViews(view: View) {
@@ -81,36 +92,19 @@ class AccountActionDialog : DialogFragment() {
         tvEmail = view.findViewById(R.id.tvEmail)
         cvManage = view.findViewById(R.id.cvManage)
         cvLogout = view.findViewById(R.id.cvLogout)
-
-        cvManage.visibility =GONE
-
+        cvManage.visibility = GONE
     }
 
-    private fun collectUserData() {
-        userStateCollector = lifecycleScope.launch {
-            userRepository.userState.collect { user ->
-                user?.let {
-                    // Set user info text
-                    tvName.text = it.name
-                    tvEmail.text = it.email
-
-                    // Load profile image
-                    Log.d("AccountActionDialog", "User from state: $it")
-                    Log.d("AccountActionDialog", "Profile Image URL: ${it.profileImageUrl}")
-
-                    context?.let { ctx ->
-                        Glide.with(ctx)
-                            .load(it.profileImageUrl)
-                            .circleCrop()
-                            .placeholder(R.drawable.person)
-                            .into(ivProfile)
-                    }
-                }
-            }
-        }
+    // ==============================================
+    // UI Setup Methods
+    // ==============================================
+    private fun setupUIComponents() {
+        setupUserInfo()
+        setupClickListeners()
+        collectUserData()
     }
 
-    private fun setupDialogWindow() {
+    private fun configureDialogWindow() {
         dialog?.window?.apply {
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             setLayout(
@@ -123,13 +117,60 @@ class AccountActionDialog : DialogFragment() {
             }
         }
     }
+
+    // ==============================================
+    // Data Handling Methods
+    // ==============================================
     private fun setupUserInfo() {
         userRepository.fetchUserData()
     }
+
+    private fun collectUserData() {
+        userStateCollector = lifecycleScope.launch {
+            userRepository.userState.collect { user ->
+                user?.let {
+                    updateUserInfoUI(it)
+                }
+            }
+        }
+    }
+
+    private fun updateUserInfoUI(user: com.example.fundoonotes.data.model.User) {
+        // Set user info text
+        tvName.text = user.name
+        tvEmail.text = user.email
+
+        // Load profile image
+        Log.d("AccountActionDialog", "User from state: $user")
+        Log.d("AccountActionDialog", "Profile Image URL: ${user.profileImageUrl}")
+
+        context?.let { ctx ->
+            Glide.with(ctx)
+                .load(user.profileImageUrl)
+                .circleCrop()
+                .placeholder(R.drawable.person)
+                .into(ivProfile)
+        }
+    }
+
+    // ==============================================
+    // Event Handlers
+    // ==============================================
     private fun setupClickListeners() {
         cvLogout.setOnClickListener {
-            authManager.logout()
-            dismiss()
+            handleLogout()
         }
+    }
+
+    private fun handleLogout() {
+        authManager.logout()
+        dismiss()
+    }
+
+    // ==============================================
+    // Cleanup Methods
+    // ==============================================
+    private fun cleanupResources() {
+        userStateCollector?.cancel()
     }
 }

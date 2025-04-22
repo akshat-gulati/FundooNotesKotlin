@@ -21,9 +21,7 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
     // ==============================================
     // Companion Object (Constants)
     // ==============================================
-    companion object {
-        private const val TAG = "NotesDataBridge"
-    }
+    companion object { private const val TAG = "NotesDataBridge" }
 
     // ==============================================
     // Properties and Initialization
@@ -164,13 +162,6 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
     fun getNoteById(noteId: String): Note? {
         return _notesState.value.find { it.id == noteId }
     }
-
-    fun cleanup() {
-        if (networkManager.isOnline()) {
-            firestoreRepository.cleanup()
-        }
-    }
-
     fun initializeDatabase() {
         fetchNotes()
     }

@@ -20,9 +20,7 @@ class LabelDataBridge(private val context: Context) : LabelInterface {
     // ==============================================
     // Companion Object (Constants)
     // ==============================================
-    companion object {
-        private const val TAG = "LabelsDataBridge"
-    }
+    companion object { private const val TAG = "LabelsDataBridge" }
 
     // ==============================================
     // Properties and Initialization
@@ -36,9 +34,7 @@ class LabelDataBridge(private val context: Context) : LabelInterface {
     private val networkManager = NetworkManager(context)
     val networkState: StateFlow<Boolean> = networkManager.networkState
 
-    init {
-        observeLabels()
-    }
+    init { observeLabels() }
 
     // ==============================================
     // Data Observation

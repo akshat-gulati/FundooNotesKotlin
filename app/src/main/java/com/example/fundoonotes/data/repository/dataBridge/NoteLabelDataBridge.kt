@@ -11,9 +11,7 @@ class NoteLabelDataBridge(context: Context) {
     private val notesDataBridge = NotesDataBridge(context)
     private val labelDataBridge = LabelDataBridge(context)
 
-    companion object {
-        private const val TAG = "NoteLabelRepository"
-    }
+    companion object { private const val TAG = "NoteLabelRepository" }
 
     // ==============================================
     // Core Note-Label Operations
