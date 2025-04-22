@@ -13,8 +13,6 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.Toolbar
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -78,8 +76,8 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
         }
         setupUI(savedInstanceState)
 
-        val notesDataBridge = NotesDataBridge(applicationContext)
-        notesDataBridge.initializeDatabase()
+        val notesDataBridge = NotesDataBridge(this) // "this" iz a Activity Context
+        notesDataBridge.initializeDatabase() // initialize to fetch latest notes from DB
         initializeWorkManager()
 
     }
@@ -97,7 +95,6 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
             permissions,
             grantResults
         ) { code ->
-            // You can add specific handling if needed
             Log.d(javaClass.simpleName.toString(), "Permission granted: $code")
         }
     }
@@ -153,14 +150,17 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
         }
     }
 
+    // Fallback function for WorkManager as sometimes the auto-initializer fails silently
+//    WorkManager is initialized only once during the entire app lifecycle
     private fun initializeWorkManager() {
-        // Initialize WorkManager if it hasn't been initialized yet
+        // Initialize WorkManager if it hasn't been initialized yet (Defensive Programming)
         try {
             WorkManager.getInstance(applicationContext)
-        } catch (e: IllegalStateException) {
+        } catch (e: IllegalStateException) { //IllegalStateException
+
             // WorkManager not initialized yet, so initialize it
             val config = androidx.work.Configuration.Builder()
-                .setMinimumLoggingLevel(Log.INFO)
+                .setMinimumLoggingLevel(Log.INFO) //INFO will ensure that only important logg will be recorded
                 .build()
 
             WorkManager.initialize(applicationContext, config)
@@ -278,5 +278,7 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
         toolbar.visibility = if (isVisible) View.VISIBLE else View.GONE
     }
     override fun getContext(): Context = this
+
+//    an instance of FragmentManager for managing fragments within an activity.
     override fun getSupportFragmentManager(): FragmentManager = super.getSupportFragmentManager()
 }

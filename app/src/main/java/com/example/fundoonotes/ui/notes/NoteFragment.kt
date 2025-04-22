@@ -159,7 +159,7 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
     }
 
     private fun updateFabVisibility(displayMode: DisplayMode) {
-        fabAddNote.visibility = if (displayMode == DisplayMode.BIN || displayMode == DisplayMode.ARCHIVE || displayMode == DisplayMode.REMINDERS) View.GONE else View.VISIBLE
+        fabAddNote.visibility = if (displayMode == DisplayMode.NOTES) View.VISIBLE else View.GONE
     }
 
 
