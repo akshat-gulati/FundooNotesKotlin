@@ -37,6 +37,7 @@ import com.google.android.material.navigation.NavigationView
 import com.example.fundoonotes.core.AuthManager
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
 import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
+import com.example.fundoonotes.ui.LayoutToggleListener
 import com.example.fundoonotes.ui.NavigationInterface
 import com.example.fundoonotes.ui.accountActionDialog.AccountActionDialog
 import com.example.fundoonotes.ui.navigation.NavigationComponent

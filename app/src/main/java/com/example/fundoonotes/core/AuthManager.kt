@@ -5,9 +5,7 @@ import android.content.Intent
 import com.example.fundoonotes.MainActivity
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
 import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
-import com.example.fundoonotes.data.repository.room.RoomNoteRepository
 import com.example.fundoonotes.ui.loginSignup.LoginSignupActivity
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 
 class AuthManager(private val context: Context) {

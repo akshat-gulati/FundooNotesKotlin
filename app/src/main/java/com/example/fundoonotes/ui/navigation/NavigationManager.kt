@@ -13,8 +13,10 @@ import com.example.fundoonotes.MainActivity
 import com.example.fundoonotes.R
 import com.example.fundoonotes.data.model.Label
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
+import com.example.fundoonotes.ui.LayoutToggleListener
 import com.example.fundoonotes.ui.NavigationInterface
 import com.example.fundoonotes.ui.labels.LabelsFragment
+import com.example.fundoonotes.ui.notes.DisplayMode
 import com.example.fundoonotes.ui.notes.NoteFragment
 import com.google.android.material.navigation.NavigationView
 import com.example.fundoonotes.ui.LayoutToggleListener
@@ -31,7 +33,7 @@ class NavigationManager(
     private val navView: NavigationView
 ) {
     // Fragment management
-    private var noteFragment: NoteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_NOTES)
+    private var noteFragment: NoteFragment = NoteFragment.newInstance(DisplayMode.NOTES)
     private var currentFragment: Fragment? = null
 
     private val activity: MainActivity get() = navigationInterface.getContext() as MainActivity
@@ -152,11 +154,11 @@ class NavigationManager(
 
         if (currentFragment !is NoteFragment) {
             // If we're coming from a different fragment type, create and load a new NoteFragment
-            noteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_NOTES)
+            noteFragment = NoteFragment.newInstance(DisplayMode.NOTES)
             loadFragment(noteFragment)
         } else {
             // If we're already on a NoteFragment, just update its display mode
-            (currentFragment as NoteFragment).updateDisplayMode(NoteFragment.DISPLAY_NOTES)
+            (currentFragment as NoteFragment).updateDisplayMode(DisplayMode.NOTES)
         }
     }
 
@@ -172,11 +174,11 @@ class NavigationManager(
         // Check if NoteFragment is already loaded
         if (currentFragment !is NoteFragment) {
             // Only create a new fragment if we don't already have a NoteFragment
-            noteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_REMINDERS)
+            noteFragment = NoteFragment.newInstance(DisplayMode.REMINDERS)
             loadFragment(noteFragment)
         } else {
             // Just update the existing fragment's display mode
-            (currentFragment as NoteFragment).updateDisplayMode(NoteFragment.DISPLAY_REMINDERS)
+            (currentFragment as NoteFragment).updateDisplayMode(DisplayMode.REMINDERS)
         }
     }
 
@@ -204,11 +206,11 @@ class NavigationManager(
         // Check if NoteFragment is already loaded
         if (currentFragment !is NoteFragment) {
             // Only create a new fragment if we don't already have a NoteFragment
-            noteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_ARCHIVE)
+            noteFragment = NoteFragment.newInstance(DisplayMode.ARCHIVE)
             loadFragment(noteFragment)
         } else {
             // Just update the existing fragment's display mode
-            (currentFragment as NoteFragment).updateDisplayMode(NoteFragment.DISPLAY_ARCHIVE)
+            (currentFragment as NoteFragment).updateDisplayMode(DisplayMode.ARCHIVE)
         }
     }
 
@@ -224,11 +226,11 @@ class NavigationManager(
         // Check if NoteFragment is already loaded
         if (currentFragment !is NoteFragment) {
             // Only create a new fragment if we don't already have a NoteFragment
-            noteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_BIN)
+            noteFragment = NoteFragment.newInstance(DisplayMode.BIN)
             loadFragment(noteFragment)
         } else {
             // Just update the existing fragment's display mode
-            (currentFragment as NoteFragment).updateDisplayMode(NoteFragment.DISPLAY_BIN)
+            (currentFragment as NoteFragment).updateDisplayMode(DisplayMode.BIN)
         }
     }
 
@@ -250,7 +252,7 @@ class NavigationManager(
             // Check if NoteFragment is already loaded
             if (currentFragment !is NoteFragment) {
                 // Create a new fragment instance
-                noteFragment = NoteFragment.newInstance(NoteFragment.DISPLAY_LABELS)
+                noteFragment = NoteFragment.newInstance(DisplayMode.LABELS)
 
                 // Store the label ID temporarily
                 val labelId = label.id
@@ -260,14 +262,14 @@ class NavigationManager(
                     .replace(R.id.fragment_container, noteFragment)
                     .runOnCommit {
                         // Now safely update the display mode after the fragment is attached
-                        noteFragment.updateDisplayMode(NoteFragment.DISPLAY_LABELS, labelId)
+                        noteFragment.updateDisplayMode(DisplayMode.LABELS, labelId)
                     }
                     .commit()
 
                 currentFragment = noteFragment
             } else {
                 // If we're already on a NoteFragment, just update its display mode
-                (currentFragment as NoteFragment).updateDisplayMode(NoteFragment.DISPLAY_LABELS, label.id)
+                (currentFragment as NoteFragment).updateDisplayMode(DisplayMode.LABELS, label.id)
             }
         }
     }

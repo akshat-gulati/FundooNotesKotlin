@@ -27,8 +27,8 @@ class NoteViewModel(context: Context) : ViewModel() {
     // ==============================================
     // UI State Flows
     // ==============================================
-    private val _displayMode = MutableStateFlow(NoteFragment.DISPLAY_NOTES)
-    val displayMode: StateFlow<Int> = _displayMode
+    private val _displayMode = MutableStateFlow(DisplayMode.NOTES)
+    val displayMode: StateFlow<DisplayMode> = _displayMode
 
     private val _currentLabelId = MutableStateFlow<String?>(null)
     val currentLabelId: StateFlow<String?> = _currentLabelId
@@ -72,22 +72,21 @@ class NoteViewModel(context: Context) : ViewModel() {
     // ==============================================
     private fun filterNotes(
         notes: List<Note>,
-        displayMode: Int,
+        displayMode: DisplayMode,
         labelId: String?,
         searchQuery: String
     ): List<Note> {
         // First apply display mode filter
         val displayModeFiltered = when (displayMode) {
-            NoteFragment.DISPLAY_NOTES -> notes.filter { !it.archived && !it.deleted }
-            NoteFragment.DISPLAY_REMINDERS -> notes.filter { !it.archived && !it.deleted && it.reminderTime != null }
-            NoteFragment.DISPLAY_ARCHIVE -> notes.filter { it.archived && !it.deleted }
-            NoteFragment.DISPLAY_BIN -> notes.filter { it.deleted }
-            NoteFragment.DISPLAY_LABELS -> {
+            DisplayMode.NOTES -> notes.filter { !it.archived && !it.deleted }
+            DisplayMode.REMINDERS -> notes.filter { !it.archived && !it.deleted && it.reminderTime != null }
+            DisplayMode.ARCHIVE -> notes.filter { it.archived && !it.deleted }
+            DisplayMode.BIN -> notes.filter { it.deleted }
+            DisplayMode.LABELS -> {
                 labelId?.let { id ->
                     notes.filter { !it.archived && !it.deleted && it.labels.contains(id) }
                 } ?: emptyList()
             }
-            else -> emptyList()
         }
 
         // Then apply search filter if any
@@ -105,7 +104,7 @@ class NoteViewModel(context: Context) : ViewModel() {
     // ==============================================
     // UI State Updates
     // ==============================================
-    fun updateDisplayMode(newMode: Int, labelId: String? = null) {
+    fun updateDisplayMode(newMode: DisplayMode, labelId: String? = null) {
         _displayMode.value = newMode
         _currentLabelId.value = labelId
         _searchQuery.value = "" // Reset search when changing modes
