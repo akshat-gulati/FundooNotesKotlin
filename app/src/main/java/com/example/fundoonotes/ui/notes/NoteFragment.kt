@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.*
 import android.view.animation.AnimationUtils
 import android.view.animation.LayoutAnimationController
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
 import androidx.fragment.app.Fragment
@@ -242,9 +243,14 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
     // NoteAdapter Callbacks
     // ==============================================
     override fun onNoteClick(note: Note) {
-        val intent = Intent(activity, NoteEditActivity::class.java)
-        intent.putExtra("NOTE_ID", note.id)
-        startActivity(intent)
+        if (!note.deleted) {
+            val intent = Intent(activity, NoteEditActivity::class.java)
+            intent.putExtra("NOTE_ID", note.id)
+            startActivity(intent)
+        }
+        else{
+            Toast.makeText(context, "Deleted Note Cant be Accessed", Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onSelectionModeStarted() {

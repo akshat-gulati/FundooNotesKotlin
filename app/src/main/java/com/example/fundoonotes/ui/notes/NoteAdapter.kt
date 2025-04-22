@@ -124,7 +124,6 @@ class NoteAdapter(
                 holder.tvLabelName3.visibility = View.GONE
             }
             else -> {
-                // More than two labels
                 holder.tvLabelName.visibility = View.VISIBLE
                 holder.tvLabelName.text = labelNames[0]
                 holder.tvLabelName2.visibility = View.VISIBLE
