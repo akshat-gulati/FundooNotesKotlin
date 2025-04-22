@@ -19,7 +19,6 @@ import com.example.fundoonotes.ui.labels.LabelsFragment
 import com.example.fundoonotes.ui.notes.DisplayMode
 import com.example.fundoonotes.ui.notes.NoteFragment
 import com.google.android.material.navigation.NavigationView
-import com.example.fundoonotes.ui.LayoutToggleListener
 
 class NavigationManager(
     private val navigationInterface: NavigationInterface,

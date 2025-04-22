@@ -1,9 +1,6 @@
 package com.example.fundoonotes
 
-import android.R.attr.searchIcon
 import android.content.Context
-import android.content.Context.INPUT_METHOD_SERVICE
-import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -21,7 +18,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.Toolbar
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.view.GravityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -37,13 +33,11 @@ import com.google.android.material.navigation.NavigationView
 import com.example.fundoonotes.core.AuthManager
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
 import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
-import com.example.fundoonotes.ui.LayoutToggleListener
 import com.example.fundoonotes.ui.NavigationInterface
 import com.example.fundoonotes.ui.accountActionDialog.AccountActionDialog
 import com.example.fundoonotes.ui.navigation.NavigationComponent
 import com.example.fundoonotes.ui.navigation.NavigationManager
 import kotlinx.coroutines.launch
-import com.example.fundoonotes.ui.LayoutToggleListener
 
 class MainActivity : AppCompatActivity(), NavigationInterface {
 
@@ -249,6 +243,7 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
             // Exit search mode if back is pressed while searching
             navigationManager.toggleSearchMode(false)
             dismissKeyboardShortcutsHelper()
+            Toast.makeText(this@MainActivity, "Back Pressed", Toast.LENGTH_SHORT).show()
         } else {
             super.onBackPressedDispatcher
         }
