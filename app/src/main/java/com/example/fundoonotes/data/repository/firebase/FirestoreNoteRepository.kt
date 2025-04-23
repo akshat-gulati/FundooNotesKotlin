@@ -18,7 +18,6 @@ class FirestoreNoteRepository(private val context: Context): NotesInterface {
     // Dependencies and Initialization
     // ==============================================
     private val db = Firebase.firestore
-    private val auth = FirebaseAuth.getInstance()
     private val _notesState = MutableStateFlow<List<Note>>(emptyList())
     val notesState: StateFlow<List<Note>> = _notesState.asStateFlow()
     private var notesListener: ListenerRegistration? = null
