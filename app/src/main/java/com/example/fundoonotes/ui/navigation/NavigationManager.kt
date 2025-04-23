@@ -31,26 +31,40 @@ class NavigationManager(
     private val etSearch: EditText,
     private val navView: NavigationView
 ) {
-    // Fragment management
+    // ==============================================
+    // Fragment Management
+    // ==============================================
     private var noteFragment: NoteFragment = NoteFragment.newInstance(DisplayMode.NOTES)
     private var currentFragment: Fragment? = null
 
+    // ==============================================
+    // View References
+    // ==============================================
     private val activity: MainActivity get() = navigationInterface.getContext() as MainActivity
     private val fragmentManager: FragmentManager get() = navigationInterface.getSupportFragmentManager()
 
-    // State variables
+    // ==============================================
+    // State Variables
+    // ==============================================
     private var currentNavItemId: Int = R.id.navNotes
     private var isGridLayout = true
     private var currentLabelName: String? = null
     private var isInSearchMode = false
 
-    // Label navigation constants
+    // ==============================================
+    // Label Navigation Constants
+    // ==============================================
     private val LABEL_MENU_GROUP_ID = 3
     private var menuLabelsGroup: Menu? = null
 
-    // Initialize LabelDataBridge
+    // ==============================================
+    // Data Bridge
+    // ==============================================
     private lateinit var labelDataBridge: LabelDataBridge
 
+    // ==============================================
+    // Initialization Methods
+    // ==============================================
     fun initialize(labelDataBridge: LabelDataBridge) {
         this.labelDataBridge = labelDataBridge
         setupInitialState()
@@ -63,6 +77,9 @@ class NavigationManager(
         setupClickListeners()
     }
 
+    // ==============================================
+    // Event Listeners
+    // ==============================================
     private fun setupClickListeners() {
         layoutToggleIcon.setOnClickListener {
             toggleLayout()
@@ -74,33 +91,31 @@ class NavigationManager(
 
         drawerButton.setOnClickListener {
             if (isInSearchMode) {
-                // Act as back button in search mode
                 toggleSearchMode(false)
             } else {
-                // Act as drawer button normally
                 navigationInterface.openDrawer()
             }
         }
     }
 
+    // ==============================================
+    // Navigation Methods
+    // ==============================================
     fun loadDefaultFragment() {
-        // Set the default item as checked
         navView.menu.findItem(currentNavItemId).isChecked = true
         updateUIForNavItem(currentNavItemId)
     }
 
     fun handleNavigation(item: MenuItem): Boolean {
         if (item.groupId == LABEL_MENU_GROUP_ID) {
-            // This is a label item, handle label navigation
             navigateToLabelNotes(item.title.toString())
-            currentNavItemId = item.itemId // Store the current item ID
+            currentNavItemId = item.itemId
             item.isChecked = true
         } else if (currentNavItemId != item.itemId) {
             currentNavItemId = item.itemId
             item.isChecked = true
             updateUIForNavItem(currentNavItemId)
         }
-
         return true
     }
 
@@ -114,6 +129,9 @@ class NavigationManager(
         }
     }
 
+    // ==============================================
+    // Fragment Loading Methods
+    // ==============================================
     private fun loadFragment(fragment: Fragment) {
         fragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
@@ -121,6 +139,94 @@ class NavigationManager(
         currentFragment = fragment
     }
 
+    private fun navigateToNotes() {
+        toolbar.setBackgroundResource(R.drawable.toolbar_rounded)
+        titleText.text = activity.getString(R.string.notes)
+        updateHeaderVisibility(true, true, true)
+
+        if (currentFragment !is NoteFragment) {
+            noteFragment = NoteFragment.newInstance(DisplayMode.NOTES)
+            loadFragment(noteFragment)
+        } else {
+            (currentFragment as NoteFragment).updateDisplayMode(DisplayMode.NOTES)
+        }
+    }
+
+    private fun navigateToReminders() {
+        clearToolbarBackground()
+        titleText.text = activity.getString(R.string.reminders)
+        updateHeaderVisibility(true, false, true)
+
+        if (currentFragment !is NoteFragment) {
+            noteFragment = NoteFragment.newInstance(DisplayMode.REMINDERS)
+            loadFragment(noteFragment)
+        } else {
+            (currentFragment as NoteFragment).updateDisplayMode(DisplayMode.REMINDERS)
+        }
+    }
+
+    private fun navigateToLabels() {
+        clearToolbarBackground()
+        val fragment = LabelsFragment()
+        titleText.text = activity.getString(R.string.createLabels)
+        updateHeaderVisibility(false, false, false)
+        loadFragment(fragment)
+    }
+
+    private fun navigateToArchive() {
+        clearToolbarBackground()
+        titleText.text = activity.getString(R.string.archive)
+        updateHeaderVisibility(true, false, true)
+
+        if (currentFragment !is NoteFragment) {
+            noteFragment = NoteFragment.newInstance(DisplayMode.ARCHIVE)
+            loadFragment(noteFragment)
+        } else {
+            (currentFragment as NoteFragment).updateDisplayMode(DisplayMode.ARCHIVE)
+        }
+    }
+
+    private fun navigateToBin() {
+        clearToolbarBackground()
+        titleText.text = activity.getString(R.string.bin)
+        updateHeaderVisibility(true, false, false)
+
+        if (currentFragment !is NoteFragment) {
+            noteFragment = NoteFragment.newInstance(DisplayMode.BIN)
+            loadFragment(noteFragment)
+        } else {
+            (currentFragment as NoteFragment).updateDisplayMode(DisplayMode.BIN)
+        }
+    }
+
+    private fun navigateToLabelNotes(labelName: String) {
+        clearToolbarBackground()
+        currentLabelName = labelName
+        val label = labelDataBridge.labelsState.value.find { it.name == labelName }
+
+        if (label != null) {
+            titleText.text = labelName
+            updateHeaderVisibility(true, false, true)
+
+            if (currentFragment !is NoteFragment) {
+                noteFragment = NoteFragment.newInstance(DisplayMode.LABELS)
+                val labelId = label.id
+                fragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, noteFragment)
+                    .runOnCommit {
+                        noteFragment.updateDisplayMode(DisplayMode.LABELS, labelId)
+                    }
+                    .commit()
+                currentFragment = noteFragment
+            } else {
+                (currentFragment as NoteFragment).updateDisplayMode(DisplayMode.LABELS, label.id)
+            }
+        }
+    }
+
+    // ==============================================
+    // UI Update Methods
+    // ==============================================
     private fun toggleLayout() {
         isGridLayout = !isGridLayout
         layoutToggleIcon.setImageResource(
@@ -142,184 +248,51 @@ class NavigationManager(
         toolbar.background = null
     }
 
-    private fun navigateToNotes() {
-        toolbar.setBackgroundResource(R.drawable.toolbar_rounded)
-        titleText.text = activity.getString(R.string.notes)
-        updateHeaderVisibility(
-            layoutToggle = true,
-            profile = true,
-            search = true
-        )
-
-        if (currentFragment !is NoteFragment) {
-            // If we're coming from a different fragment type, create and load a new NoteFragment
-            noteFragment = NoteFragment.newInstance(DisplayMode.NOTES)
-            loadFragment(noteFragment)
-        } else {
-            // If we're already on a NoteFragment, just update its display mode
-            (currentFragment as NoteFragment).updateDisplayMode(DisplayMode.NOTES)
-        }
-    }
-
-    private fun navigateToReminders() {
-        clearToolbarBackground() // Clear the background
-        titleText.text = activity.getString(R.string.reminders)
-        updateHeaderVisibility(
-            layoutToggle = true,
-            profile = false,
-            search = true
-        )
-
-        // Check if NoteFragment is already loaded
-        if (currentFragment !is NoteFragment) {
-            // Only create a new fragment if we don't already have a NoteFragment
-            noteFragment = NoteFragment.newInstance(DisplayMode.REMINDERS)
-            loadFragment(noteFragment)
-        } else {
-            // Just update the existing fragment's display mode
-            (currentFragment as NoteFragment).updateDisplayMode(DisplayMode.REMINDERS)
-        }
-    }
-
-    private fun navigateToLabels() {
-        clearToolbarBackground() // Clear the background
-        val fragment = LabelsFragment()
-        titleText.text = activity.getString(R.string.createLabels)
-        updateHeaderVisibility(
-            layoutToggle = false,
-            profile = false,
-            search = false
-        )
-        loadFragment(fragment)
-    }
-
-    private fun navigateToArchive() {
-        clearToolbarBackground() // Clear the background
-        titleText.text = activity.getString(R.string.archive)
-        updateHeaderVisibility(
-            layoutToggle = true,
-            profile = false,
-            search = true
-        )
-
-        // Check if NoteFragment is already loaded
-        if (currentFragment !is NoteFragment) {
-            // Only create a new fragment if we don't already have a NoteFragment
-            noteFragment = NoteFragment.newInstance(DisplayMode.ARCHIVE)
-            loadFragment(noteFragment)
-        } else {
-            // Just update the existing fragment's display mode
-            (currentFragment as NoteFragment).updateDisplayMode(DisplayMode.ARCHIVE)
-        }
-    }
-
-    private fun navigateToBin() {
-        clearToolbarBackground() // Clear the background
-        titleText.text = activity.getString(R.string.bin)
-        updateHeaderVisibility(
-            layoutToggle = true,
-            profile = false,
-            search = false
-        )
-
-        // Check if NoteFragment is already loaded
-        if (currentFragment !is NoteFragment) {
-            // Only create a new fragment if we don't already have a NoteFragment
-            noteFragment = NoteFragment.newInstance(DisplayMode.BIN)
-            loadFragment(noteFragment)
-        } else {
-            // Just update the existing fragment's display mode
-            (currentFragment as NoteFragment).updateDisplayMode(DisplayMode.BIN)
-        }
-    }
-
-    private fun navigateToLabelNotes(labelName: String) {
-        clearToolbarBackground()
-        currentLabelName = labelName // Store the current label name
-
-        // Find the label ID from the name
-        val label = labelDataBridge.labelsState.value.find { it.name == labelName }
-
-        if (label != null) {
-            titleText.text = labelName
-            updateHeaderVisibility(
-                layoutToggle = true,
-                profile = false,
-                search = true
-            )
-
-            // Check if NoteFragment is already loaded
-            if (currentFragment !is NoteFragment) {
-                // Create a new fragment instance
-                noteFragment = NoteFragment.newInstance(DisplayMode.LABELS)
-
-                // Store the label ID temporarily
-                val labelId = label.id
-
-                // Set up a commit callback to ensure the fragment is attached
-                fragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, noteFragment)
-                    .runOnCommit {
-                        // Now safely update the display mode after the fragment is attached
-                        noteFragment.updateDisplayMode(DisplayMode.LABELS, labelId)
-                    }
-                    .commit()
-
-                currentFragment = noteFragment
-            } else {
-                // If we're already on a NoteFragment, just update its display mode
-                (currentFragment as NoteFragment).updateDisplayMode(DisplayMode.LABELS, label.id)
-            }
-        }
-    }
-
+    // ==============================================
+    // Search Mode Methods
+    // ==============================================
     fun toggleSearchMode(enable: Boolean) {
         isInSearchMode = enable
-
-        // Toggle visibility of UI elements
         titleText.visibility = if (enable) View.GONE else View.VISIBLE
         layoutToggleIcon.visibility = if (enable) View.GONE else View.VISIBLE
         profileIcon.visibility = if (enable) View.GONE else View.VISIBLE
         searchIcon.visibility = if (enable) View.GONE else View.VISIBLE
         etSearch.visibility = if (enable) View.VISIBLE else View.GONE
 
-        // Change drawer button to back button
         if (enable) {
             drawerButton.setImageResource(R.drawable.arrow_back)
             etSearch.requestFocus()
         } else {
             drawerButton.setImageResource(R.drawable.menu)
-            etSearch.setText("") // Clear search text when exiting search mode
+            etSearch.setText("")
         }
     }
 
     fun handleSearchQuery(query: String) {
-        // Get the current fragment
         val currentFragment = fragmentManager.findFragmentById(R.id.fragment_container)
-
-        // If it's a NoteFragment, pass the search query
         if (currentFragment is NoteFragment) {
             currentFragment.filterNotes(query)
         }
     }
 
-    fun updateLabelMenu(labels: List<Label>) {
-        // Get the menu from NavigationView
-        val menu = navView.menu
+    fun isInSearchMode(): Boolean {
+        return isInSearchMode
+    }
 
-        // Find the Reminders menu item
+    // ==============================================
+    // Label Menu Management
+    // ==============================================
+    fun updateLabelMenu(labels: List<Label>) {
+        val menu = navView.menu
         val remindersMenuItem = menu.findItem(R.id.navReminders)
 
-        // Clear existing label items if any
         if (menuLabelsGroup != null) {
             menuLabelsGroup?.clear()
         } else {
-            // Create a new group for labels between group1 (which contains Reminders) and group2
             menuLabelsGroup = menu.addSubMenu(Menu.NONE, Menu.NONE,
                 remindersMenuItem.order + 1, "Labels")
         }
 
-        // Add each label as a menu item
         labels.forEach { label ->
             menuLabelsGroup?.add(LABEL_MENU_GROUP_ID, View.generateViewId(), Menu.NONE, label.name)
                 ?.setIcon(R.drawable.tag)
@@ -327,14 +300,15 @@ class NavigationManager(
         }
     }
 
+    // ==============================================
+    // State Management
+    // ==============================================
     fun restoreState() {
-        // First try to find the menu item directly
         val menuItem = navView.menu.findItem(currentNavItemId)
 
         if (menuItem != null) {
             menuItem.isChecked = true
         } else if (currentLabelName != null) {
-            // If we were on a label, try to find it by name in the current menu
             var found = false
             if (menuLabelsGroup != null) {
                 for (i in 0 until menuLabelsGroup!!.size()) {
@@ -348,14 +322,12 @@ class NavigationManager(
                 }
             }
 
-            // If we couldn't find the label, reset to default
             if (!found) {
                 currentNavItemId = R.id.navNotes
                 navView.menu.findItem(currentNavItemId)?.isChecked = true
                 currentLabelName = null
             }
         } else {
-            // If all else fails, reset to Notes
             currentNavItemId = R.id.navNotes
             navView.menu.findItem(currentNavItemId)?.isChecked = true
         }
@@ -363,9 +335,5 @@ class NavigationManager(
 
     fun saveState(outState: android.os.Bundle) {
         outState.putInt("currentNavItemId", currentNavItemId)
-    }
-
-    fun isInSearchMode(): Boolean {
-        return isInSearchMode
     }
 }
