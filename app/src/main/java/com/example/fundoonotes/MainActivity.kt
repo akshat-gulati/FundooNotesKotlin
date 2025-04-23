@@ -143,10 +143,19 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
         observeLabels()
 
         // Load default fragment if no fragment is loaded
-        if (savedInstanceState == null) {
-            navigationComponent.getNavigationManager().loadDefaultFragment()
+        if (savedInstanceState != null) {
+            // Restore toolbar title and other UI state
+            val savedTitle = savedInstanceState.getString("toolbar_title")
+            if (!savedTitle.isNullOrEmpty()) {
+                titleText.text = savedTitle
+            }
+
+            // Restore navigation state
+            val navId = savedInstanceState.getInt("current_nav_id", R.id.navNotes)
+            navigationManager.updateUIForNavItem(navId)
         } else {
-            navigationComponent.onRestoreInstanceState()
+            // No saved state, load default fragment
+            navigationManager.loadDefaultFragment()
         }
     }
 
