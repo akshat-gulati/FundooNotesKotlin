@@ -195,6 +195,12 @@ class LoginSignupActivity : AppCompatActivity() {
     // ==============================================
     // ViewModel Observation
     // ==============================================
+
+//    using collectLatest for multiple flows inside a single coroutine launch.
+//    This doesn't work properly because collectLatest suspends the coroutine
+//    until the flow completes, and since these flows are ongoing,
+//    only the first one gets collected properly.
+
     private fun observeViewModel() {
 
         lifecycleScope.launch {
