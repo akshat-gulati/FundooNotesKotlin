@@ -92,7 +92,6 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
         permissionManager.handlePermissionResult(
             this,
             requestCode,
-            permissions,
             grantResults
         ) { code ->
             Log.d(javaClass.simpleName.toString(), "Permission granted: $code")

@@ -326,7 +326,6 @@ class NoteEditActivity : AppCompatActivity() {
         permissionManager.handlePermissionResult(
             this,
             requestCode,
-            permissions,
             grantResults
         ) { code ->
             if (code == PermissionManager.NOTIFICATION_PERMISSION_CODE) {

@@ -16,7 +16,7 @@ class AuthManager(private val context: Context) {
     private val firebaseAuth = FirebaseAuth.getInstance()
     private val notesDataBridge = NotesDataBridge(context)
     private val labelDataBridge = LabelDataBridge(context)
-    private val sharedPreferences = context?.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+    private val sharedPreferences = context.getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
 
     // ==============================================
     // Authentication State Management
@@ -25,10 +25,6 @@ class AuthManager(private val context: Context) {
         val userId = sharedPreferences?.getString("userId", null)
         val currentUser = firebaseAuth.currentUser
         return userId != null && currentUser != null && currentUser.uid == userId
-    }
-
-    fun getUserId(): String? {
-        return firebaseAuth.currentUser?.uid
     }
 
     // ==============================================

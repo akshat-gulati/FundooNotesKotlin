@@ -84,12 +84,4 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         notificationManager.notify(notificationId, notificationBuilder.build())
     }
-
-//    override fun onNewToken(token: String) {
-//        sendRegistrationToServer(token)
-//    }
-//
-//    private fun sendRegistrationToServer(token: String) {
-//        Log.d("FCM_TOKEN", "New FCM token: $token")
-//    }
 }

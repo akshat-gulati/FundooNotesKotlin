@@ -11,11 +11,10 @@ class NoteLabelDataBridge(context: Context) {
     private val notesDataBridge = NotesDataBridge(context)
     private val labelDataBridge = LabelDataBridge(context)
 
-    companion object { private const val TAG = "NoteLabelRepository" }
-
     // ==============================================
     // Core Note-Label Operations
     // ==============================================
+
     fun addNewNoteWithLabels(
         noteId: String,
         title: String,
@@ -76,13 +75,6 @@ class NoteLabelDataBridge(context: Context) {
                 }
             }
         }
-    }
-
-    // ==============================================
-    // Query Methods
-    // ==============================================
-    fun getNoteLabels(noteId: String): List<String> {
-        return notesDataBridge.getNoteById(noteId)?.labels ?: emptyList()
     }
 
     fun getNotesWithLabel(labelId: String, onSuccess: (List<Note>) -> Unit) {

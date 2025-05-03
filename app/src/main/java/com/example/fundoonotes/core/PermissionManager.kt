@@ -10,7 +10,6 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
-import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -50,7 +49,7 @@ class PermissionManager(private val context: Context) {
 
     fun checkScheduleExactAlarmPermission(activity: Activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             if (!canScheduleExactAlarms()) {
                 // Request permission via settings since this requires a special intent
                 val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
@@ -137,7 +136,6 @@ class PermissionManager(private val context: Context) {
     fun handlePermissionResult(
         activity: Activity,
         requestCode: Int,
-        permissions: Array<out String>,
         grantResults: IntArray,
         onPermissionGranted: (Int) -> Unit
     ) {

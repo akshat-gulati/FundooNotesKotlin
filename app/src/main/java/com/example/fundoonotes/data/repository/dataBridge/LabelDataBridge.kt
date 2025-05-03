@@ -1,7 +1,6 @@
 package com.example.fundoonotes.data.repository.dataBridge
 
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import com.example.fundoonotes.core.NetworkManager
 import com.example.fundoonotes.data.model.Label
@@ -16,11 +15,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class LabelDataBridge(private val context: Context) : LabelInterface {
-
-    // ==============================================
-    // Companion Object (Constants)
-    // ==============================================
-    companion object { private const val TAG = "LabelsDataBridge" }
 
     // ==============================================
     // Properties and Initialization
