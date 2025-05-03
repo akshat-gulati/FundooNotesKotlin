@@ -17,6 +17,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.fundoonotes.R
+import com.example.fundoonotes.databinding.ActivityLoginSignupBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.textfield.TextInputEditText
@@ -30,6 +31,7 @@ class LoginSignupActivity : AppCompatActivity() {
     // ViewModel
     // ==============================================
     private lateinit var viewModel: LoginSignupViewModel
+    private lateinit var binding: ActivityLoginSignupBinding
 
     // ==============================================
     // UI Components Declaration
@@ -73,16 +75,17 @@ class LoginSignupActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_login_signup)
+        binding = ActivityLoginSignupBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         viewModel = LoginSignupViewModel(this)
 
-        initializeViews()
+        initializeViews(binding)
         setupTabLayout()
         setupClickListeners()
         observeViewModel()
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
@@ -103,21 +106,21 @@ class LoginSignupActivity : AppCompatActivity() {
     // ==============================================
     // Initialization Methods
     // ==============================================
-    private fun initializeViews() {
-        tabLayout = findViewById(R.id.tabLayout)
-        tilFullName = findViewById(R.id.tilFullName)
-        tilConfirmPassword = findViewById(R.id.tilConfirmPassword)
-        tilEmail = findViewById(R.id.tilEmail)
-        tilPassword = findViewById(R.id.tilPassword)
-        btnAction = findViewById(R.id.btnAction)
-        tvLoginHeader = findViewById(R.id.tvLoginHeader)
-        ivGoogle = findViewById(R.id.ivGoogle)
-        cvProfilePicture = findViewById(R.id.cvProfilePicture)
-        ibProfilePicture = findViewById(R.id.ibProfilePicture)
-        etEmail = findViewById(R.id.etEmail)
-        etPassword = findViewById(R.id.etPassword)
-        etFullName = findViewById(R.id.etFullName)
-        etConfirmPassword = findViewById(R.id.etConfirmPassword)
+    private fun initializeViews(binding: ActivityLoginSignupBinding) {
+        tabLayout = binding.tabLayout
+        tilFullName = binding.tilFullName
+        tilConfirmPassword = binding.tilConfirmPassword
+        tilEmail = binding.tilEmail
+        tilPassword = binding.tilPassword
+        btnAction = binding.btnAction
+        tvLoginHeader = binding.tvLoginHeader
+        ivGoogle = binding.ivGoogle
+        cvProfilePicture = binding.cvProfilePicture
+        ibProfilePicture = binding.ibProfilePicture
+        etEmail = binding.etEmail
+        etPassword = binding.etPassword
+        etFullName = binding.etFullName
+        etConfirmPassword = binding.etConfirmPassword
     }
 
     private fun setupTabLayout() {
