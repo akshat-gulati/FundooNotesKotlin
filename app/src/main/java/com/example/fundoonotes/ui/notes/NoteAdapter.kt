@@ -60,8 +60,8 @@ class NoteAdapter(
     // Data Binding Methods
     // ==============================================
     private fun bindNoteData(holder: NoteViewHolder, note: Note) {
-        holder.tvTitle.text = note.title
-        holder.tvDescription.text = note.description
+        bindTitleData(holder, note)
+        bindDescriptionData(holder, note)
         updateSelectionUI(holder, note)
         bindReminderData(holder, note)
         bindLabelData(holder, note)
@@ -72,6 +72,24 @@ class NoteAdapter(
             if (selectedItems.contains(note.id)) R.drawable.selected_card_border
             else R.drawable.card_border
         )
+    }
+
+    private fun bindTitleData(holder: NoteViewHolder, note: Note) {
+        if (note.title.isEmpty()) {
+            holder.tvTitle.visibility = View.GONE
+        } else {
+            holder.tvTitle.visibility = View.VISIBLE
+            holder.tvTitle.text = note.title
+        }
+    }
+
+    private fun bindDescriptionData(holder: NoteViewHolder, note: Note) {
+        if (note.description.isEmpty()) {
+            holder.tvDescription.visibility = View.GONE
+        } else {
+            holder.tvDescription.visibility = View.VISIBLE
+            holder.tvDescription.text = note.description
+        }
     }
 
     private fun bindReminderData(holder: NoteViewHolder, note: Note) {
