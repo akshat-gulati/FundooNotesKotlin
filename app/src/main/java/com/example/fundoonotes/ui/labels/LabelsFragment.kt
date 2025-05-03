@@ -29,15 +29,15 @@ class LabelsFragment : Fragment() {
     // ==============================================
     // UI Components
     // ==============================================
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var etNewLabel: EditText
-    private lateinit var btnAddLabel: Button
+    private val recyclerView: RecyclerView by lazy { binding.recyclerViewLabels }
+    private val etNewLabel: EditText by lazy { binding.etNewLabel }
+    private val btnAddLabel: Button by lazy { binding.btnAddLabel }
 
     // ==============================================
     // Data Repositories
     // ==============================================
-    private lateinit var labelDataBridge: LabelDataBridge
-    private lateinit var noteLabelDataBridge: NoteLabelDataBridge
+    private val labelDataBridge: LabelDataBridge by lazy { LabelDataBridge(requireContext()) }
+    private val noteLabelDataBridge: NoteLabelDataBridge by lazy { NoteLabelDataBridge(requireContext()) }
 
     // ==============================================
     // Adapter & Data
@@ -59,8 +59,6 @@ class LabelsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentLabelsBinding.inflate(inflater, container, false)
-        initializeViews(binding)
-        initializeDataBridges()
         setupUIComponents()
         return binding.root
     }
@@ -73,20 +71,6 @@ class LabelsFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         cleanupResources()
-    }
-
-    // ==============================================
-    // Initialization Methods
-    // ==============================================
-    private fun initializeViews(binding: FragmentLabelsBinding) {
-        recyclerView = binding.recyclerViewLabels
-        etNewLabel = binding.etNewLabel
-        btnAddLabel = binding.btnAddLabel
-    }
-
-    private fun initializeDataBridges() {
-        labelDataBridge = LabelDataBridge(requireContext())
-        noteLabelDataBridge = NoteLabelDataBridge(requireContext())
     }
 
     // ==============================================
