@@ -48,7 +48,6 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
     private lateinit var layoutToggleIcon: ImageView
     private lateinit var profileIcon: ImageView
     private lateinit var toolbar: Toolbar
-    private lateinit var authManager: AuthManager
     private lateinit var etSearch: EditText
     private lateinit var drawerButton: ImageButton
     private lateinit var drawerLayout: DrawerLayout
@@ -60,6 +59,7 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
     private lateinit var navigationComponent: NavigationComponent
     private lateinit var permissionManager: PermissionManager
     private lateinit var labelDataBridge: LabelDataBridge
+    private lateinit var authManager: AuthManager
 
 
     // ==============================================
