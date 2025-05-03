@@ -10,7 +10,7 @@ import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
 import com.example.fundoonotes.ui.NavigationInterface
 import com.google.android.material.navigation.NavigationView
 
-class NavigationComponent(
+class NavigationCoordinator(
     private val navigationInterface: NavigationInterface,
     private val labelDataBridge: LabelDataBridge,
     private val toolbar: Toolbar,

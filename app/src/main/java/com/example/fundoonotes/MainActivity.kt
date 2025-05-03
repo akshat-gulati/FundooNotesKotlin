@@ -33,7 +33,7 @@ import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
 import com.example.fundoonotes.data.repository.dataBridge.NotesDataBridge
 import com.example.fundoonotes.ui.NavigationInterface
 import com.example.fundoonotes.ui.accountActionDialog.AccountActionDialog
-import com.example.fundoonotes.ui.navigation.NavigationComponent
+import com.example.fundoonotes.ui.navigation.NavigationCoordinator
 import com.example.fundoonotes.ui.navigation.NavigationManager
 import kotlinx.coroutines.launch
 
@@ -42,24 +42,32 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
     // ==============================================
     // UI Component Declarations
     // ==============================================
-    private lateinit var navView: NavigationView
-    private lateinit var titleText: TextView
-    private lateinit var searchIcon: ImageView
-    private lateinit var layoutToggleIcon: ImageView
-    private lateinit var profileIcon: ImageView
-    private lateinit var toolbar: Toolbar
-    private lateinit var etSearch: EditText
-    private lateinit var drawerButton: ImageButton
-    private lateinit var drawerLayout: DrawerLayout
+    private val navView: NavigationView by lazy {
+        findViewById<NavigationView>(R.id.nav_view)
+    }
+    private val titleText: TextView by lazy {
+        findViewById<TextView>(R.id.tvHeaderTitle)
+    }
+
+    private val searchIcon: ImageView by lazy {
+        findViewById<ImageView>(R.id.searchIcon)
+    }
+
+    private val layoutToggleIcon: ImageView by lazy { findViewById(R.id.layout_toggle_icon) }
+    private val profileIcon: ImageView by lazy { findViewById(R.id.profile_icon) }
+    private val toolbar: Toolbar by lazy { findViewById(R.id.toolbar) }
+    private val etSearch: EditText by lazy { findViewById(R.id.etSearch) }
+    private val drawerButton: ImageButton by lazy { findViewById(R.id.drawer_button) }
+    private val drawerLayout: DrawerLayout by lazy { findViewById(R.id.main) }
 
     // ==============================================
     // Navigation and Permission Declarations
     // ==============================================
     private lateinit var navigationManager: NavigationManager
-    private lateinit var navigationComponent: NavigationComponent
-    private lateinit var permissionManager: PermissionManager
-    private lateinit var labelDataBridge: LabelDataBridge
-    private lateinit var authManager: AuthManager
+    private lateinit var navigationCoordinator: NavigationCoordinator
+    private val permissionManager: PermissionManager by lazy { PermissionManager(this) }
+    private val labelDataBridge: LabelDataBridge by lazy { LabelDataBridge(this) }
+    private val authManager: AuthManager by lazy { AuthManager(this) }
 
 
     // ==============================================
@@ -67,7 +75,6 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
     // ==============================================
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        authManager = AuthManager(this)
 
         // Check if user is logged in
         if (!authManager.isUserLoggedIn()) {
@@ -100,7 +107,7 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        navigationComponent.onSaveInstanceState(outState)
+        navigationCoordinator.onSaveInstanceState(outState)
     }
     override fun onResume() {
         super.onResume()
@@ -119,11 +126,9 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
         setupNavigation()
 
         // Initialize data bridges
-        labelDataBridge = LabelDataBridge(this)
-        permissionManager = PermissionManager(this)
         permissionManager.checkNotificationPermission(this)
 
-        navigationComponent = NavigationComponent(
+        navigationCoordinator = NavigationCoordinator(
             navigationInterface = this,  // Changed from navigationContract to match the class definition
             labelDataBridge = labelDataBridge,
             toolbar = toolbar,
@@ -135,8 +140,8 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
             etSearch = etSearch,
             navView = navView
         )
-        navigationComponent.initialize()
-        navigationManager = navigationComponent.getNavigationManager()
+        navigationCoordinator.initialize()
+        navigationManager = navigationCoordinator.getNavigationManager()
 
         // Observe labels for navigation
         observeLabels()
@@ -189,15 +194,6 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
     }
 
     private fun initializeViews() {
-        titleText = findViewById(R.id.tvHeaderTitle)
-        layoutToggleIcon = findViewById(R.id.layout_toggle_icon)
-        searchIcon = findViewById(R.id.searchIcon)
-        profileIcon = findViewById(R.id.profile_icon)
-        etSearch = findViewById(R.id.etSearch)
-        drawerButton = findViewById(R.id.drawer_button)
-        toolbar = findViewById(R.id.toolbar)
-        drawerLayout = findViewById(R.id.main)
-
         // Setup profile click listener
         profileIcon.setOnClickListener {
             val dialog = AccountActionDialog()
@@ -234,7 +230,6 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
     }
 
     private fun setupNavigation() {
-        navView = findViewById(R.id.nav_view)
         navView.setNavigationItemSelectedListener { item: MenuItem ->
             val result = navigationManager.handleNavigation(item)
             closeDrawer()
@@ -247,7 +242,7 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 labelDataBridge.labelsState.collect { labels ->
-                    navigationComponent.getNavigationManager().updateLabelMenu(labels)
+                    navigationCoordinator.getNavigationManager().updateLabelMenu(labels)
                 }
             }
         }
