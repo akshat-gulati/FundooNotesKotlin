@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.fundoonotes.R
 import com.example.fundoonotes.data.model.Note
 import com.example.fundoonotes.data.repository.firebase.FirestoreLabelRepository
+import com.example.fundoonotes.databinding.ItemRowBinding
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -23,14 +24,14 @@ class NoteAdapter(
     // ==============================================
     // ViewHolder Class
     // ==============================================
-    class NoteViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val tvTitle: TextView = itemView.findViewById(R.id.tvTitle)
-        val tvDescription: TextView = itemView.findViewById(R.id.tvDescription)
-        val llReminder: LinearLayout = itemView.findViewById(R.id.llReminder)
-        val tvTimeDate: TextView = itemView.findViewById(R.id.tvTimeDate)
-        val tvLabelName: TextView = itemView.findViewById(R.id.tvLabelName)
-        val tvLabelName2: TextView = itemView.findViewById(R.id.tvLabelName2)
-        val tvLabelName3: TextView = itemView.findViewById(R.id.tvLabelName3)
+    class NoteViewHolder(binding: ItemRowBinding) : RecyclerView.ViewHolder(binding.root) {
+        val tvTitle: TextView = binding.tvTitle
+        val tvDescription: TextView = binding.tvDescription
+        val llReminder: LinearLayout = binding.llReminder
+        val tvTimeDate: TextView = binding.tvTimeDate
+        val tvLabelName: TextView = binding.tvLabelName
+        val tvLabelName2: TextView = binding.tvLabelName2
+        val tvLabelName3: TextView = binding.tvLabelName3
     }
 
     // ==============================================
@@ -44,8 +45,9 @@ class NoteAdapter(
     // Adapter Overrides
     // ==============================================
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_row, parent, false)
-        return NoteViewHolder(view)
+//        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_row, parent, false)
+        val binding = ItemRowBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return NoteViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: NoteViewHolder, position: Int) {

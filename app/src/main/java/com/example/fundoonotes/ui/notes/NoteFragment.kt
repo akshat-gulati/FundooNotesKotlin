@@ -17,6 +17,7 @@ import com.example.fundoonotes.ui.noteEdit.NoteEditActivity
 import kotlinx.coroutines.launch
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.fundoonotes.data.model.Note
+import com.example.fundoonotes.databinding.FragmentNoteBinding
 import com.example.fundoonotes.ui.LayoutToggleListener
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
@@ -33,6 +34,8 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
             }
         }
     }
+    private var _binding: FragmentNoteBinding? = null
+    private val binding get() = _binding!!
 
     // ==============================================
     // Properties
@@ -60,13 +63,14 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
-        val view = inflater.inflate(R.layout.fragment_note, container, false)
-        initializeViews(view)
+//        val view = inflater.inflate(R.layout.fragment_note, container, false)
+        _binding = FragmentNoteBinding.inflate(inflater, container, false)
+        initializeViews()
         setupRecyclerView()
         setupFab()
-        return view
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -78,6 +82,7 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _binding = null  // Avoid memory leaks
         actionMode?.finish()
         (activity as? MainActivity)?.setToolbarVisibility(true)
     }
@@ -85,9 +90,9 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
     // ==============================================
     // Initialization Methods
     // ==============================================
-    private fun initializeViews(view: View) {
-        recyclerView = view.findViewById(R.id.recyclerView)
-        fabAddNote = view.findViewById(R.id.fab_add_note)
+    private fun initializeViews() {
+        recyclerView = binding.recyclerView
+        fabAddNote = binding.fabAddNote
         labelDialogManager = LabelDialogManager(requireContext(), viewLifecycleOwner, viewModel)
     }
 
