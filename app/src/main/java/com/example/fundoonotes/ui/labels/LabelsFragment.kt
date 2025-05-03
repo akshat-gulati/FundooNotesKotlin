@@ -16,11 +16,15 @@ import com.example.fundoonotes.R
 import com.example.fundoonotes.data.model.Label
 import com.example.fundoonotes.data.repository.dataBridge.LabelDataBridge
 import com.example.fundoonotes.data.repository.dataBridge.NoteLabelDataBridge
+import com.example.fundoonotes.databinding.FragmentLabelsBinding
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.util.UUID
 
 class LabelsFragment : Fragment() {
+
+    private var _binding: FragmentLabelsBinding? = null
+    private val binding get() = _binding!!
 
     // ==============================================
     // UI Components
@@ -54,11 +58,11 @@ class LabelsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_labels, container, false)
-        initializeViews(view)
+        _binding = FragmentLabelsBinding.inflate(inflater, container, false)
+        initializeViews(binding)
         initializeDataBridges()
         setupUIComponents()
-        return view
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -74,10 +78,10 @@ class LabelsFragment : Fragment() {
     // ==============================================
     // Initialization Methods
     // ==============================================
-    private fun initializeViews(view: View) {
-        recyclerView = view.findViewById(R.id.recyclerViewLabels)
-        etNewLabel = view.findViewById(R.id.etNewLabel)
-        btnAddLabel = view.findViewById(R.id.btnAddLabel)
+    private fun initializeViews(binding: FragmentLabelsBinding) {
+        recyclerView = binding.recyclerViewLabels
+        etNewLabel = binding.etNewLabel
+        btnAddLabel = binding.btnAddLabel
     }
 
     private fun initializeDataBridges() {
