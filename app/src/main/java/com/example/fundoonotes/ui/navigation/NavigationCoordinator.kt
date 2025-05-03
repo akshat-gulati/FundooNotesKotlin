@@ -22,6 +22,9 @@ class NavigationCoordinator(
     private val etSearch: EditText,
     private val navView: NavigationView
 ) {
+    init {
+        initialize()
+    }
     private lateinit var navigationManager: NavigationManager
 
     fun initialize() {

@@ -63,8 +63,19 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
     // ==============================================
     // Navigation and Permission Declarations
     // ==============================================
-    private lateinit var navigationManager: NavigationManager
-    private lateinit var navigationCoordinator: NavigationCoordinator
+    private val navigationCoordinator: NavigationCoordinator by lazy {
+        NavigationCoordinator(navigationInterface = this,
+        labelDataBridge = labelDataBridge,
+        toolbar = toolbar,
+        titleText = titleText,
+        layoutToggleIcon = layoutToggleIcon,
+        searchIcon = searchIcon,
+        profileIcon = profileIcon,
+        drawerButton = drawerButton,
+        etSearch = etSearch,
+        navView = navView) }
+
+    private val navigationManager: NavigationManager by lazy { navigationCoordinator.getNavigationManager() }
     private val permissionManager: PermissionManager by lazy { PermissionManager(this) }
     private val labelDataBridge: LabelDataBridge by lazy { LabelDataBridge(this) }
     private val authManager: AuthManager by lazy { AuthManager(this) }
@@ -128,21 +139,6 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
         // Initialize data bridges
         permissionManager.checkNotificationPermission(this)
 
-        navigationCoordinator = NavigationCoordinator(
-            navigationInterface = this,  // Changed from navigationContract to match the class definition
-            labelDataBridge = labelDataBridge,
-            toolbar = toolbar,
-            titleText = titleText,
-            layoutToggleIcon = layoutToggleIcon,
-            searchIcon = searchIcon,
-            profileIcon = profileIcon,
-            drawerButton = drawerButton,
-            etSearch = etSearch,
-            navView = navView
-        )
-        navigationCoordinator.initialize()
-        navigationManager = navigationCoordinator.getNavigationManager()
-
         // Observe labels for navigation
         observeLabels()
 
@@ -180,7 +176,6 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
             Log.d("MainActivity", "WorkManager initialized")
         }
     }
-
 
     // ==============================================
     // UI Setup Methods
@@ -255,7 +250,6 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
     // NavigationInterface Implementation
     // ==============================================
 
-
     override fun openDrawer() {
         drawerLayout.openDrawer(GravityCompat.START)
     }
@@ -282,6 +276,5 @@ class MainActivity : AppCompatActivity(), NavigationInterface {
     }
     override fun getContext(): Context = this
 
-//    an instance of FragmentManager for managing fragments within an activity.
     override fun getSupportFragmentManager(): FragmentManager = super.getSupportFragmentManager()
 }
