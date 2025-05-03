@@ -33,18 +33,19 @@ class NoteEditActivity : AppCompatActivity() {
     // ==============================================
     // ViewModel and Dependencies
     // ==============================================
-    private lateinit var viewModel: NoteEditViewModel
-    private lateinit var permissionManager: PermissionManager
+
+    private val viewModel: NoteEditViewModel by lazy { NoteEditViewModel(application) }
+    private val permissionManager: PermissionManager by lazy { PermissionManager(this) }
 
     // ==============================================
     // UI Components
     // ==============================================
-    private lateinit var ivBack: ImageView
-    private lateinit var etNoteTitle: EditText
-    private lateinit var etNoteDescription: EditText
-    private lateinit var ivReminder: ImageView
-    private lateinit var ivArchive: ImageView
-    private lateinit var labelChipGroup: ChipGroup
+
+    private val ivBack: ImageView by lazy { findViewById(R.id.ivBack) }
+    private val etNoteTitle: EditText by lazy { findViewById(R.id.etNoteTitle) }
+    private val etNoteDescription: EditText by lazy { findViewById(R.id.etNoteDescription) }
+    private val ivReminder: ImageView by lazy { findViewById(R.id.ivReminder) }
+    private val ivArchive: ImageView by lazy { findViewById(R.id.ivArchive) }
 
     // ==============================================
     // Companion Object
@@ -58,9 +59,6 @@ class NoteEditActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_note_edit)
-
-        viewModel = ViewModelProvider(this)[NoteEditViewModel::class.java]
-        permissionManager = PermissionManager(this)
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -92,13 +90,6 @@ class NoteEditActivity : AppCompatActivity() {
     // View Initialization
     // ==============================================
     private fun initializeViews() {
-        ivBack = findViewById(R.id.ivBack)
-        etNoteTitle = findViewById(R.id.etNoteTitle)
-        etNoteDescription = findViewById(R.id.etNoteDescription)
-        ivReminder = findViewById(R.id.ivReminder)
-        labelChipGroup = findViewById(R.id.label_chip_group)
-        ivArchive = findViewById(R.id.ivArchive)
-
         ivArchive.setOnClickListener {
             viewModel.toggleArchive()
         }
@@ -127,12 +118,6 @@ class NoteEditActivity : AppCompatActivity() {
                             etNoteTitle.setText(it.title)
                             etNoteDescription.setText(it.description)
                         }
-                    }
-                }
-
-                launch {
-                    viewModel.noteLabels.collect { labelIds ->
-                        populateLabelChips(labelIds)
                     }
                 }
 
@@ -177,58 +162,6 @@ class NoteEditActivity : AppCompatActivity() {
     }
 
     // ==============================================
-    // Label Management
-    // ==============================================
-    private fun populateLabelChips(labelIds: List<String>) {
-        labelChipGroup.removeAllViews()
-
-        viewModel.availableLabels.value?.forEach { label ->
-            if (labelIds.contains(label.id)) {
-                addLabelChip(label, true)
-            }
-        }
-
-        // Add the "Add Label" chip
-        val addLabelChip = Chip(this)
-        addLabelChip.text = "+ Add Label"
-        addLabelChip.isCheckable = false
-        addLabelChip.setOnClickListener {
-            showLabelSelectionDialog()
-        }
-        labelChipGroup.addView(addLabelChip)
-    }
-
-    private fun addLabelChip(label: Label, isSelected: Boolean) {
-        val chip = Chip(this)
-        chip.text = label.name
-        chip.isCloseIconVisible = true
-        chip.isChecked = isSelected
-        chip.setOnCloseIconClickListener {
-            viewModel.removeLabel(label.id)
-        }
-        labelChipGroup.addView(chip, labelChipGroup.childCount - 1) // Add before the "Add Label" chip
-    }
-
-    private fun showLabelSelectionDialog() {
-        val availableLabels = viewModel.getAvailableLabelsForDialog()
-
-        if (availableLabels.isEmpty()) {
-            Toast.makeText(this, "No more labels available. Create new labels in the Labels section.", Toast.LENGTH_LONG).show()
-            return
-        }
-
-        val labelNames = availableLabels.map { it.name }.toTypedArray()
-
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Add Label")
-            .setItems(labelNames) { _, which ->
-                viewModel.addLabel(availableLabels[which])
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
-    // ==============================================
     // Reminder Management
     // ==============================================
     private fun setupReminderPicker() {
@@ -240,7 +173,6 @@ class NoteEditActivity : AppCompatActivity() {
                 return
             }
         }
-
         // Check if a reminder is already set
         val currentReminderTime = viewModel.reminderTime.value
         if (currentReminderTime != null) {
