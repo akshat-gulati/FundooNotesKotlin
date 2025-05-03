@@ -33,17 +33,16 @@ class AccountActionDialog : DialogFragment() {
     // ==============================================
     // UI Components
     // ==============================================
-    private lateinit var ivProfile: ImageView
-    private lateinit var tvName: TextView
-    private lateinit var tvEmail: TextView
-    private lateinit var cvManage: CardView
-    private lateinit var cvLogout: CardView
+    private val ivProfile: ImageView by lazy { binding.ivProfile }
+    private val tvName: TextView by lazy { binding.tvName }
+    private val tvEmail: TextView by lazy { binding.tvEmail }
+    private val cvLogout: CardView by lazy { binding.cvLogout }
 
     // ==============================================
     // Data Repositories & Services
     // ==============================================
-    private lateinit var authManager: AuthManager
-    private lateinit var userRepository: FirestoreUserDataRepository
+    private val authManager: AuthManager by lazy { AuthManager(requireContext()) }
+    private val userRepository: FirestoreUserDataRepository by lazy { FirestoreUserDataRepository(requireContext()) }
 
     // ==============================================
     // Coroutine Management
@@ -55,7 +54,6 @@ class AccountActionDialog : DialogFragment() {
     // ==============================================
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        initializeServices(context)
     }
 
     override fun onCreateView(
@@ -69,7 +67,6 @@ class AccountActionDialog : DialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initializeViews(view)
         setupUIComponents()
     }
 
@@ -83,24 +80,6 @@ class AccountActionDialog : DialogFragment() {
         cleanupResources()
         _binding = null
     }
-
-    // ==============================================
-    // Initialization Methods
-    // ==============================================
-    private fun initializeServices(context: Context) {
-        authManager = AuthManager(context)
-        userRepository = FirestoreUserDataRepository(context)
-    }
-
-    private fun initializeViews(view: View) {
-        ivProfile = binding.ivProfile
-        tvName = binding.tvName
-        tvEmail = binding.tvEmail
-        cvManage = binding.cvManage
-        cvLogout = binding.cvLogout
-        cvManage.visibility = GONE
-    }
-
     // ==============================================
     // UI Setup Methods
     // ==============================================
