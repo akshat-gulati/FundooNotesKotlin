@@ -8,6 +8,8 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fundoonotes.R
 import com.example.fundoonotes.data.model.Label
+import com.example.fundoonotes.databinding.ActivityMainBinding
+import com.example.fundoonotes.databinding.ItemLabelBinding
 import com.google.android.material.textfield.TextInputEditText
 
 class LabelAdapter(
@@ -27,19 +29,19 @@ class LabelAdapter(
     // ==============================================
     // ViewHolder Class
     // ==============================================
-    class LabelViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val labelText: TextInputEditText = view.findViewById(R.id.tvLabelName)
-        val deleteButton: ImageButton = view.findViewById(R.id.tvDeleteLabel)
-        val editButton: ImageView = view.findViewById(R.id.ibEditLabel)
+    class LabelViewHolder(val binding: ItemLabelBinding) : RecyclerView.ViewHolder(binding.root) {
+        val labelText: TextInputEditText = binding.tvLabelName
+        val deleteButton: ImageButton = binding.tvDeleteLabel
+        val editButton: ImageView = binding.ibEditLabel
     }
 
     // ==============================================
     // RecyclerView.Adapter Overrides
     // ==============================================
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LabelViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_label, parent, false)
-        return LabelViewHolder(view)
+        val binding = ItemLabelBinding.inflate(
+            LayoutInflater.from(parent.context), parent,false)
+        return LabelViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: LabelViewHolder, position: Int) {
