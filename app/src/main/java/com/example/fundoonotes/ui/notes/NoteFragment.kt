@@ -41,10 +41,14 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
     // Properties
     // ==============================================
     private val viewModel: NoteViewModel by lazy { NoteViewModel(requireContext()) }
-    private lateinit var labelDialogManager: LabelDialogManager
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var noteAdapter: NoteAdapter
-    private lateinit var fabAddNote: FloatingActionButton
+
+    private val labelDialogManager: LabelDialogManager by lazy {
+        LabelDialogManager(requireContext(), viewLifecycleOwner, viewModel) }
+
+    private val recyclerView: RecyclerView by lazy { binding.recyclerView }
+    private val noteAdapter: NoteAdapter by lazy { NoteAdapter(emptyList(), this) }
+    private val fabAddNote: FloatingActionButton by lazy { binding.fabAddNote }
+
     private var actionMode: ActionMode? = null
 
     // ==============================================
@@ -67,7 +71,6 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
 
 //        val view = inflater.inflate(R.layout.fragment_note, container, false)
         _binding = FragmentNoteBinding.inflate(inflater, container, false)
-        initializeViews()
         setupRecyclerView()
         setupFab()
         return binding.root
@@ -90,14 +93,8 @@ class NoteFragment : Fragment(), LayoutToggleListener, OnNoteClickListener {
     // ==============================================
     // Initialization Methods
     // ==============================================
-    private fun initializeViews() {
-        recyclerView = binding.recyclerView
-        fabAddNote = binding.fabAddNote
-        labelDialogManager = LabelDialogManager(requireContext(), viewLifecycleOwner, viewModel)
-    }
 
     private fun setupRecyclerView() {
-        noteAdapter = NoteAdapter(emptyList(), this)
         recyclerView.apply {
             adapter = noteAdapter
             itemAnimator = DefaultItemAnimator()
