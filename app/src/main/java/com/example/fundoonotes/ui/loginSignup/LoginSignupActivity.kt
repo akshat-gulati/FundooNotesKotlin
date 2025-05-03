@@ -30,27 +30,27 @@ class LoginSignupActivity : AppCompatActivity() {
     // ==============================================
     // ViewModel
     // ==============================================
-    private lateinit var viewModel: LoginSignupViewModel
-    private lateinit var binding: ActivityLoginSignupBinding
+    private val viewModel by lazy { LoginSignupViewModel(this) }
+    private val binding by lazy { ActivityLoginSignupBinding.inflate(layoutInflater) }
 
     // ==============================================
     // UI Components Declaration
     // ==============================================
-    private lateinit var tabLayout: TabLayout
-    private lateinit var tilFullName: TextInputLayout
-    private lateinit var tilConfirmPassword: TextInputLayout
-    private lateinit var tilEmail: TextInputLayout
-    private lateinit var tilPassword: TextInputLayout
-    private lateinit var btnAction: Button
-    private lateinit var tvLoginHeader: TextView
-    private lateinit var ivGoogle: ImageView
-    private lateinit var cvProfilePicture: CardView
-    private lateinit var ibProfilePicture: ImageView
+    private val tabLayout by lazy { binding.tabLayout }
 
-    private lateinit var etEmail: TextInputEditText
-    private lateinit var etPassword: TextInputEditText
-    private lateinit var etFullName: TextInputEditText
-    private lateinit var etConfirmPassword: TextInputEditText
+
+    private val tilFullName: TextInputLayout by lazy { binding.tilFullName }
+    private val tilConfirmPassword: TextInputLayout by lazy { binding.tilConfirmPassword }
+    private val btnAction: Button by lazy { binding.btnAction }
+    private val tvLoginHeader: TextView by lazy { binding.tvLoginHeader }
+    private val ivGoogle: ImageView by lazy { binding.ivGoogle }
+    private val cvProfilePicture: CardView by lazy { binding.cvProfilePicture }
+    private val ibProfilePicture: ImageView by lazy { binding.ibProfilePicture }
+
+    private val etEmail: TextInputEditText by lazy { binding.etEmail }
+    private val etPassword: TextInputEditText by lazy { binding.etPassword }
+    private val etFullName: TextInputEditText by lazy { binding.etFullName }
+    private val etConfirmPassword: TextInputEditText by lazy { binding.etConfirmPassword }
 
     // ==============================================
     // Activity Result Launchers
@@ -75,12 +75,7 @@ class LoginSignupActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        binding = ActivityLoginSignupBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        viewModel = LoginSignupViewModel(this)
-
-        initializeViews(binding)
         setupTabLayout()
         setupClickListeners()
         observeViewModel()
@@ -106,22 +101,6 @@ class LoginSignupActivity : AppCompatActivity() {
     // ==============================================
     // Initialization Methods
     // ==============================================
-    private fun initializeViews(binding: ActivityLoginSignupBinding) {
-        tabLayout = binding.tabLayout
-        tilFullName = binding.tilFullName
-        tilConfirmPassword = binding.tilConfirmPassword
-        tilEmail = binding.tilEmail
-        tilPassword = binding.tilPassword
-        btnAction = binding.btnAction
-        tvLoginHeader = binding.tvLoginHeader
-        ivGoogle = binding.ivGoogle
-        cvProfilePicture = binding.cvProfilePicture
-        ibProfilePicture = binding.ibProfilePicture
-        etEmail = binding.etEmail
-        etPassword = binding.etPassword
-        etFullName = binding.etFullName
-        etConfirmPassword = binding.etConfirmPassword
-    }
 
     private fun setupTabLayout() {
         showLoginUI()
