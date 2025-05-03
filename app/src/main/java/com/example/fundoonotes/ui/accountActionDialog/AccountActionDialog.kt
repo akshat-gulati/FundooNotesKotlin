@@ -20,11 +20,15 @@ import com.bumptech.glide.load.resource.bitmap.TransformationUtils.circleCrop
 import com.example.fundoonotes.R
 import com.example.fundoonotes.core.AuthManager
 import com.example.fundoonotes.data.repository.firebase.FirestoreUserDataRepository
+import com.example.fundoonotes.databinding.FragmentAccountActionDialogBinding
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class AccountActionDialog : DialogFragment() {
+
+    private var _binding: FragmentAccountActionDialogBinding? = null
+    private val binding get() = _binding!!
 
     // ==============================================
     // UI Components
@@ -59,7 +63,8 @@ class AccountActionDialog : DialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_account_action_dialog, container, false)
+        _binding = FragmentAccountActionDialogBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -76,6 +81,7 @@ class AccountActionDialog : DialogFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         cleanupResources()
+        _binding = null
     }
 
     // ==============================================
@@ -87,11 +93,11 @@ class AccountActionDialog : DialogFragment() {
     }
 
     private fun initializeViews(view: View) {
-        ivProfile = view.findViewById(R.id.ivProfile)
-        tvName = view.findViewById(R.id.tvName)
-        tvEmail = view.findViewById(R.id.tvEmail)
-        cvManage = view.findViewById(R.id.cvManage)
-        cvLogout = view.findViewById(R.id.cvLogout)
+        ivProfile = binding.ivProfile
+        tvName = binding.tvName
+        tvEmail = binding.tvEmail
+        cvManage = binding.cvManage
+        cvLogout = binding.cvLogout
         cvManage.visibility = GONE
     }
 
