@@ -26,8 +26,6 @@ class LoginSignupViewModel(context: Context) : ViewModel() {
     // ==============================================
     // StateFlow Declarations
     // ==============================================
-    private val _currentTab = MutableStateFlow<Int>(0)
-    val currentTab: StateFlow<Int> = _currentTab.asStateFlow()
 
     private val _profileImageUri = MutableStateFlow<Uri?>(null)
     val profileImageUri: StateFlow<Uri?> = _profileImageUri.asStateFlow()
@@ -48,6 +46,22 @@ class LoginSignupViewModel(context: Context) : ViewModel() {
     // Authentication Methods
     // ==============================================
     fun login(email: String, password: String) {
+
+        if (email.isEmpty() || password.isEmpty()) {
+            _authError.value = "Please enter email and password"
+            return
+        }
+
+        if (!isValidEmail(email)) {
+            _authError.value = "Invalid email format"
+            return
+        }
+
+        if (!isValidPassword(password)) {
+            _authError.value = "Please use strong Password"
+            return
+        }
+
         _isLoading.value = true
         clearAuthState()
 
@@ -65,6 +79,22 @@ class LoginSignupViewModel(context: Context) : ViewModel() {
     }
 
     fun register(email: String, password: String, confirmPassword: String, fullName: String) {
+
+        if (email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || fullName.isEmpty()) {
+            _authError.value = "Please enter all the details"
+            return
+        }
+
+        if (!isValidEmail(email)) {
+            _authError.value = "Invalid email format"
+            return
+        }
+
+        if (!isValidPassword(password)) {
+            _authError.value = "Please use strong Password"
+            return
+        }
+
         _isLoading.value = true
         clearAuthState()
 
@@ -83,6 +113,33 @@ class LoginSignupViewModel(context: Context) : ViewModel() {
             _isLoading.value = false
         }
     }
+
+    fun isValidEmail(email: String): Boolean {
+        val emailRegex =
+            "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$"
+        return email.matches(emailRegex.toRegex())
+    }
+
+    fun isValidPassword(password: String,
+                        minLength: Int = 6,
+                        requireUppercase: Boolean = false,
+                        requireLowercase: Boolean = false,
+                        requireNumbers: Boolean = false,
+                        requireSpecialChars: Boolean = false): Boolean {
+        if (password.length < minLength) return false
+
+        var regexBuilder = "^"
+
+        if (requireUppercase) regexBuilder += "(?=.*[A-Z])"
+        if (requireLowercase) regexBuilder += "(?=.*[a-z])"
+        if (requireNumbers) regexBuilder += "(?=.*\\d)"
+        if (requireSpecialChars) regexBuilder += "(?=.*[@#$%^&+=!])"
+
+        regexBuilder += ".{$minLength,}$"
+
+        return password.matches(regexBuilder.toRegex())
+    }
+
 
     fun performGoogleSignIn() {
         _isLoading.value = true
