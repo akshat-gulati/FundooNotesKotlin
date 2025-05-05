@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Suppress("SpellCheckingInspection")
 class NotesDataBridge(private val context: Context) : NotesInterface {
@@ -26,7 +27,7 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
     // ==============================================
     // Properties and Initialization
     // ==============================================
-    private val coroutineScope = CoroutineScope(Dispatchers.Main)
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
     private val _notesState = MutableStateFlow<List<Note>>(emptyList())
     val notesState: StateFlow<List<Note>> = _notesState.asStateFlow()
 
@@ -46,10 +47,12 @@ class NotesDataBridge(private val context: Context) : NotesInterface {
         // Observe network state changes
         coroutineScope.launch {
             networkState.collect { isOnline ->
-                if (isOnline) {
-                    _notesState.value = firestoreRepository.notesState.value
-                } else {
-                    _notesState.value = roomNoteRepository.notesState.value
+                withContext(Dispatchers.Main) {
+                    if (isOnline) {
+                        _notesState.value = firestoreRepository.notesState.value
+                    } else {
+                        _notesState.value = roomNoteRepository.notesState.value
+                    }
                 }
             }
         }

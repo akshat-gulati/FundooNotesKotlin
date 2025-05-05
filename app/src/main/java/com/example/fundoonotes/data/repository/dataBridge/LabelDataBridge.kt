@@ -13,13 +13,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class LabelDataBridge(private val context: Context) : LabelInterface {
 
     // ==============================================
     // Properties and Initialization
     // ==============================================
-    private val coroutineScope = CoroutineScope(Dispatchers.Main)
+    private val coroutineScope = CoroutineScope(Dispatchers.IO)
     private val _labelsState = MutableStateFlow<List<Label>>(emptyList())
     val labelsState: StateFlow<List<Label>> = _labelsState.asStateFlow()
 
@@ -37,10 +38,12 @@ class LabelDataBridge(private val context: Context) : LabelInterface {
         // Observe network state changes
         coroutineScope.launch {
             networkState.collect { isOnline ->
-                if (isOnline) {
-                    _labelsState.value = firestoreLabelRepository.labelsState.value
-                } else {
-                    _labelsState.value = roomLabelRepository.labelsState.value
+                withContext(Dispatchers.Main) {
+                    if (isOnline) {
+                        _labelsState.value = firestoreLabelRepository.labelsState.value
+                    } else {
+                        _labelsState.value = roomLabelRepository.labelsState.value
+                    }
                 }
             }
         }
