@@ -47,8 +47,12 @@ class LoginSignupViewModel(context: Context) : ViewModel() {
     // ==============================================
     fun login(email: String, password: String) {
 
-        if (email.isEmpty() || password.isEmpty()) {
+        if (email.isEmpty()) {
             _authError.value = "Please enter email and password"
+            return
+        }
+        if (password.isEmpty()) {
+            _authError.value = "Please enter password"
             return
         }
 
@@ -80,8 +84,25 @@ class LoginSignupViewModel(context: Context) : ViewModel() {
 
     fun register(email: String, password: String, confirmPassword: String, fullName: String) {
 
-        if (email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || fullName.isEmpty()) {
-            _authError.value = "Please enter all the details"
+        if (email.isEmpty()) {
+            _authError.value = "Please enter email"
+            return
+        }
+        if (password.isEmpty()) {
+            _authError.value = "Please enter password"
+            return
+        }
+        if (password.isEmpty()  || confirmPassword.isEmpty()) {
+            _authError.value = "Please enter password"
+            return
+        }
+        if (fullName.isEmpty()){
+            _authError.value = "Please enter name"
+            return
+        }
+
+        if (password == confirmPassword){
+            _authError.value = "Passwords do not match"
             return
         }
 
