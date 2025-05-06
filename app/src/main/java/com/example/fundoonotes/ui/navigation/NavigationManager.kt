@@ -31,6 +31,16 @@ class NavigationManager(
     private val etSearch: EditText,
     private val navView: NavigationView
 ) {
+
+    companion object {
+        fun createNoteFragment(displayMode: DisplayMode): NoteFragment {
+            return NoteFragment.newInstance(displayMode)
+        }
+        fun createLabelsFragment(): LabelsFragment {
+            return LabelsFragment()
+        }
+    }
+
     // ==============================================
     // Fragment Management
     // ==============================================
@@ -145,7 +155,7 @@ class NavigationManager(
         updateHeaderVisibility(true, true, true)
 
         if (currentFragment !is NoteFragment) {
-            noteFragment = NoteFragment.newInstance(DisplayMode.NOTES)
+            noteFragment = createNoteFragment(DisplayMode.NOTES)
             loadFragment(noteFragment)
         } else {
             (currentFragment as NoteFragment).updateDisplayMode(DisplayMode.NOTES)
@@ -158,7 +168,7 @@ class NavigationManager(
         updateHeaderVisibility(true, false, true)
 
         if (currentFragment !is NoteFragment) {
-            noteFragment = NoteFragment.newInstance(DisplayMode.REMINDERS)
+            noteFragment = createNoteFragment(DisplayMode.REMINDERS)
             loadFragment(noteFragment)
         } else {
             (currentFragment as NoteFragment).updateDisplayMode(DisplayMode.REMINDERS)
@@ -167,7 +177,7 @@ class NavigationManager(
 
     private fun navigateToLabels() {
         clearToolbarBackground()
-        val fragment = LabelsFragment()
+        val fragment = createLabelsFragment()
         titleText.text = activity.getString(R.string.createLabels)
         updateHeaderVisibility(false, false, false)
         loadFragment(fragment)
@@ -179,7 +189,7 @@ class NavigationManager(
         updateHeaderVisibility(true, false, true)
 
         if (currentFragment !is NoteFragment) {
-            noteFragment = NoteFragment.newInstance(DisplayMode.ARCHIVE)
+            noteFragment = createNoteFragment(DisplayMode.ARCHIVE)
             loadFragment(noteFragment)
         } else {
             (currentFragment as NoteFragment).updateDisplayMode(DisplayMode.ARCHIVE)
@@ -192,7 +202,7 @@ class NavigationManager(
         updateHeaderVisibility(true, false, false)
 
         if (currentFragment !is NoteFragment) {
-            noteFragment = NoteFragment.newInstance(DisplayMode.BIN)
+            noteFragment = createNoteFragment(DisplayMode.BIN)
             loadFragment(noteFragment)
         } else {
             (currentFragment as NoteFragment).updateDisplayMode(DisplayMode.BIN)
@@ -209,7 +219,7 @@ class NavigationManager(
             updateHeaderVisibility(true, false, true)
 
             if (currentFragment !is NoteFragment) {
-                noteFragment = NoteFragment.newInstance(DisplayMode.LABELS)
+                noteFragment = createNoteFragment(DisplayMode.LABELS)
                 val labelId = label.id
                 fragmentManager.beginTransaction()
                     .replace(R.id.fragment_container, noteFragment)
